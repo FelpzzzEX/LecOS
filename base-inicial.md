@@ -282,19 +282,19 @@ Seguindo o fluxo do processo, seria algo basicamente:
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | m (desmontado) | - vazio - |
-| m (boot montado) | ldlinux.c32  ldlinux.sys |
+| m (boot montado) | ldlinux.c32 ; ldlinux.sys |
 
 Copiamos então o kernel compilado e o `init.cpio` para dentro do diretório com o comando `cp`.
 
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
-| m (boot montado) | bzImage  init.cpio  ldlinux.c32  ldlinux.sys |
+| m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
 
 Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "desplugar" ele de 'm'.
 
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
-| m (boot montado) | bzImage  init.cpio  ldlinux.c32  ldlinux.sys |
+| m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
 | m (desmontado) | - vazio - |
 
 Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker - mas não feche/encerre o container ainda!
