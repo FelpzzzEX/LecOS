@@ -1,4 +1,4 @@
-# Sistema básico
+# Sistema básico - MinOS
 
 Este sistema servirá de base para a construção do sistema principal do framework, uma vez que, apesar de muito abstraído, oferece uma linha de raciocínio da montagem do sistema operacional mínimo com o Kernel Linux, embora não utilize de ferramentas/componentes do ecossistema GNU.
 
@@ -62,12 +62,12 @@ apt install bzip2 git vim make gcc libncurses-dev flex bison bc cpio libelf-dev 
 
 Sendo desses componentes:
 
-* bzip2 - Necessário para o BusyBox;
-* git - Clone dos repositórios do Kernel Linux e do BusyBox;
-* vim - Editar/criar arquivos;
-* make, gcc - Necessários para a compilação;
-* flex, bison, bc, libelf-dev, libssl-dev - Necessários para o Kernel;
-* cpio - Componente que permite a criação do `initramfs`.
+* **bzip2** - Necessário para o BusyBox;
+* **git** - Clone dos repositórios do Kernel Linux e do BusyBox;
+* **vim** - Editar/criar arquivos;
+* **make, gcc** - Necessários para a compilação;
+* **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o Kernel;
+* **cpio** - Componente que permite a criação do `initramfs`.
 ---
 
 ## Compilando o Kernel Linux
@@ -328,3 +328,5 @@ Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora t
 * Orientador: Igor Muzetti Pereira
 * Coorientador: Samuel Souza Brito
 * Universidade Federal de Ouro Preto - UFOP
+
+* Tutorial de base: [Making Simple Linux Distro from Scratch - Nir Lichtman](https://www.youtube.com/watch?v=QlzoegSuIzg)
