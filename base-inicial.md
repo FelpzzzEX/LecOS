@@ -53,7 +53,7 @@ Para iniciarmos o desenvolvimento, é de extrema importância que criemos um amb
 O método fica de livre escolha do utilizador, mas por fins de praticidade, recomenda-se a utilização do container **Docker**, uma vez que já fornece o sistema isolado necessário para se realizar o trabalho completo, além de ser o método utilizado neste tutorial, facilitando o acompanhamento. A partir desse sistema virtualizado, podemos seguir com o processo.
 
 | Método | Segurança | Praticidade | Tamanho |
-| -- | -- | -- | -- |
+| :--: | :--: | :--: | :--: |
 | Container (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
 
@@ -280,20 +280,20 @@ Além disso, considere montar e desmontar (`mount & umount`) como "plugar e desp
 Seguindo o fluxo do processo, seria algo basicamente:
 
 | Diretório\Estado | Conteúdo |
-| -- | -- |
+| :--: | :--: |
 | m (desmontado) | - vazio - |
 | m (boot montado) | ldlinux.c32  ldlinux.sys |
 
 Copiamos então o kernel compilado e o `init.cpio` para dentro do diretório com o comando `cp`.
 
 | Diretório\Estado | Conteúdo |
-| -- | -- |
+| :--: | :--: |
 | m (boot montado) | bzImage  init.cpio  ldlinux.c32  ldlinux.sys |
 
 Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "desplugar" ele de 'm'.
 
 | Diretório\Estado | Conteúdo |
-| -- | -- |
+| :--: | :--: |
 | m (boot montado) | bzImage  init.cpio  ldlinux.c32  ldlinux.sys |
 | m (desmontado) | - vazio - |
 
