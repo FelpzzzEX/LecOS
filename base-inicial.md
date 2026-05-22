@@ -1,4 +1,4 @@
-# Sistema básico - MinOS
+# Sistema básico - KompaktOS
 
 Este sistema servirá de base para a construção do sistema principal do framework, uma vez que, apesar de muito abstraído, oferece uma linha de raciocínio da montagem do sistema operacional mínimo com o Kernel Linux, embora não utilize de ferramentas/componentes do ecossistema GNU.
 
