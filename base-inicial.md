@@ -19,26 +19,45 @@ O fluxo desse processo consiste em:
 
 ```mermaid
 flowchart LR
+    subgraph Build["Construção do Sistema"]
+      A["Kernel Linux"] --> B["bzImage"]
+      C["BusyBox"] --> D["Initramfs"]
+      D --> E["init.cpio"]
+      B --> F["Imagem FAT"]
+      E --> F
+      F --> G["Syslinux"]
+    end
 
-    A["Kernel Linux"] --> B["BusyBox Userland"]
-    B --> C["Initramfs"]
-    C --> D["Imagem de Boot (FAT)"]
-    D --> E["Syslinux"]
-    E --> F["QEMU"]
-    F --> G["Boot do Sistema"]
+    subgraph Build["Inicializando"]
+      H["QEMU"]
+      H --> I["Boot"]
+      I --> J["Kernel"]
+      J --> K["/init"]
+      K --> L["BusyBox Shell"]
+    end
 
-    G --> H["Kernel"]
-    H --> I["/init"]
-    I --> J["BusyBox Shell"]
-
-    style G fill:#2e8b57,color:#fff
-    style J fill:#3b82f6,color:#fff
+    G --> H
+    
+    style I fill:#22c55e,color:#fff
+    style L fill:#2563eb,color:#fff
 ```
 
 ---
 ## Iniciando a construção
 
-Dando início ao desenvolvimento do sistema, inserimos:
+Para iniciarmos o desenvolvimento, é de extrema importância que criemos um ambiente virtual/isolado, uma vez que os comandos e tarefas realizados a seguir podem acabar afetando negativamente o seu sistema principal/host. Para isso, temos as opções de se utilizar as seguintes tecnologias:
+
+* **Docker** - utilizando um container privilegiado (`--privileged`) e interativo (`-it`);
+* **Máquina virtual** - utilizando um sistema virtualizado completo para estar realizando as etapas do tutorial.
+
+O método fica de livre escolha do utilizador, mas por fins de praticidade, recomenda-se a utilização do container **Docker**, uma vez que já fornece o sistema isolado necessário para se realizar o trabalho completo, além de ser o método utilizado neste tutorial, facilitando o acompanhamento. A partir desse sistema virtualizado, podemos seguir com o processo.
+
+| Método | Segurança | Praticidade | Tamanho |
+| -- | -- | -- | -- |
+| Container (Docker) | Boa | Excelente | Leve |
+| Máquina Virtual | Excelente | Mediana | Pesado |
+
+Dando início ao desenvolvimento do sistema, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
 ```bash
 docker run --privileged -it debian:trixie-slim

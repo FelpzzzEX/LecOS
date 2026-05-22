@@ -1,3 +1,3 @@
-# Sistema principal - LecOS
+# **Sistema principal - LecOS**
 
 **[Em construção...]**
