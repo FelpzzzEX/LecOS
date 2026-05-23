@@ -56,7 +56,9 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 | Container (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
 
-Dando início ao desenvolvimento do sistema, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
+Além disso, o tutorial assume um ambiente Linux para o seu desenvolvimento, embora seja completamente possível de se realizar no ecossistema Windows graças a alternativas como o `WSL` presente no sistema.
+
+Com as informações repassadas, podemos dar início ao desenvolvimento do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
 ```bash
 docker run --privileged -it debian:trixie-slim
