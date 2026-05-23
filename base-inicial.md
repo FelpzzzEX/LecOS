@@ -28,7 +28,7 @@ flowchart LR
       F --> G["Syslinux"]
     end
 
-    subgraph Build["Inicializando"]
+    subgraph Boot["Inicializando"]
       H["QEMU"] --> I["Boot"]
       I --> J["Kernel"]
       J --> K["/init"]
