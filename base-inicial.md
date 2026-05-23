@@ -18,7 +18,7 @@ Além disso, a construção será feita dentro de um container docker, sendo uti
 O fluxo desse processo consiste em:
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Build["Construção do Sistema"]
       A["Kernel Linux"] --> B["bzImage"]
       C["BusyBox"] --> D["Initramfs"]
