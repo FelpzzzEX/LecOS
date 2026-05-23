@@ -9,7 +9,7 @@ Tendo isso em mente e após algumas pesquisas, notei que existem materiais didá
 ---
 ## Etapas
 
-Para iniciar o processo do framework, optei por iniciar com uma abordagem mais simples de se concluir e aprender, pois mesmo que seja algo menos robusto, ela fornece uma base valiosa que será utilizada posteriormente no framework, na construção do distema de propósito geral, servindo como uma ponte entre os conteúdos em vez de já iniciarmos na parte "complexa" do framework.
+Para iniciar o processo do framework, optei por iniciar com uma abordagem mais simples de se concluir e aprender, pois mesmo que seja algo menos robusto, ela fornece uma base valiosa que será utilizada posteriormente no framework, na construção do sistema de propósito geral, servindo como uma ponte entre os conteúdos em vez de já iniciarmos na parte "complexa" do framework.
 
 ### KompaktOS
 
