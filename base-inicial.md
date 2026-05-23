@@ -29,8 +29,7 @@ flowchart LR
     end
 
     subgraph Build["Inicializando"]
-      H["QEMU"]
-      H --> I["Boot"]
+      H["QEMU"] --> I["Boot"]
       I --> J["Kernel"]
       J --> K["/init"]
       K --> L["BusyBox Shell"]
