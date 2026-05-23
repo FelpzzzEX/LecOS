@@ -13,7 +13,7 @@ Os componentes desse sistema mínimo são divididos em três itens:
 
 Devido ao nível elevado de abstração decorrido da utilização do BusyBox como userland (uma vez que substitui vários componentes como Coreutils em um único binário), ele não será utilizado no sistema final, mas servirá para nossa base mínima.
 
-Além disso, a construção será feita dentro de um container docker, sendo utilizado, nesta versão, a imagem `debian:trixie-slim`.
+Além disso, a construção será feita dentro de um container docker rodando uma imagem de um sistema GNU/Linux, sendo utilizado, nesta versão, a `debian:trixie-slim`.
 
 O fluxo desse processo consiste em:
 
