@@ -64,7 +64,7 @@ Com as informações repassadas, podemos dar início ao desenvolvimento do siste
 docker run --privileged -it debian:trixie-slim
 ```
 
-A diretriz `--privileged` garante ao container um acesso maior a recursos do sistema, sendo necessários em etapas importantes do sistema. Já a diretriz `-it` garante que o container será interativo, permitindo utilizar o seu terminal para baixarmos arquivos e executarmos comandos.
+A diretriz `--privileged` garante ao container um acesso maior a recursos do sistema, sendo necessários em etapas importantes do processo. Já a diretriz `-it` garante que o container será interativo, permitindo utilizar o seu terminal para baixarmos arquivos e executarmos comandos.
 
 Já dentro do container, iniciamos a rotina atualizando o repositório de pacotes:
 
@@ -72,7 +72,7 @@ Já dentro do container, iniciamos a rotina atualizando o repositório de pacote
 apt update
 ```
 
-Não utilizaremos nenhum `sudo` neste sistema, uma vez que o container já nos joga como usuário `root`, facilitando o processo da construção do sistema.
+Não utilizaremos nenhum `sudo` neste sistema, uma vez que o container já nos joga como usuário `root`, facilitando o processo da construção.
 
 Seguimos o processo para a etapa de instalação, onde estaremos fazendo o download de componentes necessários para a construção:
 
