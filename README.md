@@ -32,4 +32,4 @@ Versão voltada a software livre.
 ---
 ## Licença
 
-Este projeto está licenciado sob a **GNU General Public License v2.0 (GPLv2)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a **GNU General Public License v3.0 (GPLv3)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
