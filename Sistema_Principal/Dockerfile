@@ -30,7 +30,12 @@ RUN apt update && apt install -y autoconf \
     texinfo \
     texi2html \
     xz-utils && \
-    mkdir -p /LOS && mkdir /LOS/root 
+    mkdir -p /LOS && mkdir /LOS/root && mkdir /LOS/root/boot \
+    && mkdir /LOS/root/proc && mkdir /LOS/root/sys && mkdir /LOS/root/dev \
+    && mkdir /LOS/root/usr && mkdir /LOS/root/usr/lib && mkdir /LOS/root/usr/lib64 \
+    && mkdir /LOS/root/usr/bin && mkdir /LOS/root/usr/sbin
+
+RUN ln -s usr/lib lib && ln -s usr/lib64 lib64 && ln -s usr/bin bin && ln -s usr/sbin sbin    
 
 # Criando uma variável para facilitar o trabalho nas instalações - $LOS = /LOS/root
 ENV LOS=/LOS/root
