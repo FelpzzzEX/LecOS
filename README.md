@@ -15,7 +15,7 @@ Para iniciar o processo do framework, optei por iniciar com uma abordagem mais s
 
 Nesta etapa, o sistema construído tem um escopo bem mais simples, tendo como proposta principal fornecer uma base sólida e simplificada para que os alunos possam aprender conceitos fundamentais a respeito da construção de um S.O., embora não utilize componentes do ecossistema GNU, ainda possui um grande valor educativo que ajudará em etapas posteriores.
 
-Para realizar a construção do sistema, basta acessar o tutorial presente no arquivo [Base Inicial](base-inicial.md), nele contém o passo a passo explicando o processo de construção, desde a compilação do Kernel Linux até o boot, sendo uma experiência relativamente rápida, mas que servirá de base para o sistema principal do Framework.
+Para realizar a construção do sistema, basta acessar o tutorial presente no arquivo [Base Inicial](Primeiros_Passos/base-inicial.md), nele contém o passo a passo explicando o processo de construção, desde a compilação do Kernel Linux até o boot, sendo uma experiência relativamente rápida, mas que servirá de base para o sistema principal do Framework.
 
 ### LecOS
 
