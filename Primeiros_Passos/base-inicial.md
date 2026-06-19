@@ -1,8 +1,9 @@
-# Sistema básico - KompaktOS
+# **Sistema básico - KompaktOS**
 
 Este sistema servirá de base para a construção do sistema principal do framework, uma vez que, apesar de muito abstraído, oferece uma linha de raciocínio da montagem do sistema operacional mínimo com o Kernel Linux, embora não utilize de ferramentas/componentes do ecossistema GNU.
 
 ---
+
 ## Componentes
 
 Os componentes desse sistema mínimo são divididos em três itens:
@@ -41,7 +42,10 @@ flowchart LR
     style L fill:#2563eb,color:#fff
 ```
 
+>Os conceitos mencionados serão abordados ao longo do tutorial.
+
 ---
+
 ## Iniciando a construção
 
 Para iniciarmos o desenvolvimento, é de extrema importância que criemos um ambiente virtual/isolado, uma vez que os comandos e tarefas realizados a seguir podem acabar afetando negativamente o seu sistema principal/host. Para isso, temos as opções de se utilizar as seguintes tecnologias:
@@ -88,6 +92,7 @@ Sendo desses componentes:
 * **make, gcc** - Necessários para a compilação;
 * **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o Kernel;
 * **cpio** - Componente que permite a criação do `initramfs`.
+
 ---
 
 ## Compilando o Kernel Linux
@@ -100,7 +105,7 @@ git clone --depth 1 https://github.com/torvalds/linux.git
 
 A diretriz `--depth 1` nos garante que não clonaremos o histórico git completo, somente o último commit.
 
-Com isso, após entrarmos na pasta `/linux` que contém o repositório clonado, iremos iniciar um pequeno ajuste inserindo o seguinte comando:
+Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado, iremos iniciar um pequeno ajuste inserindo o seguinte comando:
 
 ```bash
 make menuconfig
@@ -118,10 +123,10 @@ O comando `make` é o que inicia o processo da compilação através da configur
 
 O processo de compilação serve para gerar o arquivo binário que será utilizado na construção do nosso sistema (sempre utilizamos binários para construir).
 
-Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, neste caso, criaremos uma nova pasta onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
+Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
 
 ```bash
-# primeiro criaremos o diretório, ainda dentro da pasta 'linux'
+# primeiro criaremos o diretório, ainda dentro do diretório 'linux'
 mkdir /boot-files
 
 # seguido de copiar o arquivo/path do Kernel Linux compilado para ele
@@ -131,15 +136,20 @@ cp arch/x86/boot/bzImage /boot-files
 Tendo feito isso, estaremos indo para a próxima etapa: a construção da **Userland/Userspace**.
 
 ---
+
 ## Compilando o BusyBox
 
-Após os preparativos com o Kernel, iremos agora iniciar o processo de compilação para a criação da userland, permitindo o usuário de interagir com o sistema operacional. Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
+Após os preparativos com o Kernel, iremos agora iniciar o processo de compilação para a criação da `userland`, permitindo o usuário de interagir com o sistema.
+
+> A userland (ou `user space`) é tudo que executa fora do Kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o Kernel, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc...
+
+Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
 
 ```bash
 git clone --depth 1 https://git.busybox.net/busybox 
 ```
 
-Feito o clone do repositório, iremos acessar a pasta e, assim como no Kernel Linux, faremos a configuração antes da compilação com `make menuconfig`.
+Feito o clone do repositório, iremos acessar o diretório e, assim como no Kernel Linux, faremos a configuração antes da compilação com `make menuconfig`.
 
 Na interface, acessando a primeira opção "Settings", descendo algumas opções, encontraremos na sessão `---Build options` a opção `Build static binary (no shared libs)` desmarcada, sendo necessário habilitar para evitar utilizar bibliotecas externas.
 
@@ -162,12 +172,13 @@ mkdir /boot-files/initramfs
 make CONFIG_PREFIX=/boot-files/initramfs install
 ```
 
-O diretório `initramfs` é o que será carregado pelo Kernel logo após o boot, por isso colocaremos o BusyBox nele - no processo, ele já cria partes do rootfs, sendo as pastas `bin, sbin e usr`.
+O diretório `initramfs` é o que será carregado pelo Kernel logo após o boot, por isso colocaremos o BusyBox nele - no processo, ele já cria partes do rootfs, sendo os diretórios `bin, sbin e usr`.
 
 ---
+
 ## Sistema de inicialização
 
-Tendo o Kernel e a userland (BusyBox) compilados, iremos criar então o sistema de inicialização. Dentro da pasta `/boot-files/initramfs`, iremos criar um arquivo de init simples.
+Tendo o Kernel e a userland (BusyBox) compilados, iremos criar então o sistema de inicialização. Dentro do diretório `/boot-files/initramfs`, iremos criar um arquivo de init simples.
 
 ```bash
 vim init
@@ -201,12 +212,15 @@ Em seguida, criaremos nosso arquivo de inicialização através do `cpio` utiliz
 find . | cpio -o -H newc > ../init.cpio
 ```
 
-Onde pegamos todos os arquivos da pasta atual (`find .`), transformamos no tipo de arquivo que o Kernel suporta (`-H newc`) através do cpio, inserindo tudo em um novo arquivo (`> ../init.cpio`), gerando nosso arquivo de inicialização.
+Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no tipo de arquivo que o Kernel suporta (`-H newc`) através do cpio, inserindo tudo em um novo arquivo (`> ../init.cpio`), gerando nosso arquivo de inicialização.
 
 ---
+
 ## Bootloader
 
 Nesta última etapa, estaremos configurando o Bootloader do nosso sistema, responsável por inicializar o Kernel e, por tabela, o sistema em si. Neste tutorial, estaremos iniciando o Syslinux.
+
+> `Bootloader` nada mais é que 
 
 ```bash
 apt install syslinux
@@ -245,6 +259,7 @@ syslinux boot
 Que, basicamente, indica para instalar o `Syslinux` no filesystem FAT presente no arquivo `boot`, completando assim o nosso arquivo de boot contendo o bootloader.
 
 ---
+
 ## O boot
 
 Finalizando o processo, iremos enfim fazer o boot do nosso sistema. Para isso, precisamos copiar o Kernel e o initramfs para dentro do arquivo de boot, sendo feito de uma maneira bem simples:
@@ -276,7 +291,7 @@ Em caso de erros, irei detalhar um pouco os comandos repassados acima para melho
 * major = 7 -> driver loop
 * minor = 0 -> loop0
 
-Além disso, considere montar e desmontar (`mount & umount`) como "plugar e desplugar um pendrive". O arquivo de boot, por si só, não nos permite "editar" ou acrescentar arquivos dentro dele normalmente, como o Kernel Linux compilado e o arquivo `init.cpio`, por isso, precisamos montar ele em uma pasta para que os arquivos sejam exibidos no diretório e que nos permita adicionar o que for necessário.
+Além disso, considere montar e desmontar (`mount & umount`) como "plugar e desplugar um pendrive". O arquivo de boot, por si só, não nos permite "editar" ou acrescentar arquivos dentro dele normalmente, como o Kernel Linux compilado e o arquivo `init.cpio`, por isso, precisamos montar ele em um diretório para que os arquivos sejam exibidos no diretório e que nos permita adicionar o que for necessário.
 
 Seguindo o fluxo do processo, seria algo basicamente:
 
@@ -301,6 +316,7 @@ Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "de
 Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker - mas não feche/encerre o container ainda!
 
 ---
+
 ## Iniciando o sistema
 
 Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema minimalista, para isso, estaremos utilizando o sistema `qemu`, que verá nosso arquivo e irá executar em uma máquina virtual, por isso, garanta que, no sistema host (em um novo terminal, para não fechar/encerrar o docker), você tenha o `qemu` instalado:
@@ -313,7 +329,7 @@ sudo apt install qemu-system-x86
 sudo dnf install qemu-system-x86
 ```
 
-Feita a instalação do qemu, podemos iniciar a etapa final. Ainda no mesmo terminal, para fins de organizações, entre na pasta de Documentos e crie uma nova pasta chamada 'sistema' e entre na mesma. Em seguida, rode o comando:
+Feita a instalação do qemu, podemos iniciar a etapa final. Ainda no mesmo terminal, para fins de organizações, entre no diretório de Documentos e crie um novo diretório chamada 'sistema' e entre na mesma. Em seguida, rode o comando:
 
 ```bash
 docker ps
@@ -327,7 +343,7 @@ Em seguida, faremos a cópia do nosso arquivo de boot dentro do container para o
 docker cp [CONTAINER_ID]:/boot-files/boot .
 ```
 
-Que basicamente irá copiar, do container especificado, o arquivo `boot` do diretório `/boot-files` e armazenará na pasta atual (.), completando assim a cópia do nosso arquivo de boot.
+Que basicamente irá copiar, do container especificado, o arquivo `boot` do diretório `/boot-files` e armazenará no diretório atual (.), completando assim a cópia do nosso arquivo de boot.
 
 Agora, com o arquivo em mãos, podemos enfim rodar em nosso sistema principal utilizando o qemu, iniciando a máquina virtual através do comando:
 
@@ -340,6 +356,7 @@ Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o Kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 
 ---
+
 # **PARABÉNS!**
 
 Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. Esse sistema mínimo será a base do sistema completo que servirá de base ao framework didático. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, nos veremos em breve!

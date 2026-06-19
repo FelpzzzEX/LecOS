@@ -1,0 +1,4 @@
+## **Memória Primária e Secundária**
+
+
+

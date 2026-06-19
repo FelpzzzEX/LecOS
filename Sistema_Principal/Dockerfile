@@ -3,6 +3,7 @@ FROM debian:trixie-slim
 
 # Executando comandos essenciais: instalando dependências e criando o diretório base
 RUN apt update && apt install -y autoconf \
+    automake \
     autopoint \
     bc \
     binutils \
@@ -17,25 +18,31 @@ RUN apt update && apt install -y autoconf \
     gnupg2 \
     gperf \
     gzip \
+    help2man \
     libelf-dev \
     libncurses5-dev \
     libssl-dev \
     libtool \
+    m4 \
     make \
+    nano \
     openssl \
     pahole \
     perl-base \
+    pkgconf \
+    python3 \
     rsync \
     tar \
     texinfo \
     texi2html \
+    wget \
     xz-utils && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/* && \
     mkdir -p /LOS && mkdir /LOS/root && mkdir /LOS/root/boot \
     && mkdir /LOS/root/proc && mkdir /LOS/root/sys && mkdir /LOS/root/dev \
     && mkdir /LOS/root/usr && mkdir /LOS/root/usr/lib && mkdir /LOS/root/usr/lib64 \
     && mkdir /LOS/root/usr/bin && mkdir /LOS/root/usr/sbin
-
-RUN ln -s usr/lib lib && ln -s usr/lib64 lib64 && ln -s usr/bin bin && ln -s usr/sbin sbin    
 
 # Criando uma variável para facilitar o trabalho nas instalações - $LOS = /LOS/root
 ENV LOS=/LOS/root
@@ -44,12 +51,13 @@ ENV LOS=/LOS/root
 WORKDIR /LOS
 
 # Clonando o repositório do Kernel Linux, Bash, Coreutils, Util-Linux, Nano, Glibc e Ncurses (somente o último commit)
-RUN git clone --depth 1 https://github.com/torvalds/linux.git && \
-    git clone --depth 1 https://git.savannah.gnu.org/git/bash.git && \
+RUN git clone --depth 1 https://git.savannah.gnu.org/git/bash.git && \
     git clone --depth 1 https://github.com/coreutils/coreutils && \
     git clone --depth 1 https://github.com/util-linux/util-linux && \
     git clone --depth 1 https://git.savannah.gnu.org/git/nano.git && \
     git clone --depth 1 https://sourceware.org/git/glibc
+
+RUN cd /LOS/root/ && ln -s usr/lib lib && ln -s usr/lib64 lib64 && ln -s usr/bin bin && ln -s usr/sbin sbin    
 
 # Iniciando shell padrão
 CMD [ "/bin/bash" ]

@@ -7,6 +7,7 @@ Durante a minha graduação, seguindo meus estudos relacionados a sistemas opera
 Tendo isso em mente e após algumas pesquisas, notei que existem materiais didáticos espalhados por diversas fontes, que acabavam sendo peças importantes para aprender a montar uma distribuição de forma didática, resolvi propôr como tema de Trabalho de Conclusão de Curso (TCC) a criação de um framework destinado a facilitar o aprendizado relacionado a S.O. de maneira prática utilizando de sistemas GNU/Linux, permitindo que os alunos consigam aplicar os conceitos teóricos enquanto constroem um sistema minimalista, porém funcional.
 
 ---
+
 ## Etapas
 
 Para iniciar o processo do framework, optei por iniciar com uma abordagem mais simples de se concluir e aprender, pois mesmo que seja algo menos robusto, ela fornece uma base valiosa que será utilizada posteriormente no framework, na construção do sistema de propósito geral, servindo como uma ponte entre os conteúdos em vez de já iniciarmos na parte "complexa" do framework.
@@ -23,13 +24,8 @@ Sistema principal do framework.
 
 **[Em construção...]**
 
-### LecOS - Libre
-
-Versão voltada a software livre.
-
-**[Em construção...]**
-
 ---
+
 ## Licença
 
 Este projeto está licenciado sob a **GNU General Public License v3.0 (GPLv3)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
