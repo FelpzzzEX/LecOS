@@ -86,6 +86,6 @@ docker volume create lecos_data
 docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS/root felpzzex/lecos:latest tail -f /dev/null
 ```
 
-Por fim, o script também copia arquivos essenciais para o nosso ambiente, como o Kernel Linux já previamente compilado (no mesmo ambiente), o arquivo de inicialização e os scripts de build para cada ferramenta de nossa userland. Caso esteja interessado, pode verificar o conteúdo presente acessando o arquivo [init.sh](Sistema_Principal/init.sh).
+Por fim, o script também copia arquivos essenciais para o nosso ambiente, como o Kernel Linux já previamente compilado (no mesmo ambiente), o arquivo de inicialização e os scripts de build para cada ferramenta de nossa userland. Caso esteja interessado, pode verificar o conteúdo presente acessando o arquivo [init.sh](../init.sh).
 
 Após a execução do script, você entrará no sistema de desenvolvimento do nosso framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O.
