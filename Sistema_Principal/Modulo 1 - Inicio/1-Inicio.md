@@ -4,7 +4,7 @@ Ao aprendermos a estrutura de um sistema operacional, não podemos nos limitar s
 
 Esse processo visa, através de um teste `POST` (_Power-On Self-Test_), testar a integridade e inicialização do hardware, garantindo que este está funcionando corretamente. Após essa etapa, o sistema repassa para o firmware localiza e carrega o `bootloader` (que será aprofundado na próxima etapa), o qual coordena o processo de inicializar o software - no caso, o sistema operacional.
 
-Os equipamentos, geralmente, utilizam dois firmwares principais: o `BIOS` (_Basic Input/Output System_), sendo o firmware legado muito utilizado antigamente, e a `UEFI` (_Unified Extensible Firmware Interface_), a alternativa moderna para a inicialização do hardware. Ambos tendo o mesmo propósito (garantir que o hardware está funcionando corretamente antes de iniciar o sistema operacional), porém utilizando abordagens diferentes, sendo a UEFI desenvolvida para "corrigir" as limitações do BIOS, sendo a principal razão dos equipamentos modernos optarem por implementar a UEFI.
+Os equipamentos, geralmente, utilizam dois firmwares principais: o `BIOS` (_Basic Input/Output System_), sendo o firmware legado de 1980 muito utilizado antigamente, e a `UEFI` (_Unified Extensible Firmware Interface_), a alternativa moderna para a inicialização do hardware. Ambos tendo o mesmo propósito (garantir que o hardware está funcionando corretamente antes de iniciar o sistema operacional), porém utilizando abordagens diferentes, sendo a UEFI desenvolvida para "corrigir" as limitações do BIOS, sendo a principal razão dos equipamentos modernos optarem por implementar a UEFI.
 
 ### **BIOS**
 
@@ -35,16 +35,19 @@ Vendo todas as informações repassadas, podemos verificar que o processo inicia
 
 ```mermaid
 flowchart LR
-  A["Ligar o Computador"] --> B["BIOS"]
-  A --> C["UEFI"]
-  B --> D["Teste POST"]
-  C --> D["Teste POST"]
-  D --> E["Partição"]
-  E --> F["MBR"]
-  E --> G["GPT"]
-  F --> H["Bootloader"]
-  G --> H
-  B --> F
-  C --> G
+  A["Ligar o Computador"] -->|Inicia| B["BIOS"]
+  A -->|Inicia| C["UEFI"]
+  B -->|Realiza| D["Teste POST"]
+  C -->|Realiza| D
+  D -->I{"Sucesso?"}
+  I -->|Sim| E["Partição"]
+  I -->|Não| J["Falha - Desliga o computador"]
+  E -->|BIOS| F["MBR"]
+  E -->|UEFI| G["GPT"]
+  F -->|Inicia| H["Bootloader"]
+  G -->|Inicia| H
 
 ```
+
+### **Finalidade**
+

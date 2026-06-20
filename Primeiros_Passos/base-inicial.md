@@ -4,7 +4,7 @@ Este sistema servirá de base para a construção do sistema principal do framew
 
 ---
 
-## Componentes
+## **Componentes**
 
 Os componentes desse sistema mínimo são divididos em três itens:
 
@@ -16,12 +16,14 @@ Devido ao nível elevado de abstração decorrido da utilização do BusyBox com
 
 Além disso, a construção será feita dentro de um container docker rodando uma imagem de um sistema GNU/Linux, sendo utilizado, nesta versão, a `debian:trixie-slim`.
 
-O fluxo desse processo consiste em:
+>Os conceitos mencionados serão abordados ao longo do tutorial.
+
+O fluxo desse trabalho consiste em:
 
 ```mermaid
 flowchart LR
     subgraph Build["Construção do Sistema"]
-      A["Kernel Linux"] --> B["bzImage"]
+      A["Kernel Linux"] -->|Gera| B["bzImage"]
       C["BusyBox"] --> D["Initramfs"]
       D --> E["init.cpio"]
       B --> F["Imagem FAT"]
@@ -30,10 +32,10 @@ flowchart LR
     end
 
     subgraph Boot["Inicializando"]
-      H["QEMU"] --> I["Boot"]
-      I --> J["Kernel"]
-      J --> K["/init"]
-      K --> L["BusyBox Shell"]
+      H["QEMU"] -->|Utiliza| I["Boot"]
+      I -->|Carrega| J["Kernel"]
+      J -->|Carrega| K["/init"]
+      K -->|Inicia| L["BusyBox Shell"]
     end
 
     G --> H
@@ -41,14 +43,13 @@ flowchart LR
     style I fill:#22c55e,color:#fff
     style L fill:#2563eb,color:#fff
 ```
-
->Os conceitos mencionados serão abordados ao longo do tutorial.
+>Figura 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pela compilação do kernel Linux e do BusyBox, a criação da imagem _bootável_ com Syslinux e passando pelo boot, utilizando o `QEMU` para virtualização.
 
 ---
 
-## Iniciando a construção
+## **Iniciando a construção**
 
-Para iniciarmos o desenvolvimento, é de extrema importância que criemos um ambiente virtual/isolado, uma vez que os comandos e tarefas realizados a seguir podem acabar afetando negativamente o seu sistema principal/host. Para isso, temos as opções de se utilizar as seguintes tecnologias:
+Para iniciarmos o desenvolvimento, é de extrema importância que criemos um ambiente virtual/isolado, uma vez que os comandos e tarefas realizados a seguir podem acabar afetando o seu sistema principal/host. Para isso, temos as opções de se utilizar as seguintes tecnologias:
 
 * **Docker** - utilizando um container privilegiado (`--privileged`) e interativo (`-it`);
 * **Máquina virtual** - utilizando um sistema virtualizado completo para estar realizando as etapas do tutorial.
@@ -59,8 +60,9 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 | :--: | :--: | :--: | :--: |
 | Container (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
+>Tabela 1: Comparativos de abordagens para seguir o tutorial em um ambiente isolado, comparando o sistema `Docker` com máquina virtual.
 
-Além disso, o tutorial assume um ambiente Linux para o seu desenvolvimento, embora seja completamente possível de se realizar no ecossistema Windows graças a alternativas como o `WSL` presente no sistema.
+Além disso, o tutorial assume um ambiente GNU/Linux para o seu desenvolvimento, embora seja completamente possível de se realizar no ecossistema Windows graças a alternativas como o `WSL` presente no sistema.
 
 Com as informações repassadas, podemos dar início ao desenvolvimento do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
@@ -95,7 +97,7 @@ Sendo desses componentes:
 
 ---
 
-## Compilando o Kernel Linux
+## **Compilando o Kernel Linux**
 
 Após todos os preparativos, iniciaremos a configuração e compilação do Kernel Linux - a espinha dorsal do sistema operacional. Para isso, iniciaremos clonando o mirror do GitHub:
 
@@ -123,21 +125,21 @@ O comando `make` é o que inicia o processo da compilação através da configur
 
 O processo de compilação serve para gerar o arquivo binário que será utilizado na construção do nosso sistema (sempre utilizamos binários para construir).
 
-Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
+Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado na **Figura 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
 
 ```bash
 # primeiro criaremos o diretório, ainda dentro do diretório 'linux'
 mkdir /boot-files
 
-# seguido de copiar o arquivo/path do Kernel Linux compilado para ele
+# seguido de copiar o arquivo binário do kernel Linux compilado para ele
 cp arch/x86/boot/bzImage /boot-files
 ```
 
-Tendo feito isso, estaremos indo para a próxima etapa: a construção da **Userland/Userspace**.
+Tendo feito isso, estaremos indo para a próxima etapa: a construção da **Userland/User space**.
 
 ---
 
-## Compilando o BusyBox
+## **Compilando o BusyBox**
 
 Após os preparativos com o Kernel, iremos agora iniciar o processo de compilação para a criação da `userland`, permitindo o usuário de interagir com o sistema.
 
@@ -176,11 +178,15 @@ O diretório `initramfs` é o que será carregado pelo Kernel logo após o boot,
 
 ---
 
-## Sistema de inicialização
+## **Sistema de inicialização**
 
 Tendo o Kernel e a userland (BusyBox) compilados, iremos criar então o sistema de inicialização. Dentro do diretório `/boot-files/initramfs`, iremos criar um arquivo de init simples.
 
 ```bash
+# Entraremos no diretório 'initramfs'
+cd initramfs
+
+# Criaremos o arquivo de inicialização
 vim init
 ```
 
@@ -216,13 +222,17 @@ Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no 
 
 ---
 
-## Bootloader
+## **Bootloader**
 
-Nesta última etapa, estaremos configurando o Bootloader do nosso sistema, responsável por inicializar o Kernel e, por tabela, o sistema em si. Neste tutorial, estaremos iniciando o Syslinux.
+Nesta última etapa, estaremos configurando o Bootloader do nosso projeto, sendo o componente responsável por inicializar o sistema operacional. Neste tutorial, estaremos iniciando o Syslinux.
 
-> `Bootloader` nada mais é que 
+> `Bootloader` nada mais é que um software executado assim que o hardware liga, sendo o componente carregado logo após os testes realizados pela `BIOS/UEFI`, se responsabilizando por carregar tanto o Kernel quanto o arquivo de inicialização - `initrd/initramfs`.
 
 ```bash
+# Sair do diretório 'initramfs'
+cd ..
+
+# Instalar o Syslinux 
 apt install syslinux
 ```
 
@@ -256,11 +266,11 @@ Após isso, podemos enfim configurar o nosso bootloader dentro do arquivo, uma v
 syslinux boot
 ```
 
-Que, basicamente, indica para instalar o `Syslinux` no filesystem FAT presente no arquivo `boot`, completando assim o nosso arquivo de boot contendo o bootloader.
+Que, basicamente, indica para instalar o `Syslinux` no filesystem FAT presente no arquivo `boot`, completando assim o nosso arquivo de boot contendo o bootloader (como indicado na **Figura 1**, na sessão "Construção do Sistema").
 
 ---
 
-## O boot
+## **O boot**
 
 Finalizando o processo, iremos enfim fazer o boot do nosso sistema. Para isso, precisamos copiar o Kernel e o initramfs para dentro do arquivo de boot, sendo feito de uma maneira bem simples:
 
@@ -299,12 +309,14 @@ Seguindo o fluxo do processo, seria algo basicamente:
 | :--: | :--: |
 | m (desmontado) | - vazio - |
 | m (boot montado) | ldlinux.c32 ; ldlinux.sys |
+>Tabela 2: Montando o arquivo no diretório `m`, permitindo acessar seus arquivos.
 
 Copiamos então o kernel compilado e o `init.cpio` para dentro do diretório com o comando `cp`.
 
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
+>Tabela 3: Diretório após inserir o kernel e o `init.cpio`.
 
 Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "desplugar" ele de 'm'.
 
@@ -312,12 +324,13 @@ Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "de
 | :--: | :--: |
 | m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
 | m (desmontado) | - vazio - |
+>Tabela 4: Desmontando o arquivo do diretório `m`, agora com o kernel e o `init.cpio` contendo na imagem de `boot`.
 
 Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker - mas não feche/encerre o container ainda!
 
 ---
 
-## Iniciando o sistema
+## **Iniciando o sistema**
 
 Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema minimalista, para isso, estaremos utilizando o sistema `qemu`, que verá nosso arquivo e irá executar em uma máquina virtual, por isso, garanta que, no sistema host (em um novo terminal, para não fechar/encerrar o docker), você tenha o `qemu` instalado:
 

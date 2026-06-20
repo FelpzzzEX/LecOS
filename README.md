@@ -28,4 +28,4 @@ Sistema principal do framework.
 
 ## Licença
 
-Este projeto está licenciado sob a **GNU General Public License v3.0 (GPLv3)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a **GNU Free Documentation License v1.3 (GFDL-1.3)**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
