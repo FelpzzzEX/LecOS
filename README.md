@@ -18,37 +18,9 @@ Nesta etapa, o sistema construído tem um escopo bem mais simples, tendo como pr
 
 Para realizar a construção do sistema, basta acessar o tutorial presente no arquivo [Base Inicial](Primeiros_Passos/base-inicial.md), nele contém o passo a passo explicando o processo de construção, desde a compilação do Kernel Linux até o boot, sendo uma experiência relativamente rápida, mas que servirá de base para o sistema principal do Framework.
 
-```mermaid
-flowchart TD
-subgraph base1["Etapa Inicial"]
-  A[["Primeiros_Passos"]]
-  B(["base_inicial.md"])
-  A-->B
-end
-```
-
 ### LecOS
 
 Sistema principal do framework.
-
-```mermaid
-flowchart TD
-subgraph base2["Etapa Principal"]
-  C@{ shape: docs, label: "Sistema Principal"}
-  D{{"Modulo 1 - Início"}}
-  E{{"Modulo 2 - Boot"}}
-  F{{"Modulo 3 - Processos"}}
-  G{{"Modulo 4 - Final"}}
-  H>"init.sh"]
-  I([Usuario])
-  I-->|Inicia|C
-  C-->D
-  C-->E
-  C-->F
-  C-->G
-  C-->|Script de inicialização|H
-end
-```
 
 **[Em construção...]**
 

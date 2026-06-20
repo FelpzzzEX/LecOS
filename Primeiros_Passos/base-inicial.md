@@ -355,7 +355,7 @@ Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim d
 
 Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema minimalista, para isso, estaremos utilizando `QEMU`, que verá nosso arquivo e irá executar em uma máquina virtual, por isso, garanta que, no sistema host (em um novo terminal, para não fechar/encerrar o docker), você tenha o `QEMU` instalado:
 
->**ATENÇÃO**: A seguinte etapa é para ser realizada em um novo terminal em seu sistema padrão, não em um container.**NÃO** feche o container onde a construção do sistema foi realizada ou o seu progresso será perdido.
+>**ATENÇÃO**: A seguinte etapa é para ser realizada em um novo terminal em seu sistema padrão, não em um container. **NÃO** feche o container onde a construção do sistema foi realizada ou o seu progresso será perdido.
 
 ```bash
 # em distribuições Debian e derivadas
@@ -391,11 +391,17 @@ Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo 
 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o Kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 
+![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
+
 ---
 
 # **PARABÉNS!**
 
-Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. Esse sistema mínimo será a base do sistema completo que servirá de base ao framework didático. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, nos veremos em breve!
+Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. 
+
+![KompaktOS](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_181404.png)
+
+Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
 
 * Autor: Felipe Fialho - TCC-I
 * Orientador: Igor Muzetti Pereira
