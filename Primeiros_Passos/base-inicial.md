@@ -159,7 +159,7 @@ Tendo feito isso, estaremos indo para a próxima etapa: a construção da **User
 
 Após os preparativos com o Kernel, iremos agora iniciar o processo de compilação para a criação da `userland`, permitindo o usuário de interagir com o sistema.
 
-> A userland (ou `user space`) é tudo que executa fora do Kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o Kernel, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc...  
+> A userland (ou `user space`) é tudo que executa fora do Kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o Kernel, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc.  
 
 
 Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
@@ -392,6 +392,7 @@ Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o Kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 
 ![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
+>Imagem 1: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
 
 ---
 
@@ -400,6 +401,7 @@ Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo d
 Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. 
 
 ![KompaktOS](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_181404.png)
+>Imagem 2: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando - `ls`, `whoami`, etc.
 
 Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
 
