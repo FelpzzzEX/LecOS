@@ -6,6 +6,23 @@ Esse processo visa, através de um teste `POST` (_Power-On Self-Test_), testar a
 
 Os equipamentos, geralmente, utilizam dois firmwares principais: o `BIOS` (_Basic Input/Output System_), sendo o firmware legado de 1980 muito utilizado antigamente, e a `UEFI` (_Unified Extensible Firmware Interface_), a alternativa moderna para a inicialização do hardware. Ambos tendo o mesmo propósito (garantir que o hardware está funcionando corretamente antes de iniciar o sistema operacional), porém utilizando abordagens diferentes, sendo a UEFI desenvolvida para "corrigir" as limitações do BIOS, sendo a principal razão dos equipamentos modernos optarem por implementar a UEFI.
 
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant H as Hardware
+    participant B as BIOS/UEFI
+    participant P as Teste POST
+    participant BL as Bootloader
+
+    U->>H: Liga
+    H->>B: Utiliza
+    B->>P: Realizam
+    P->>B: Sucesso
+    B->>BL: Carrega
+    BL->>H: Inicia o sistema
+    H->>U: Utiliza
+```
+
 ### **BIOS**
 
 Após o POST, o BIOS busca o `MBR` (_Master Boot Record_) no disco rígido. O MBR contém informações sobre a partição ativa e o código do bootloader. O BIOS, então, transfere o controle para o bootloader, que inicia o sistema operacional.
