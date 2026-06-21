@@ -199,6 +199,7 @@ Após, podemos sair desta tela, mas ainda resta uma configuração a ser realiza
 
 ![tc](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200940.png)
 >Imagem 3: Indicando a sessão `Network utilities`.
+
 ![tc2](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201039.png)
 >Imagem 4: Indicando a opção `tc` a ser desmarcada.
 
