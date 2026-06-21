@@ -43,7 +43,7 @@ flowchart LR
     M-->|Compila|A
     M-->|Compila|C
 ```
->Figura 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pelo acesso ao container `Docker` até a criação da imagem bootável com `Syslinux`.
+>Diagrama 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pelo acesso ao container `Docker` até a criação da imagem bootável com `Syslinux`.
 
 ### **Etapa 2 - Boot**
 
@@ -63,7 +63,7 @@ flowchart LR
   end
 ```
 
->Figura 2: Representação da sequência de inicialização do nosso sistema, iniciando pelo `QEMU` (sistema de virtualização) até o boot.
+>Diagrama 2: Representação da sequência de inicialização do nosso sistema, iniciando pelo `QEMU` (sistema de virtualização) até o boot.
 
 ---
 
@@ -155,7 +155,7 @@ O comando `make` é o que inicia o processo da compilação através da configur
 
 O processo de compilação serve para gerar o arquivo binário que será utilizado na construção do nosso sistema (sempre utilizamos binários para construir).
 
-Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado na **Figura 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
+Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado no **Diagrama 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
 
 ```bash
 # primeiro criaremos o diretório, ainda dentro do diretório 'linux'
@@ -313,7 +313,7 @@ Após isso, podemos enfim configurar o nosso bootloader dentro do arquivo, uma v
 syslinux boot
 ```
 
-Que, basicamente, indica para instalar o `Syslinux` no filesystem FAT presente no arquivo `boot`, completando assim o nosso arquivo de boot contendo o bootloader (como indicado na **Figura 1**, na sessão "Construção do Sistema").
+Que, basicamente, indica para instalar o `Syslinux` no filesystem FAT presente no arquivo `boot`, completando assim o nosso arquivo contendo o bootloader (como indicado no **Diagrama 1**, na sessão "Construção do Sistema").
 
 ---
 
@@ -402,6 +402,9 @@ docker ps
 
 Para o comando a seguir, precisaremos do ID do container, que ficará embaixo do título `CONTAINER_ID`, algo como 'a94abe6c119f', por exemplo.
 
+![terminal](https://github.com/FelpzzzEX/Imagens/blob/942a863f7dc2aac45c33a70965729e67b8f431a6/Captura_de_tela_20260621_042627.png)
+>Imagem 5: Localizando o ID do container.  
+
 Em seguida, faremos a cópia do nosso arquivo de boot dentro do container para o diretório que criamos utilizando o seguinte comando:
 
 ```bash
@@ -422,7 +425,7 @@ Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo d
 >**IMPORTANTE**: Algumas teclas podem apresentar mapeamentos diferentes dentro do sistema, verifique qual tecla do seu teclado corresponde à `/` (normalmente, é na tecla `dois pontos/ponto e vírgula`, permitindo assim digitar corretamente os parâmetros).
 
 ![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
->Imagem 1: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
+>Imagem 6: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
 
 ---
 
@@ -431,7 +434,7 @@ Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo d
 Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. 
 
 ![KompaktOS](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_181404.png)
->Imagem 2: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando - `ls`, `whoami`, etc.
+>Imagem 7: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando - `ls`, `whoami`, etc.
 
 Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
 
