@@ -49,13 +49,18 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A["QEMU"] -->|Utiliza| B["Imagem bootável"]
-  B -->|Carrega| C["Kernel"]
-  C -->|Carrega| D["/init"]
-  E{"Sucesso?"}
-  D-->E
-  E -->|Sim| G["BusyBox Shell"]
-  E -->|Não| H([Falha na inicialização])
+  subgraph virtAmb["Ambiente Virtual"]
+    A["QEMU"] -->|Utiliza| B["Imagem bootável"]
+  end
+
+  subgraph sistema["Sistema Iniciado"]
+    B -->|Inicia| C["Bootloader"]
+    C -->|Carrega| D["Kernel/Init.cpio"]
+    E{"Sucesso?"}
+    D-->E
+    E -->|Sim| G["BusyBox Shell"]
+    E -->|Não| H([Falha na inicialização])
+  end
 ```
 
 >Figura 2: Representação da sequência de inicialização do nosso sistema, iniciando pelo `QEMU` (sistema de virtualização) até o boot.
@@ -94,7 +99,7 @@ Já dentro do container, iniciamos a rotina atualizando o repositório de pacote
 apt update
 ```
 
-Não utilizaremos nenhum `sudo` neste sistema, uma vez que o container já nos joga como usuário `root`, facilitando o processo da construção.
+>Não utilizaremos nenhum `sudo` neste sistema, uma vez que o container já nos joga como usuário `root`, facilitando o processo da construção.
 
 Seguimos o processo para a etapa de instalação, onde estaremos fazendo o download de componentes necessários para a construção:
 
@@ -123,13 +128,21 @@ git clone --depth 1 https://github.com/torvalds/linux.git
 
 A diretriz `--depth 1` nos garante que não clonaremos o histórico git completo, somente o último commit.
 
-Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado, iremos iniciar um pequeno ajuste inserindo o seguinte comando:
+Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado.
+
+```bash
+cd linux
+```
+
+Feito isso, iremos iniciar um pequeno ajuste na configuração do kernel inserindo o seguinte comando:
 
 ```bash
 make menuconfig
 ```
 
 Este comando abrirá uma interface onde, logo abaixo de "General Setup", tenha certeza de deixar a opção de "64-bit kernel" ativa (barra de espaço). Tendo feito, está tudo pronto, basta apertar a tecla `Tab` para alterar a opção para sair e `Enter` para confirmar.
+
+![kernel](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201658.png)
 
 Com a configuração feita, chegou a hora de compilar o Kernel Linux, utilizaremos o seguinte comando:
 
@@ -168,11 +181,23 @@ Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
 git clone --depth 1 https://git.busybox.net/busybox 
 ```
 
-Feito o clone do repositório, iremos acessar o diretório e, assim como no Kernel Linux, faremos a configuração antes da compilação com `make menuconfig`.
+Feito o clone do repositório, iremos acessar o diretório do BusyBox para realizarmos, assim como no kernel Linux, uma configuração antes da compilação com `make menuconfig`.
+
+```bash
+cd busybox
+
+make menuconfig
+```
 
 Na interface, acessando a primeira opção "Settings", descendo algumas opções, encontraremos na sessão `---Build options` a opção `Build static binary (no shared libs)` desmarcada, sendo necessário habilitar para evitar utilizar bibliotecas externas.
 
+![static](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200801.png)
+
 Após, podemos sair desta tela, mas ainda resta uma configuração a ser realizada. De volta a tela inicial do `menuconfig`, mais abaixo, entraremos na opção `Network utilities` e, descendo bem a página, encontraremos o item `tc` habilitado, o que pode acabar causando algum conflito na compilação, por isso, para este tutorial, deixaremos desabilitado.
+
+![tc](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200940.png)
+
+![tc2](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201039.png)
 
 Feitas as configurações, podemos enfim compilar o BusyBox:
 
@@ -390,6 +415,7 @@ qemu-system-x86_64 boot
 Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo de boot para iniciar o sistema, o que abrirá uma nova interface da máquina virtual rodando.
 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o Kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
+>**IMPORTANTE**: Algumas teclas podem apresentar mapeamentos diferentes dentro do sistema, verifique qual tecla do seu teclado corresponde à `/` (normalmente, é na tecla `dois pontos/ponto e vírgula`, permitindo assim digitar corretamente os parâmetros).
 
 ![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
 >Imagem 1: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
