@@ -143,6 +143,7 @@ make menuconfig
 Este comando abrirá uma interface onde, logo abaixo de "General Setup", tenha certeza de deixar a opção de "64-bit kernel" ativa (barra de espaço). Tendo feito, está tudo pronto, basta apertar a tecla `Tab` para alterar a opção para sair e `Enter` para confirmar.
 
 ![kernel](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201658.png)
+>Imagem 1: Interface de configuração `menuconfig`, indicando a opção do kernel de 64-bit que deve estar habilitada.
 
 Com a configuração feita, chegou a hora de compilar o Kernel Linux, utilizaremos o seguinte comando:
 
@@ -192,12 +193,14 @@ make menuconfig
 Na interface, acessando a primeira opção "Settings", descendo algumas opções, encontraremos na sessão `---Build options` a opção `Build static binary (no shared libs)` desmarcada, sendo necessário habilitar para evitar utilizar bibliotecas externas.
 
 ![static](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200801.png)
+>Imagem 2: Opção indicada para habilitar o `build estático` do BusyBox.
 
 Após, podemos sair desta tela, mas ainda resta uma configuração a ser realizada. De volta a tela inicial do `menuconfig`, mais abaixo, entraremos na opção `Network utilities` e, descendo bem a página, encontraremos o item `tc` habilitado, o que pode acabar causando algum conflito na compilação, por isso, para este tutorial, deixaremos desabilitado.
 
 ![tc](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200940.png)
-
+>Imagem 3: Indicando a sessão `Network utilities`.
 ![tc2](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201039.png)
+>Imagem 4: Indicando a opção `tc` a ser desmarcada.
 
 Feitas as configurações, podemos enfim compilar o BusyBox:
 
