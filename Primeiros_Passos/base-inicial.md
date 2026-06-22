@@ -1,6 +1,6 @@
 # **Sistema básico - KompaktOS**
 
-Este sistema servirá de base para a construção do sistema principal do framework, uma vez que, apesar de muito abstraído, oferece uma linha de raciocínio da montagem do sistema operacional mínimo com o Kernel Linux, embora não utilize de ferramentas/componentes do ecossistema GNU.
+Este sistema servirá de base para a construção do sistema principal do framework, uma vez que, apesar de muito abstraído, oferece uma linha de raciocínio da montagem do sistema operacional mínimo com o kernel Linux, embora não utilize de ferramentas/componentes do ecossistema GNU.
 
 ---
 
@@ -96,10 +96,11 @@ A diretriz `--privileged` garante ao container um acesso maior a recursos do sis
 Já dentro do container, iniciamos a rotina atualizando o repositório de pacotes:
 
 ```bash
+# Atualiza o repositório de pacotes 'apt' (padrão do Debian)
 apt update
 ```
 
->Não utilizaremos nenhum `sudo` neste sistema, uma vez que o container já nos joga como usuário `root`, facilitando o processo da construção.
+>Não utilizaremos nenhum `sudo` neste processo (comando que permite usuários comuns executarem comandos como administador), uma vez que o container já nos joga como usuário `root` (administrador), facilitando o processo da construção.
 
 Seguimos o processo para a etapa de instalação, onde estaremos fazendo o download de componentes necessários para a construção:
 
@@ -110,17 +111,17 @@ apt install bzip2 git vim make gcc libncurses-dev flex bison bc cpio libelf-dev 
 Sendo desses componentes:
 
 * **bzip2** - Necessário para o BusyBox;
-* **git** - Clone dos repositórios do Kernel Linux e do BusyBox;
+* **git** - Clone dos repositórios do kernel Linux e do BusyBox;
 * **vim** - Editar/criar arquivos;
 * **make, gcc** - Necessários para a compilação;
-* **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o Kernel;
+* **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o kernel;
 * **cpio** - Componente que permite a criação do `initramfs`.
 
 ---
 
-## **Compilando o Kernel Linux**
+## **Compilando o kernel Linux**
 
-Após todos os preparativos, iniciaremos a configuração e compilação do Kernel Linux - a espinha dorsal do sistema operacional. Para isso, iniciaremos clonando o mirror do GitHub:
+Após todos os preparativos, iniciaremos a configuração e compilação do kernel Linux - a espinha dorsal do sistema operacional. Para isso, iniciaremos clonando o mirror do GitHub:
 
 ```bash
 git clone --depth 1 https://github.com/torvalds/linux.git
@@ -131,6 +132,7 @@ A diretriz `--depth 1` nos garante que não clonaremos o histórico git completo
 Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado.
 
 ```bash
+# cd: Change Directory - nos permite acessar o diretório indicado
 cd linux
 ```
 
@@ -145,7 +147,7 @@ Este comando abrirá uma interface onde, logo abaixo de "General Setup", tenha c
 ![kernel](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201658.png)
 >Imagem 1: Interface de configuração `menuconfig`, indicando a opção do kernel de 64-bit que deve estar habilitada.
 
-Com a configuração feita, chegou a hora de compilar o Kernel Linux, utilizaremos o seguinte comando:
+Com a configuração feita, chegou a hora de compilar o kernel Linux, utilizaremos o seguinte comando:
 
 ```bash
 make -j$(nproc)
@@ -158,22 +160,35 @@ O processo de compilação serve para gerar o arquivo binário que será utiliza
 Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado no **Diagrama 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
 
 ```bash
-# primeiro criaremos o diretório, ainda dentro do diretório 'linux'
+# primeiro criaremos o novo diretório utilizando 'mkdir' - Make Directory'
 mkdir /boot-files
 
-# seguido de copiar o arquivo binário do kernel Linux compilado para ele
+# seguido de copiar o arquivo binário do kernel Linux compilado para ele utilizando 'cp [ARQUIVO] [DESTINO]' - cp: Copy
 cp arch/x86/boot/bzImage /boot-files
+
+# após, podemos sair do diretório atual (linux) COM '..'
+cd ..
 ```
 
-Tendo feito isso, estaremos indo para a próxima etapa: a construção da **Userland/User space**.
+Tendo feito isso, podemos verificar o diretório `boot-files` presente na raiz:
+
+```bash
+# utiliza o comando 'ls' (list) para verificar o conteúdo no diretório atual
+ls
+
+# utiliza 'ls [DESTINO] para verificar o conteúdo de um diretório específico
+ls boot-files
+```
+
+Com o diretório criado e contendo o binário do kernel compilado dentro dele, estaremos indo para a próxima etapa: a construção da **Userland/User space**.
 
 ---
 
 ## **Compilando o BusyBox**
 
-Após os preparativos com o Kernel, iremos agora iniciar o processo de compilação para a criação da `userland`, permitindo o usuário de interagir com o sistema.
+Após os preparativos com o kernel, iremos agora iniciar o processo de compilação para a criação da `userland`, permitindo o usuário de interagir com o sistema.
 
-> A userland (ou `user space`) é tudo que executa fora do Kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o Kernel, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc.  
+> A userland (ou `user space`) é tudo que executa fora do kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o hardware, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc.  
 
 
 Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
@@ -220,23 +235,23 @@ mkdir /boot-files/initramfs
 make CONFIG_PREFIX=/boot-files/initramfs install
 ```
 
-O diretório `initramfs` é o que será carregado pelo Kernel logo após o boot, por isso colocaremos o BusyBox nele - no processo, ele já cria partes do rootfs, sendo os diretórios `bin, sbin e usr`.
+O diretório `initramfs` é o que será carregado pelo kernel logo após o boot, por isso colocaremos o BusyBox nele - no processo, ele já cria partes do rootfs, sendo os diretórios `bin, sbin e usr`.
 
 ---
 
 ## **Sistema de inicialização**
 
-Tendo o Kernel e a userland (BusyBox) compilados, iremos criar então o sistema de inicialização. Dentro do diretório `/boot-files/initramfs`, iremos criar um arquivo de init simples.
+Tendo o kernel e a userland (BusyBox) compilados, iremos criar então o sistema de inicialização. Dentro do diretório `/boot-files/initramfs`, iremos criar um arquivo de init simples.
 
 ```bash
 # Entraremos no diretório 'initramfs'
-cd initramfs
+cd boot-files/initramfs
 
 # Criaremos o arquivo de inicialização
 vim init
 ```
 
-Dentro da interface do Vim, apertaremos a tecla `I` para podermos criar o arquivo de init - arquivo este que o Kernel procura após carregar o `initramfs`.
+Dentro da interface do `Vim` (um editor de texto via terminal), apertaremos a tecla `I` para podermos criar o arquivo de init - arquivo este que o kernel procura após carregar o `initramfs`.
 
 Neste arquivo, iremos configurar para inicializar o `shell`:
 
@@ -246,7 +261,7 @@ Neste arquivo, iremos configurar para inicializar o `shell`:
 /bin/sh
 ```
 
-Basicamente, os símbolos `#!` indicam ao Kernel a utilizar o binário indicado - `/bin/sh` - para executar/iniciar o comando/componente indicado, que no caso, é o próprio shell.
+Basicamente, os símbolos `#!` indicam ao kernel a utilizar o binário indicado - `/bin/sh` - para executar/iniciar o comando/componente indicado, que no caso, é o próprio shell.
 
 Feito isso, podemos sair do editor apertando a tecla `Esc`, seguido de `: + wq`, onde `:` ativa a sessão de comandos e `wq` significa 'Write and Quit', salvando nosso arquivo de init e saindo do editor.
 
@@ -264,7 +279,7 @@ Em seguida, criaremos nosso arquivo de inicialização através do `cpio` utiliz
 find . | cpio -o -H newc > ../init.cpio
 ```
 
-Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no tipo de arquivo que o Kernel suporta (`-H newc`) através do cpio, inserindo tudo em um novo arquivo (`> ../init.cpio`), gerando nosso arquivo de inicialização.
+Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no tipo de arquivo que o kernel suporta (`-H newc`) através do cpio, inserindo tudo em um novo arquivo (`> ../init.cpio`), gerando nosso arquivo de inicialização.
 
 ---
 
@@ -272,7 +287,7 @@ Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no 
 
 Nesta última etapa, estaremos configurando o Bootloader do nosso projeto, sendo o componente responsável por inicializar o sistema operacional. Neste tutorial, estaremos iniciando o Syslinux.
 
-> `Bootloader` nada mais é que um software executado assim que o hardware liga, sendo o componente carregado logo após os testes realizados pela `BIOS/UEFI`, se responsabilizando por carregar tanto o Kernel quanto o arquivo de inicialização - `initrd/initramfs`.  
+> `Bootloader` nada mais é que um software executado assim que o hardware liga, sendo o componente carregado logo após os testes realizados pela `BIOS/UEFI`, se responsabilizando por carregar tanto o kernel quanto o arquivo de inicialização - `initrd/initramfs`.  
 
 
 ```bash
@@ -289,11 +304,11 @@ Com o bootloader instalado, podemos criar o arquivo de boot. Para isso, utilizar
 dd if=/dev/zero of=boot bs=1M count=50
 ```
 
-Simplificando, o comando nos permite criar um arquivo de 50MB * preenchido de zeros. Mas sendo mais técnico: 
+Simplificando, o comando nos permite criar um arquivo de 50MB preenchido de zeros. Mas sendo mais técnico: 
 * ele utiliza a ferramenta `dd` que serve para copiar dados brutos de uma origem para um destino;
-* nesse caso, a origem (`input file/if`) sendo `/dev/zero` que contém infinitos zeros e o destino (`output file/of`) sendo `boot`, que será preenchido com zeros;
+* nesse caso, a origem (`if (input file)`) sendo `/dev/zero`, um diretório especial que contém teoricamente infinitos zeros, e o destino (`of (output file)`) sendo `boot`, que será preenchido com os zeros que copiaremos;
 * com isso, o arquivo se torna uma espécie de "imagem de disco virtual";
-* por fim, especificamos o tamanho dos blocos que serão copiados (`bs=1M`), espeficiando a copiar os zeros em blocos de 1MB, e a quantidade total de blocos (`count=50`), resultando em 50 blocos de 1MB - totalizando 50MB.
+* por fim, especificamos o tamanho dos blocos que serão copiados (`bs=1M (block size = 1 MB)`), espeficiando a copiar os zeros em blocos de 1MB, e a quantidade total de blocos (`count=50`), resultando em 50 blocos de 1MB - totalizando 50MB.
 
 Após criarmos o arquivo de boot (ainda não finalizado), podemos configurar o sistema de arquivos dele. Por utilizarmos Syslinux, estaremos utilizando o sistema FAT por ser o sistema que ele suporta.
 
@@ -334,21 +349,14 @@ mknod /dev/loop0 b 7 0
 chmod 660 /dev/loop0
 mount -o loop boot m
 
-# copiaremos o Kernel e o initramfs no filesystem do boot
+# copiaremos o kernel e o initramfs no filesystem do boot
 cp bzImage init.cpio m
 
 # por fim, podemos desmontar o arquivo do diretório
 umount m
 ```
 
-Em caso de erros, irei detalhar um pouco os comandos repassados acima para melhor entendimento:
-
-`mknod` indica a criação de arquivos especiais de dispositivos, sendo `/dev/loop0` o nome deste que estaremos criando, `b` é a flag para criar como 'arquivo de bloco', e `7 e 0`:
-
-* major = 7 -> driver loop
-* minor = 0 -> loop0
-
-Além disso, considere montar e desmontar (`mount & umount`) como "plugar e desplugar um pendrive". O arquivo de boot, por si só, não nos permite "editar" ou acrescentar arquivos dentro dele normalmente, como o Kernel Linux compilado e o arquivo `init.cpio`, por isso, precisamos montar ele em um diretório para que os arquivos sejam exibidos no diretório e que nos permita adicionar o que for necessário.
+Considere montar e desmontar (`mount & umount`) como "plugar e desplugar um pendrive". O arquivo de boot, por si só, não nos permite "editar" ou acrescentar arquivos dentro dele normalmente, como o kernel Linux compilado e o arquivo `init.cpio`, por isso, precisamos montar ele em um diretório para que os arquivos sejam exibidos no diretório e que nos permita adicionar o que for necessário.
 
 Seguindo o fluxo do processo, seria algo basicamente:
 
@@ -373,8 +381,41 @@ Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "de
 | :--: | :--: |
 | m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
 | m (desmontado) | - vazio - |
->Tabela 4: Desmontando o arquivo do diretório `m`, agora com o kernel e o `init.cpio` contendo na imagem de `boot`.  
+>Tabela 4: Desmontando o arquivo do diretório `m`, agora com o kernel e o `init.cpio` contendo na imagem de `boot`.
 
+Caso tenha se deparado com o erro mencionado nos comandos acima (`mount boot m` e `mount -o loop boot m`), irei detalhar um pouco os comandos repassados para melhor entendimento:
+
+O que estamos fazendo com o comando `mknod` é pedir ao sistema operacional: 'Crie um pendrive virtual para mim, e o plugue na pasta /dev/loop0'. Simplificando, o comando `mount -o loop boot m` utiliza um `loop device`. Esse tipo de dispositivo permite que um arquivo comum seja acessado pelo sistema como se fosse um disco, um pendrive ou uma partição real.
+
+Em alguns ambientes mínimos, o dispositivo /dev/loop0 pode não existir. Nessa situação, podemos criá-lo manualmente com:
+
+```bash
+mknod /dev/loop0 b 7 0
+```
+
+Cada parte do comando possui uma função específica:
+
+* **mknod (make node)**: cria um arquivo especial de dispositivo dentro do diretório /dev;
+* **/dev/loop0**: nome do dispositivo que será criado;
+* **b (bloco)**: informa que se trata de um dispositivo de bloco, isto é, um dispositivo que armazena dados em blocos, como discos rígidos, SSDs e pendrives;
+* **7**: é o número major, utilizado pelo kernel para identificar o driver responsável pelos dispositivos de loop;
+* **0**: é o número minor, utilizado para distinguir uma instância específica desse tipo de dispositivo. Nesse caso, estamos criando o primeiro dispositivo de loop (loop0).
+
+Após criá-lo, ajustamos suas permissões:
+
+```bash
+chmod 660 /dev/loop0
+```
+
+Esse comando permite que o proprietário e o grupo do dispositivo possam lê-lo e gravá-lo, sendo necessário para que o comando `mount` consiga associar o arquivo boot ao dispositivo de loop e montá-lo normalmente.
+
+Em termos práticos, o processo funciona da seguinte forma:
+
+1. O arquivo boot é associado ao dispositivo /dev/loop0;
+2. O sistema passa a enxergar esse arquivo como se fosse um pendrive;
+3. O comando mount monta esse "pendrive" no diretório m;
+4. Podemos copiar arquivos para ele normalmente;
+5. Ao desmontá-lo com umount, todas as alterações ficam gravadas dentro do arquivo boot.
 
 Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker - mas não feche/encerre o container ainda!
 
@@ -421,7 +462,7 @@ qemu-system-x86_64 boot
 
 Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo de boot para iniciar o sistema, o que abrirá uma nova interface da máquina virtual rodando.
 
-Por fim, na sessão de boot, o Syslinux aguarda a imagem do Kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o Kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
+Por fim, na sessão de boot, o Syslinux aguarda a imagem do kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 >**IMPORTANTE**: Algumas teclas podem apresentar mapeamentos diferentes dentro do sistema, verifique qual tecla do seu teclado corresponde à `/` (normalmente, é na tecla `dois pontos/ponto e vírgula`, permitindo assim digitar corretamente os parâmetros).
 
 ![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
