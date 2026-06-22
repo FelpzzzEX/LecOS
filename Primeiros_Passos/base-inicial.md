@@ -385,6 +385,12 @@ Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "de
 
 Caso tenha se deparado com o erro mencionado nos comandos acima (`mount boot m` e `mount -o loop boot m`), irei detalhar um pouco os comandos repassados para melhor entendimento:
 
+```bash
+mknod /dev/loop0 b 7 0
+chmod 660 /dev/loop0
+mount -o loop boot m
+```
+
 O que estamos fazendo com o comando `mknod` é pedir ao sistema operacional: 'Crie um pendrive virtual para mim, e o plugue na pasta /dev/loop0'. Simplificando, o comando `mount -o loop boot m` utiliza um `loop device`. Esse tipo de dispositivo permite que um arquivo comum seja acessado pelo sistema como se fosse um disco, um pendrive ou uma partição real.
 
 Em alguns ambientes mínimos, o dispositivo /dev/loop0 pode não existir. Nessa situação, podemos criá-lo manualmente com:
