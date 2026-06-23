@@ -16,7 +16,7 @@ Devido ao nível elevado de abstração decorrido da utilização do BusyBox com
 
 Além disso, a construção será feita dentro de um container docker rodando uma imagem de um sistema GNU/Linux, sendo utilizado, nesta versão, a `debian:trixie-slim`.
 
->Os conceitos mencionados acima serão abordados ao longo do tutorial para facilitar o entendimento dos processos.  
+>Docker é um sistema utilizado para implantar aplicações em containers virtuais, permitindo o isolamento do sistema principal do usuário e garantir que o software execute da mesma forma, independente do dispositivo que está hospedando.
 
 
 O fluxo desse trabalho consiste em:
@@ -85,7 +85,7 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 
 Além disso, o tutorial assume um ambiente GNU/Linux para o seu desenvolvimento, embora seja completamente possível de se realizar no ecossistema Windows graças a alternativas como o `WSL` presente no sistema.
 
-Com as informações repassadas, podemos dar início ao desenvolvimento do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
+Com as informações repassadas, podemos dar início à montagem do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
 ```bash
 docker run --privileged -it debian:trixie-slim
@@ -93,7 +93,7 @@ docker run --privileged -it debian:trixie-slim
 
 A diretriz `--privileged` garante ao container um acesso maior a recursos do sistema, sendo necessários em etapas importantes do processo. Já a diretriz `-it` garante que o container será interativo, permitindo utilizar o seu terminal para baixarmos arquivos e executarmos comandos.
 
-Já dentro do container, iniciamos a rotina atualizando o repositório de pacotes:
+Já dentro do container, após executarmos o comando anterior, iniciamos a rotina atualizando o repositório de pacotes:
 
 ```bash
 # Atualiza o repositório de pacotes 'apt' (padrão do Debian)
@@ -110,11 +110,16 @@ apt install bzip2 git vim make gcc libncurses-dev flex bison bc cpio libelf-dev 
 
 Sendo desses componentes:
 
-* **bzip2** - Necessário para o BusyBox;
+* **bzip2** - Necessário para o BusyBox, servindo para compactar e descompactar arquivos;
 * **git** - Clone dos repositórios do kernel Linux e do BusyBox;
 * **vim** - Editar/criar arquivos;
-* **make, gcc** - Necessários para a compilação;
-* **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o kernel;
+* **make, gcc** - Necessários para a compilação de código em linguagem C;
+* **flex, bison, bc, libelf-dev, libssl-dev** - Necessários para o kernel, onde:
+  * **flex**: ferramenta que cria programas capazes de reconhecer os elementos básicos de uma linguagem, como palavras-chave, números e símbolos.
+  * **bison**: ferramenta que cria programas responsáveis por analisar como esses elementos se relacionam, verificando se a estrutura da linguagem está correta.
+  * **bc**: calculadora utilizada durante a compilação do kernel para realizar operações matemáticas automaticamente.
+  * **libelf-dev**: biblioteca necessária para manipular arquivos executáveis no formato ELF.
+  * **libssl-dev**: biblioteca que fornece recursos criptográficos usados na assinatura e verificação de componentes do kernel.
 * **cpio** - Componente que permite a criação do `initramfs`.
 
 ---
@@ -129,6 +134,8 @@ git clone --depth 1 https://github.com/torvalds/linux.git
 
 A diretriz `--depth 1` nos garante que não clonaremos o histórico git completo, somente o último commit.
 
+>Kernel, como mencionado antes, é a "espinha dorsal" do sistema operacional, pois é ele quem coordena as chamadas de sistema e gerencia a comunicação entre o software e o hardware.
+
 Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado.
 
 ```bash
@@ -141,6 +148,8 @@ Feito isso, iremos iniciar um pequeno ajuste na configuração do kernel inserin
 ```bash
 make menuconfig
 ```
+
+>Se você estiver rodando no terminal do `VSCode` ou em uma janela pequena, o seguinte erro pode acontecer: **"Your display is too small to run Menuconfig! It must be at least [...]"**. Caso ocorra, basta aumentar o tamanho do terminal e a interface irá aparecer normalmente.
 
 Este comando abrirá uma interface onde, logo abaixo de "General Setup", tenha certeza de deixar a opção de "64-bit kernel" ativa (barra de espaço). Tendo feito, está tudo pronto, basta apertar a tecla `Tab` para alterar a opção para sair e `Enter` para confirmar.
 
@@ -191,7 +200,9 @@ Após os preparativos com o kernel, iremos agora iniciar o processo de compilaç
 > A userland (ou `user space`) é tudo que executa fora do kernel do sistema operacional, se referindo a programas e bibliotecas que permitem o sistema operacional a interagir com o hardware, como programas que realizam entrada/saída de dados, manipulam sistemas de arquivos, etc.  
 
 
-Para isso, vamos iniciar clonando o repositório oficial do **BusyBox**:
+Para isso estaremos utilizando o **BusyBox**, um conjunto de utilitários reunídos em um único binário, facilitando no processo de compilação e montagem da nossa distribuição -- o canivete suíço para distribuições minimalistas.
+
+A seguir, iniciaremos o processo clonando o repositório oficial do BusyBox:
 
 ```bash
 git clone --depth 1 https://git.busybox.net/busybox 
@@ -235,7 +246,9 @@ mkdir /boot-files/initramfs
 make CONFIG_PREFIX=/boot-files/initramfs install
 ```
 
-O diretório `initramfs` é o que será carregado pelo kernel logo após o boot, por isso colocaremos o BusyBox nele - no processo, ele já cria partes do rootfs, sendo os diretórios `bin, sbin e usr`.
+O diretório `initramfs` representa o sistema de arquivos temporário carregado pelo kernel logo após o processo de boot. Nele colocaremos o BusyBox que, durante sua instalação, cria automaticamente parte da estrutura do `rootfs` (sistema de arquivos raiz), incluindo os diretórios `bin`, `sbin` e `usr`.
+
+O diretório `bin` armazena comandos essenciais acessíveis a todos os usuários, `sbin` contém programas utilizados principalmente para administração do sistema, enquanto `usr` reúne aplicações, bibliotecas e outros arquivos compartilhados entre os usuários.
 
 ---
 
@@ -263,7 +276,7 @@ Neste arquivo, iremos configurar para inicializar o `shell`:
 
 Basicamente, os símbolos `#!` indicam ao kernel a utilizar o binário indicado - `/bin/sh` - para executar/iniciar o comando/componente indicado, que no caso, é o próprio shell.
 
-Feito isso, podemos sair do editor apertando a tecla `Esc`, seguido de `: + wq`, onde `:` ativa a sessão de comandos e `wq` significa 'Write and Quit', salvando nosso arquivo de init e saindo do editor.
+Feito isso, podemos sair do editor apertando a tecla `Esc`, seguido de `:` e após `wq`, onde `:` ativa a sessão de comandos e `wq` significa 'Write and Quit', salvando nosso arquivo de init e saindo do editor.
 
 Logo após, precisamos dar permissão de execução para o arquivo, uma vez que ele atuará como um script, o sistema necessita de que ele tenha a autoridade para ser executado, nos levando a:
 
@@ -273,7 +286,9 @@ chmod +x init
 
 Onde `chmod` é o comando utilizado para alterar permissões de arquivos e diretórios, `+x` sendo a permissão adicionada (+) a de execução (x) e `init` o nome do nosso arquivo.
 
-Em seguida, criaremos nosso arquivo de inicialização através do `cpio` utilizando todos os arquivos presentes no diretório atual `initramfs`:
+Em seguida, criaremos nosso arquivo de inicialização utilizando o `cpio`, uma ferramenta que empacota diversos arquivos e diretórios em um único arquivo. Esse arquivo será utilizado pelo kernel como `initramfs` durante os primeiros estágios da inicialização do sistema.
+
+Para criar o arquivo, executaremos o seguinte comando:
 
 ```bash
 find . | cpio -o -H newc > ../init.cpio
@@ -304,7 +319,10 @@ Com o bootloader instalado, podemos criar o arquivo de boot. Para isso, utilizar
 dd if=/dev/zero of=boot bs=1M count=50
 ```
 
-Simplificando, o comando nos permite criar um arquivo de 50MB preenchido de zeros. Mas sendo mais técnico: 
+Simplificando, o comando nos permite criar um arquivo de 50MB preenchido de zeros que, posteriormente, será formatado e utilizado para armazenar os arquivos necessários para a inicialização do sistema. 
+
+Aprofundando mais um pouco no comando:
+
 * ele utiliza a ferramenta `dd` que serve para copiar dados brutos de uma origem para um destino;
 * nesse caso, a origem (`if (input file)`) sendo `/dev/zero`, um diretório especial que contém teoricamente infinitos zeros, e o destino (`of (output file)`) sendo `boot`, que será preenchido com os zeros que copiaremos;
 * com isso, o arquivo se torna uma espécie de "imagem de disco virtual";
