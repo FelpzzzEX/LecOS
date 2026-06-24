@@ -14,6 +14,8 @@ Neste sistema, estaremos utilizando o `GNU GRUB` como bootloader, sendo um compo
 
 </div>
 
+>Imagem 1: Tela inicial do GNU GRUB, onde o usuário é capaz de escolher qual sistema deseja acessar.
+
 Ele foi selecionado pela aproximação do ambiente real de desenvolvimento de distribuições modernas. O `Syslinux` utilizado na base inicial, apesar de funcional e bastante leve, é mais utilizado em **sistemas embarcados**, mídias de instalação e distribuições voltadas ao minimalismo. Já o `GNU GRUB` oferece suporte unificado aos modos `BIOS e UEFI`, maior flexibilidade na manipulação de kernels e initramfs, além de recursos avançados de inicialização. Dessa forma, sua utilização torna o sistema construído mais próximo das soluções adotadas em distribuições Linux de propósito geral, permitindo explorar mecanismos de inicialização encontrados em ambientes reais de produção.
 
 ---

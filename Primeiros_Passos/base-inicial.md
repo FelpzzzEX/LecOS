@@ -153,7 +153,12 @@ make menuconfig
 
 Este comando abrirá uma interface onde, logo abaixo de "General Setup", tenha certeza de deixar a opção de "64-bit kernel" ativa (barra de espaço). Tendo feito, está tudo pronto, basta apertar a tecla `Tab` para alterar a opção para sair e `Enter` para confirmar.
 
+<div align="center">
+
 ![kernel](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201658.png)
+
+</div>
+
 >Imagem 1: Interface de configuração `menuconfig`, indicando a opção do kernel de 64-bit que deve estar habilitada.
 
 Com a configuração feita, chegou a hora de compilar o kernel Linux, utilizaremos o seguinte comando:
@@ -218,15 +223,30 @@ make menuconfig
 
 Na interface, acessando a primeira opção "Settings", descendo algumas opções, encontraremos na sessão `---Build options` a opção `Build static binary (no shared libs)` desmarcada, sendo necessário habilitar para evitar utilizar bibliotecas externas.
 
+<div align="center">
+
 ![static](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200801.png)
+
+</div>
+
 >Imagem 2: Opção indicada para habilitar o `build estático` do BusyBox.
 
 Após, podemos sair desta tela, mas ainda resta uma configuração a ser realizada. De volta a tela inicial do `menuconfig`, mais abaixo, entraremos na opção `Network utilities` e, descendo bem a página, encontraremos o item `tc` habilitado, o que pode acabar causando algum conflito na compilação, por isso, para este tutorial, deixaremos desabilitado.
 
+<div align="center">
+
 ![tc](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_200940.png)
+
+</div>
+
 >Imagem 3: Indicando a sessão `Network utilities`.
 
+<div align="center">
+
 ![tc2](https://github.com/FelpzzzEX/Imagens/blob/fece1dc59e0abfe42824f67b6995c79739065e33/Captura_de_tela_20260620_201039.png)
+
+</div>
+
 >Imagem 4: Indicando a opção `tc` a ser desmarcada.
 
 Feitas as configurações, podemos enfim compilar o BusyBox:
@@ -467,7 +487,12 @@ docker ps
 
 Para o comando a seguir, precisaremos do ID do container, que ficará embaixo do título `CONTAINER_ID`, algo como 'a94abe6c119f', por exemplo.
 
+<div align="center">
+
 ![terminal](https://github.com/FelpzzzEX/Imagens/blob/942a863f7dc2aac45c33a70965729e67b8f431a6/Captura_de_tela_20260621_042627.png)
+
+</div>
+
 >Imagem 5: Localizando o ID do container.  
 
 Em seguida, faremos a cópia do nosso arquivo de boot dentro do container para o diretório que criamos utilizando o seguinte comando:
@@ -489,7 +514,12 @@ Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 >**IMPORTANTE**: Algumas teclas podem apresentar mapeamentos diferentes dentro do sistema, verifique qual tecla do seu teclado corresponde à `/` (normalmente, é na tecla `dois pontos/ponto e vírgula`, permitindo assim digitar corretamente os parâmetros).
 
+<div align="center">
+
 ![Boot_QEMU](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_180939.png)
+
+</div>
+
 >Imagem 6: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
 
 ---
@@ -498,7 +528,12 @@ Por fim, na sessão de boot, o Syslinux aguarda a imagem do kernel e o arquivo d
 
 Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. 
 
+<div align="center">
+
 ![KompaktOS](https://github.com/FelpzzzEX/Imagens/blob/2b91f7dbd4b7174caffc8922ae0a19cbc1d5db38/Captura_de_tela_20260620_181404.png)
+
+</div>
+
 >Imagem 7: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando - `ls`, `whoami`, etc.
 
 Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
