@@ -136,7 +136,7 @@ A diretriz `--depth 1` nos garante que não clonaremos o histórico git completo
 
 >Kernel, como mencionado antes, é a "espinha dorsal" do sistema operacional, pois é ele quem coordena as chamadas de sistema e gerencia a comunicação entre o software e o hardware.
 
-Com isso, após entrarmos no diretório `/linux` que contém o repositório clonado.
+Com isso, o comando git terminar de executar, podemos acessar o diretório `/linux` que contém o repositório clonado.
 
 ```bash
 # cd: Change Directory - nos permite acessar o diretório indicado
