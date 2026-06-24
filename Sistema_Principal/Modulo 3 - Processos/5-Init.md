@@ -1,4 +1,0 @@
-## **Inicialização (Init)**
-
-
-

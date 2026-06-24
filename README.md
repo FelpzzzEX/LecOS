@@ -1,5 +1,9 @@
+<div align="center">
+
 # **Framework didático para construção de distribuições GNU/Linux**
 ![Static Badge](https://img.shields.io/badge/Sistema-GNU/Linux-black?logo=linux) ![Static Badge](https://img.shields.io/badge/Framework-LecOS-red?logo=bookstack) ![Static Badge](https://img.shields.io/badge/Formato-Markdown-yellow?logo=markdown) ![Static Badge](https://img.shields.io/badge/Ferramenta-Bash-green?logo=gnubash) ![Static Badge](https://img.shields.io/badge/Build-Docker-blue?logo=docker) ![Static Badge](https://img.shields.io/badge/Run-QEMU-white?logo=qemu)
+
+</div>
 
 ## Introdução
 
