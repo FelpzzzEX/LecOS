@@ -1,6 +1,8 @@
 # **BIOS | UEFI**
 
-Ao aprendermos a estrutura de um sistema operacional, não podemos nos limitar somente ao software em si, uma vez que o S.O. nada mais é do que uma forma de possibilitar o ser humano de se utilizar e comunicar com o hardware através do software. Por este motivo, passaremos pelo primeiro "componente" do sistema operacional, embora não venha do software em si, mas sim o próprio hardware através de um firmware na placa-mãe.
+Após finalizarmos os [Primeiros Passos](Primeiros_Passos/base-inicial.md) do nosso framework através da `base inicial`, iniciaremos agora a etapa definitiva do projeto, onde focaremos não no processo de montar um sistema operacional, mas no entendimento por trás dos componentes e conceitos de sistemas operacionais.
+
+Sabendo disso, ao aprendermos a estrutura de um sistema operacional, não podemos nos limitar somente ao software em si, uma vez que o S.O. nada mais é do que uma forma de possibilitar o ser humano de se utilizar e comunicar com o hardware através do software. Por este motivo, passaremos pelo primeiro "componente" do sistema operacional, embora não venha do software em si, mas sim o próprio hardware através de um firmware na placa-mãe.
 
 ## **Sistema Inicial**
 
@@ -56,7 +58,12 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 
 > **Secure Boot** é um sistema que protege a inicialização do sistema operacional, bloqueando qualquer tentativa de `boot` que não possua uma assinatura válida registrada pelos fabricantes do hardware, garantindo uma segurança a mais para a infraestrutura presente.
 
+<div align="center">
+
 ![UEFI](https://shared.cdn.smp.schibsted.com/v2/images/c866ad38-0576-4578-b4e5-85b6c77a3f8d?fit=crop&format=auto&h=1078&w=1600&s=25659373e0ec5915601f77dd1c7c3b9739b08798)
+
+</div>
+
 >Imagem 2: Interface da UEFI
 
 ### **Comparativo**

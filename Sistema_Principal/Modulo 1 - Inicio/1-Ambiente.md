@@ -1,6 +1,6 @@
-# **Sistema principal - LecOS**
+# **Ambiente - LecOS**
 
-Após finalizarmos os [Primeiros Passos](Primeiros_Passos/base-inicial.md) do nosso framework através da `base inicial`, iniciaremos agora a etapa definitiva do projeto, onde focaremos não no processo de montar um sistema operacional, mas no entendimento por trás dos componentes e conceitos de sistemas operacionais, dessa vez utilizando uma nova distribuição mínima, dessa vez mais completa e de propósito geral, como base para repassarmos nos conceitos fundamentais da disciplina enquanto realizamos na prática.
+Após a inicialização correta do hardware, a responsabilidade da inicialização passa a ser do software daqui pra frente, uma vez que agora ele tem a liberdade de poder executar devido aos componentes da máquina estarem funcionando corretamente. O responsável pela próxima etapa é o `bootloader`, no entanto, antes de iniciarmos de fato o tutorial, precisamos subir nosso ambiente de desenvolvimento primeiro, dessa vez utilizando uma nova distribuição, mais completa e de propósito geral, como base para repassarmos nos conceitos fundamentais da disciplina enquanto realizamos na prática.
 
 ---
 
@@ -45,7 +45,12 @@ O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas qu
 
 Assim como na etapa inicial, o trabalho será desenvolvido também dentro de um container `Docker`, visando novamente uma segurança maior para evitar problemas no sistema principal. No entanto, em vez de iniciarmos tudo manualmente através de comandos simples, contaremos com um script de inicialização completo do ambiente, visando um desenvolvimento mais dinâmico e direto ao ponto uma vez que já passamos pelo conceito e processo de compilação nos primeiros passos, garantindo uma boa reprodutibilidade.
 
+<div align="center">
+
 ![Lecos](https://github.com/FelpzzzEX/Imagens/blob/ba23ec0dd9bd389476783926a4c15314b1950045/Captura_de_tela_20260624_002208.png)
+
+</div>
+
 >Imagem 1: Mensagem de boas-vindas ao executar o script de construção do ambiente.
 
 Além disso, nesse ambiente possuímos persistência de dados graças ao volume construído junto do container, ou seja, você pode pausar o processo e retornar quando quiser, não sendo necessário fazer tudo de uma só vez, evitando perda de progresso e permitindo seguir no próprio ritmo.
@@ -136,7 +141,12 @@ docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS/root felpzzex/lec
 
 Por fim, o script também copia arquivos essenciais para dentro do nosso ambiente, como o `kernel Linux` já previamente compilado, o arquivo de inicialização do sistema e os scripts de build para cada componente da nossa userland, apresentados na sessão `Componentes`. Caso esteja interessado, pode verificar o conteúdo completo presente no script acessando o arquivo [init.sh](../init.sh).
 
+<div align="center">
+
 ![LOS](https://github.com/FelpzzzEX/Imagens/blob/4e53f2fd3e9e8aa6714aecd17a14952afa7351e0/Captura_de_tela_20260624_010528.png)
+
+</div>
+
 >Imagem 3: Conteúdo copiado do sistema principal para dentro do container, contendo todos os scripts de build dos componentes.
 
 Após a execução do script, ele te jogará dentro do container de desenvolvimento do framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O. As próximas etapas passarão por cada componente presente em nosso planejamento de forma aprofundada e dedicada, visando uma "ordem cronológica" do processo de inicialização, onde já abordamos o início com o `BIOS e UEFI`, na próxima etapa, começaremos pelo [bootloader](2-Bootloader.md).
