@@ -17,7 +17,7 @@ Tendo isso em mente e após algumas pesquisas, notei que existem materiais didá
 
 Para iniciar o processo do framework, optei por iniciar com uma abordagem mais simples de se concluir e aprender, pois mesmo que seja algo menos robusto, ela fornece uma base valiosa que será utilizada posteriormente no framework, na construção do sistema de propósito geral, servindo como uma ponte entre os conteúdos em vez de já iniciarmos na parte "complexa" do framework.
 
-### KompaktOS
+### Base Inicial
 
 Nesta etapa, o sistema construído tem um escopo bem mais simples, tendo como proposta principal fornecer uma base sólida e simplificada para que os alunos possam aprender conceitos fundamentais a respeito da construção de um S.O., embora não utilize componentes do ecossistema GNU, ainda possui um grande valor educativo que ajudará em etapas posteriores.
 
