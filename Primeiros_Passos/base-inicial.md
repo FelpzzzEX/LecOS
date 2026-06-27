@@ -126,7 +126,7 @@ Sendo desses componentes:
 
 ## **Compilando o kernel Linux**
 
-Após todos os preparativos, iniciaremos a configuração e compilação do kernel Linux - a espinha dorsal do sistema operacional. Para isso, iniciaremos clonando o mirror do GitHub:
+Após todos os preparativos, iniciaremos a configuração e compilação do kernel Linux -- a espinha dorsal do sistema operacional. Para isso, iniciaremos clonando o mirror do GitHub:
 
 ```bash
 git clone --depth 1 https://github.com/torvalds/linux.git
@@ -171,7 +171,7 @@ O comando `make` é o que inicia o processo da compilação através da configur
 
 O processo de compilação serve para gerar o arquivo binário que será utilizado na construção do nosso sistema (sempre utilizamos binários para construir).
 
-Após a compilação, nos será retornardo o caminho onde a imagem está guardada - neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado no **Diagrama 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
+Após a compilação, nos será retornardo o caminho onde a imagem está guardada -- neste tutorial, é em `arch/x86/boot/bzImage`, sendo `bzImage` o nosso kernel que acabamos de compilar (como indicado no **Diagrama 1**). Neste caso, criaremos um novo diretório onde iremos armazenar os arquivos e componentes que serão utilizados na construção:
 
 ```bash
 # primeiro criaremos o novo diretório utilizando 'mkdir' - Make Directory'
@@ -284,7 +284,7 @@ cd boot-files/initramfs
 vim init
 ```
 
-Dentro da interface do `Vim` (um editor de texto via terminal), apertaremos a tecla `I` para podermos criar o arquivo de init - arquivo este que o kernel procura após carregar o `initramfs`.
+Dentro da interface do `Vim` (um editor de texto via terminal), apertaremos a tecla `I` para podermos criar o arquivo de init -- arquivo este que o kernel procura após carregar o `initramfs`.
 
 Neste arquivo, iremos configurar para inicializar o `shell`:
 
@@ -294,7 +294,7 @@ Neste arquivo, iremos configurar para inicializar o `shell`:
 /bin/sh
 ```
 
-Basicamente, os símbolos `#!` indicam ao kernel a utilizar o binário indicado - `/bin/sh` - para executar/iniciar o comando/componente indicado, que no caso, é o próprio shell.
+Basicamente, os símbolos `#!` indicam ao kernel a utilizar o binário indicado -- `/bin/sh` -- para executar/iniciar o comando/componente indicado, que no caso, é o próprio shell.
 
 Feito isso, podemos sair do editor apertando a tecla `Esc`, seguido de `:` e após `wq`, onde `:` ativa a sessão de comandos e `wq` significa 'Write and Quit', salvando nosso arquivo de init e saindo do editor.
 
@@ -322,7 +322,7 @@ Onde pegamos todos os arquivos do diretório atual (`find .`), transformamos no 
 
 Nesta última etapa, estaremos configurando o Bootloader do nosso projeto, sendo o componente responsável por inicializar o sistema operacional. Neste tutorial, estaremos iniciando o Syslinux.
 
-> `Bootloader` nada mais é que um software executado assim que o hardware liga, sendo o componente carregado logo após os testes realizados pela `BIOS/UEFI`, se responsabilizando por carregar tanto o kernel quanto o arquivo de inicialização - `initrd/initramfs`.  
+> `Bootloader` nada mais é que um software executado assim que o hardware liga, sendo o componente carregado logo após os testes realizados pela `BIOS/UEFI`, se responsabilizando por carregar tanto o kernel quanto o arquivo de inicialização -- `initrd/initramfs`.  
 
 
 ```bash
@@ -346,7 +346,7 @@ Aprofundando mais um pouco no comando:
 * ele utiliza a ferramenta `dd` que serve para copiar dados brutos de uma origem para um destino;
 * nesse caso, a origem (`if (input file)`) sendo `/dev/zero`, um diretório especial que contém teoricamente infinitos zeros, e o destino (`of (output file)`) sendo `boot`, que será preenchido com os zeros que copiaremos;
 * com isso, o arquivo se torna uma espécie de "imagem de disco virtual";
-* por fim, especificamos o tamanho dos blocos que serão copiados (`bs=1M (block size = 1 MB)`), espeficiando a copiar os zeros em blocos de 1MB, e a quantidade total de blocos (`count=50`), resultando em 50 blocos de 1MB - totalizando 50MB.
+* por fim, especificamos o tamanho dos blocos que serão copiados (`bs=1M (block size = 1 MB)`), espeficiando a copiar os zeros em blocos de 1MB, e a quantidade total de blocos (`count=50`), resultando em 50 blocos de 1MB -- totalizando 50MB.
 
 Após criarmos o arquivo de boot (ainda não finalizado), podemos configurar o sistema de arquivos dele. Por utilizarmos Syslinux, estaremos utilizando o sistema FAT por ser o sistema que ele suporta.
 
@@ -461,7 +461,7 @@ Em termos práticos, o processo funciona da seguinte forma:
 4. Podemos copiar arquivos para ele normalmente;
 5. Ao desmontá-lo com umount, todas as alterações ficam gravadas dentro do arquivo boot.
 
-Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker - mas não feche/encerre o container ainda!
+Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker -- mas não feche/encerre o container ainda!
 
 ---
 
@@ -534,13 +534,13 @@ Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora t
 
 </div>
 
->Imagem 7: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando - `ls`, `whoami`, etc.
+>Imagem 7: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando -- `ls`, `whoami`, etc.
 
 Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
 
-* Autor: Felipe Fialho - TCC-I
+* Autor: Felipe Fialho -- TCC-I
 * Orientador: Igor Muzetti Pereira
 * Coorientador: Samuel Souza Brito
-* Universidade Federal de Ouro Preto - UFOP
+* Universidade Federal de Ouro Preto -- UFOP
 
 * Tutorial de base: [Making Simple Linux Distro from Scratch - Nir Lichtman](https://www.youtube.com/watch?v=QlzoegSuIzg)

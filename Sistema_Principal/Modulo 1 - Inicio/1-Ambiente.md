@@ -107,11 +107,21 @@ flowchart LR
 
 Para iniciarmos o nosso trabalho, precisamos criar o nosso ambiente de desenvolvimento. Para isso, estaremos utilizando o script mencionado para isso, o `init.sh`. Esse script contém os comandos necessários para a inicialização do container onde seguiremos o framework, automatizando o processo de criação e já fornecendo todas as ferramentas que precisaremos para realizar essa tarefa.
 
+No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente. Por isso, certifique-se de que seu dispositivo possui o sistema `Git` -- sendo esse o sistema de versionamento de códigos mais utilizado nos projetos modernos, e execute o seguinte comando:
+
+```bash
+# Comando clona o repositório do GitHub para sua máquina local
+git clone --depth 1 https://github.com/FelpzzzEX/LecOS.git
+```
+
+![Git](https://github.com/FelpzzzEX/Imagens/blob/78d7a925ce7e18193418b571830eb4395e2395bd/Captura_de_tela_20260627_012605.png)
+>Imagem 3: Comando git sendo executado e o resultado de sua execução.
+
 Para executarmos o script, precisamos primeiramente fornecer a permissão de execução para que ele possa ser executado, uma vez que mesmo o script sendo criado, ele não possui por padrão a capacidade de rodar os comandos sem permissão. Portanto, acessando o diretório [Sistema Principal](Sistema_Principal), inserimos o seguinte comando:
 
 ```bash
 # Acessa o diretório 'Sistema_Principal'
-cd Sistema_Principal
+cd LecOS/Sistema_Principal
 
 # Fornece a permissão de execução (+x) para o script 'init.sh'
 chmod +x init.sh
@@ -147,6 +157,6 @@ Por fim, o script também copia arquivos essenciais para dentro do nosso ambient
 
 </div>
 
->Imagem 3: Conteúdo copiado do sistema principal para dentro do container, contendo todos os scripts de build dos componentes.
+>Imagem 4: Conteúdo copiado do sistema principal para dentro do container, contendo todos os scripts de build dos componentes.
 
-Após a execução do script, ele te jogará dentro do container de desenvolvimento do framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O. As próximas etapas passarão por cada componente presente em nosso planejamento de forma aprofundada e dedicada, visando uma "ordem cronológica" do processo de inicialização, onde já abordamos o início com o `BIOS e UEFI`, na próxima etapa, começaremos pelo [bootloader](2-Bootloader.md).
+Após a execução do script, ele te jogará dentro do container de desenvolvimento do framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O. As próximas etapas passarão por cada componente presente em nosso planejamento de forma aprofundada e dedicada, visando uma "ordem cronológica" do processo de inicialização, onde já abordamos o início com o `BIOS e UEFI` e, na próxima etapa, começaremos pelo [bootloader](2-Bootloader.md), o responsável por carregar os componentes necessários para a inicialização.
