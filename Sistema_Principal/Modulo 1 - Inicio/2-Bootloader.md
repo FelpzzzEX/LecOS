@@ -22,19 +22,23 @@ Ele foi selecionado pela aproximação do ambiente real de desenvolvimento de di
 
 ## **Montando o disco**
 
-Antes de, de fato, partirmos para o bootloader, precisamos montar nosso arquivo de disco. Se recordarmos do tutorial passado, ao criarmos o arquivo de `boot`, utilizamos o seguinte comando:
+Antes de, de fato, partirmos para o bootloader, precisamos montar nosso arquivo de disco. Se recordarmos do tutorial passado, em nossa **base inicial**, ao criarmos o arquivo de `boot`, utilizamos o seguinte comando:
 
 ```bash
 # Não execute!
 dd if=/dev/zero of=boot bs=1M count=50
 ```
 
-Nessa etapa, faremos algo parecido novamente, pois será a nossa imagem _"bootável"_, arquivo esse que irá nos permitir inicializar o sistema. Vale ressaltar que a imagem será significativamente maior do que a que geramos anteriormente, dada a natureza dos componentes utilizados neste ambiente.
+Nessa etapa, faremos algo parecido novamente, pois será a nossa imagem _"bootável"_, arquivo esse que irá nos permitir inicializar o sistema em uma máquina virtual. Vale ressaltar que a imagem será significativamente maior do que a que geramos anteriormente, dada a natureza dos componentes utilizados neste ambiente.
 
-Para iniciarmos, executaremos o seguinte comando:
+Para iniciarmos, executaremos o seguinte comando estando **dentro** do container:
 
 ```bash
+# Devido ao tamanho, pode levar alguns segundos para executar
 dd if=/dev/zero of=lecos.img bs=1M count=10240
 ```
 
 Com este comando, estaremos criando um arquivo de 10GB denominado `lecos.img`, arquivo este que será utilizado para dar início ao nosso sistema.
+
+>Para saber se está dentro do container e no diretório correto, basta verificar o seu terminal se apresentar algo parecido com `root@a75d5a072e7a:/LOS#`, sendo `root` o usuário atual e `a75d5a072e7a` o ID do sistema, por fim, `/LOS` é o diretório onde estaremos montando o sistema e rodando todos os comandos. Tenha certeza de estar sempre nesse diretório antes de rodar qualquer script ou criar quaisquer arquivos.
+

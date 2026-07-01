@@ -6,7 +6,7 @@ Este sistema servirá de base para a construção do sistema principal do framew
 
 ## **Componentes**
 
-Os componentes desse sistema mínimo são divididos em três itens:
+Os componentes desse sistema mínimo são:
 
 * Kernel Linux 64-bit;
 * BusyBox (userland);
@@ -24,31 +24,48 @@ O fluxo desse trabalho consiste em:
 ### **Etapa 1 - Construção**
 
 ```mermaid
-flowchart LR
-    subgraph Ambiente["Ambiente Isolado"]
-      M["Docker"]
-      P["Usuário"]
-      P-->|Acessa|M
-    end
+flowchart TD
+  O@{ shape: circle, label: "Início" }
+    
+  subgraph Ambiente["Seleção de Ambiente"]
+    M["Ambiente Docker"]
+    N["Máquina Virtual"]
+    P["Usuário"]
+    Q@{ shape: diamond, label: " " }
+    P-->Q
+    Q-->|Básico|M
+    Q-->|Complexo|N
+  end
+  O-->P
+    R@{ shape: diamond, label: " " }
+    S@{ shape: fork, label: "Fork" }
+    M-->R
+    N-->R
+    R-->S
+    S-->|Compila|A
+    S-->|Compila|C
     
     subgraph Build["Construção do Sistema"]
       A["Kernel Linux"] -->|Gera| B["bzImage"]
       C["BusyBox"] -->|Insere em| D["Initramfs"]
       D -->|Gera| E["init.cpio"]
-      B --> F["Imagem FAT"]
-      E --> F
-      F -->|Formata com| G["Syslinux"]
+      T@{ shape: fork, label: "Join" }
+      B --> T
+      E --> T
+      T-->|Insere em|F["Imagem FAT"]
+      F -->|Utiliza| G["Syslinux"]
     end
 
-    M-->|Compila|A
-    M-->|Compila|C
+    G-->U@{ shape: dbl-circ, label: "Fim"}
 ```
 >Diagrama 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pelo acesso ao container `Docker` até a criação da imagem bootável com `Syslinux`.
 
 ### **Etapa 2 - Boot**
 
 ```mermaid
-flowchart LR
+flowchart TD
+  O@{ shape: circle, label: "Início" }
+  O-->A
   subgraph virtAmb["Ambiente Virtual"]
     A["QEMU"] -->|Utiliza| B["Imagem bootável"]
   end
@@ -56,13 +73,16 @@ flowchart LR
   subgraph sistema["Sistema Iniciado"]
     B -->|Inicia| C["Bootloader"]
     C -->|Carrega| D["Kernel/Init.cpio"]
-    E{"Sucesso?"}
+    E@{ shape: diamond, label: " " }
     D-->E
-    E -->|Sim| G["BusyBox Shell"]
-    E -->|Não| H([Falha na inicialização])
+    E -->|Sucesso| G["BusyBox Shell"]
+    E -->|Falha| H[Falha na inicialização]
   end
+  I@{ shape: fork, label: "Join" }
+  G-->I
+  H-->I
+  I-->J@{ shape: dbl-circ, label: "Fim"}
 ```
-
 >Diagrama 2: Representação da sequência de inicialização do nosso sistema, iniciando pelo `QEMU` (sistema de virtualização) até o boot.
 
 ---
@@ -76,10 +96,15 @@ Para iniciarmos o desenvolvimento, é de extrema importância que criemos um amb
 
 O método fica de livre escolha do utilizador, mas por fins de praticidade, recomenda-se a utilização do container **Docker**, uma vez que já fornece o sistema isolado necessário para se realizar o trabalho completo, além de ser o método utilizado neste tutorial, facilitando o acompanhamento. A partir desse sistema virtualizado, podemos seguir com o processo.
 
+<div align="center">
+
 | Método | Segurança | Praticidade | Tamanho |
 | :--: | :--: | :--: | :--: |
 | Container (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
+
+</div>
+
 >Tabela 1: Comparativos de abordagens para seguir o tutorial em um ambiente isolado, comparando o sistema `Docker` com máquina virtual.  
 
 
@@ -100,7 +125,7 @@ Já dentro do container, após executarmos o comando anterior, iniciamos a rotin
 apt update
 ```
 
->Não utilizaremos nenhum `sudo` neste processo (comando que permite usuários comuns executarem comandos como administador), uma vez que o container já nos joga como usuário `root` (administrador), facilitando o processo da construção.
+>Não utilizaremos nenhum `sudo` neste processo (comando que permite usuários comuns executarem comandos como administador), uma vez que o container já nos joga como usuário `root` (administrador) por padrão, facilitando o processo da construção.
 
 Seguimos o processo para a etapa de instalação, onde estaremos fazendo o download de componentes necessários para a construção:
 
@@ -398,27 +423,42 @@ Considere montar e desmontar (`mount & umount`) como "plugar e desplugar um pend
 
 Seguindo o fluxo do processo, seria algo basicamente:
 
+<div align="center">
+
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | m (desmontado) | - vazio - |
 | m (boot montado) | ldlinux.c32 ; ldlinux.sys |
+
+</div>
+
 >Tabela 2: Montando o arquivo no diretório `m`, permitindo acessar seus arquivos.  
 
 
 Copiamos então o kernel compilado e o `init.cpio` para dentro do diretório com o comando `cp`.
 
+<div align="center">
+
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
+
+</div>
+
 >Tabela 3: Diretório após inserir o kernel e o `init.cpio`.  
 
 
 Com boot, agora, possuindo o kernel compilado e o `init.cpio`, podemos enfim "desplugar" ele de 'm'.
 
+<div align="center">
+
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | m (boot montado) | bzImage ; init.cpio ; ldlinux.c32 ; ldlinux.sys |
 | m (desmontado) | - vazio - |
+
+</div>
+
 >Tabela 4: Desmontando o arquivo do diretório `m`, agora com o kernel e o `init.cpio` contendo na imagem de `boot`.
 
 Caso tenha se deparado com o erro mencionado nos comandos acima (`mount boot m` e `mount -o loop boot m`), irei detalhar um pouco os comandos repassados para melhor entendimento:
@@ -522,11 +562,7 @@ Por fim, na sessão de boot, o Syslinux aguarda a imagem do kernel e o arquivo d
 
 >Imagem 6: Tela inicial do bootloader `Syslinux` aguardando a passagem dos parâmetros, no caso, o arquivo do kernel Linux e o arquivo `init.cpio`.
 
----
-
-# **PARABÉNS!**
-
-Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados. 
+Com isso, se tudo correu como planejado, após a passagem dos parâmetros indicados acima, o bootloader finalmente realiza o boot e nos joga no terminal, onde podemos interagir com o sistema através de comandos básicos, como listar o conteúdo de diretórios (`ls`), acessar algum diretório específico (`cd [DESTINO]`), etc. Claro, não é algo que se pode chamar de "utilizável no dia a dia", porém não tira o mérito de que ele de fato possui as funcionalidades básicas de uma distribuição (graças ao BusyBox), além de ensinar um pouco mais a fundo como os sistemas são montados e configurados.
 
 <div align="center">
 
@@ -536,9 +572,45 @@ Se você acompanhou o tutorial direito e não ocorreu nenhum erro, você agora t
 
 >Imagem 7: Sistema operacional operando corretamente, apresentando todos os seus componentes e comandos funcionando -- `ls`, `whoami`, etc.
 
-Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux. Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
+Por fim, para sairmos do sistema, devemos fechar a janela do `QEMU`. O motivo que nos leva a essa opção e não, por exemplo, digitar `poweroff` ou `reboot`, ambos comandos básicos para desligar ou reiniciar, respectivamente, é pelo modo em que nosso arquivo de inicialização foi construído. Se recordarmos, nosso script `init` foi montado da seguinte forma:
 
-* Autor: Felipe Fialho -- TCC-I
+```bash
+#!/bin/sh
+
+/bin/sh
+```
+
+Com isso, ao iniciar, o sistema assume o `shell` (interpretador de comandos) como o `processo inicial` (ou `PID 1`). É um script funcional para o modelo que estamos trabalhando nesta base, mas implica em alguns problemas quando falamos das distribuições de propósito geral, como a incapacidade de iniciar, verificar ou encerrar processos. Além disso, o kernel possui uma medida de segurança: o processo inicial **NÃO** pode ser encerrado, pois isso causaria a queda do próprio sistema em si.
+
+Sabendo disso, se caso inserirmos o comando `exit` em nosso sistema, seremos agraciados com o famoso `Kernel Panic`. De uma forma resumida, considere isso como a famosa `Tela Azul da Morte` do sistema operacional `Windows`, sendo disparada assim que o PID 1 é encerrado, deixando o kernel sem uma orientação clara do que fazer e jogando a tela de erro para o usuário.
+
+Em nosso sistema principal, este problema não ocorrerá pela estrutura do script de inicialização seguir o padrão das distribuições de propósito geral, mas é importante entendermos como o kernel lida com os processos e seus impactos na arquitetura como um todo.
+
+<div align="center">
+
+![Processos](https://github.com/FelpzzzEX/Imagens/blob/64f0ef6346ad1b4add6de1bebe7eaf18331f2992/Captura_de_tela_20260630_175539.png)
+
+</div>
+
+>Imagem 8: Falha nos comandos `poweroff` e `reboot` devido a ausência do diretorio `/proc`.
+
+<div align="center">
+
+![Kernel Panic](https://github.com/FelpzzzEX/Imagens/blob/64f0ef6346ad1b4add6de1bebe7eaf18331f2992/Captura_de_tela_20260630_175620.png)
+
+</div>
+
+>Imagem 9: `Kernel panic` causado pelo encerramento do `PID 1`, no caso, o shell.
+
+---
+
+# **PARABÉNS!**
+
+Se chegou até aqui e todos os passos do tutorial seguiram sem maiores problemas, você agora tem um Sistema Operacional com kernel Linux minimalista e funcional! Esse projeto mínimo será a base do framework didático, nos ensinando, de uma forma simplificada, o processo de construção de um sistema operacional GNU/Linux.
+
+Que sua jornada tenha sido proveitosa e que tenha adquirido um bom conhecimento no geral, na próxima etapa, utilizaremos o sistema principal para nos aprofundarmos não na construção, mas sim nos conceitos e tecnologias utilizadas, nos veremos em breve!
+
+* Autor: Felipe Fialho
 * Orientador: Igor Muzetti Pereira
 * Coorientador: Samuel Souza Brito
 * Universidade Federal de Ouro Preto -- UFOP

@@ -12,7 +12,7 @@ docker volume create lecos_data
 echo "
 [Sistema] - Gerando o container de desenvolvimento"
 
-docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS/root felpzzex/lecos:latest tail -f /dev/null
+docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS felpzzex/lecos:latest tail -f /dev/null
 
 echo "
 [Sistema] - Copia o Kernel pré-compilado para dentro do container"
