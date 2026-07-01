@@ -72,32 +72,44 @@ Além disso, nesse ambiente possuímos persistência de dados graças ao volume 
 Com nosso objetivo bem definido, não ficaremos presos somente nos componentes que iremos montar, mas também repassaremos em conceitos fundamentais dos sistemas operacionais, o que também inclui o hardware que executa o sistema. Com isso, seguindo todas as etapas presentes, temos o seguinte fluxo:
 
 ```mermaid
-flowchart LR
-    subgraph Boot["Processo de boot"]
-      A["BIOS"] -->|Carrega| B["Bootloader"]
-      C["UEFI"] -->|Carrega| B
-      B -->|Carrega| D["Kernel"]
-      B -->|Carrega| E["Initrd/Initramfs"]
-    end
+flowchart TD
+  O@{ shape: circle, label: "Início" }
+  P@{ shape: fork, label: "Fork" }
+  Q@{ shape: fork, label: "Join" }
+  R@{ shape: fork, label: "Fork" }
 
-    subgraph Init["Inicialização do sistema"]
-      F["Init System"]
-      F -->|Inicia| G["Processos"]
-    end
+  O-->P
+  P-->|Inicia|A
+  P-->|Inicia|C
+  subgraph Boot["Processo de boot"]
+    A["UEFI"]-->Q
+    C["BIOS"]-->Q
+    Q-->|Carrega| B["Bootloader"]
+    B-->R
+    R -->|Carrega| D["Kernel"]
+    R -->|Carrega| E["Initrd/Initramfs"]
+  end
 
-    subgraph FS["Sistemas de Arquivos"]
-      H["File System Virtual"]
-      I["File System Real"]
-      J["Inicialização"]
-      J -->|Utiliza| H
-    end
+  subgraph Init["Inicialização do sistema"]
+    F["Init System"]
+    F -->|Inicia| G["Processos"]
+  end
 
-    E -->|Monta| H
-    D -->|Cria| I
-    D --> J
-    J --> D
-    I --> F
-    
+  subgraph FS["Sistemas de Arquivos"]
+    H["File System Virtual"]
+    S@{ shape: fork, label: "Join" }
+    I["File System Real"]
+    J["Inicialização"]
+    J -->|Utiliza| S
+    S-->H
+  end
+
+  E -->|Monta| S
+  D -->|Cria| I
+  D --> J
+  J --> D
+  I --> F  
+  G-->T@{ shape: dbl-circ, label: "Fim"}
 ```
 >Diagrama 1: Fluxo de inicialização de uma máquina, iniciando pelo `BIOS/UEFI` e finalizando na inicialização dos processos.
 
@@ -146,7 +158,7 @@ docker volume create lecos_data
 
 # Cria o container de trabalho "LecOS-dev"
 # Utiliza a imagem "lecos" criada para este propósito
-docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS/root felpzzex/lecos:latest tail -f /dev/null
+docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS felpzzex/lecos:latest tail -f /dev/null
 ```
 
 Por fim, o script também copia arquivos essenciais para dentro do nosso ambiente, como o `kernel Linux` já previamente compilado, o arquivo de inicialização do sistema e os scripts de build para cada componente da nossa userland, apresentados na sessão `Componentes`. Caso esteja interessado, pode verificar o conteúdo completo presente no script acessando o arquivo [init.sh](../init.sh).

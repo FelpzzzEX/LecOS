@@ -86,6 +86,9 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 >Imagem 2: Interface da UEFI
 
 ## **Comparativo**
+
+<div align="center">
+
 | **Recurso** | **BIOS** | **UEFI** |
 | :--: | :--: | :--: |
 | Suporte a Discos | Limitado a 2 TB (MBR) | Até 9.4 ZB (GPT) |
@@ -93,6 +96,9 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 | Interface | Texto simples | Interface gráfica moderna |
 | Velocidade de Inicialização | Lenta | Rápida |
 | Compatibilidade | Sistemas legados | Sistemas modernos e legados |
+
+</div>
+
 >Tabela 1: Comparativos entre as especificações dos firmwares `BIOS` e `UEFI`.
 
 ## **Sequência de Boot - Início**
@@ -100,14 +106,24 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 Vendo todas as informações repassadas, podemos verificar que o processo inicial possui um fluxo bem simples e intuitivo, contendo componentes e processos bem definidos. A seguir, temos um fluxograma contendo as informações de uma forma mais visual a fim de consolidarmos as informações.
 
 ```mermaid
-flowchart LR
-  C(["Teste POST"]) -->I{"Sucesso?"}
-  I -->|Sim| E["Localiza arquivo de boot"]
-  I -->|Não| J["Falha"]
-  E -->|BIOS| F[["MBR"]]
-  E -->|UEFI| G[["GPT"]]
-  F -->|Inicia| H["Bootloader"]
-  G -->|Inicia| H
+flowchart TD
+  O@{ shape: circle, label: "Início" }
+  I@{ shape: diamond, label: " " }
+  L@{ shape: fork, label: "Join" }
+  M@{ shape: fork, label: "Fork" }
+  O-->C["Teste POST"]
+  C-->I
+  I -->|Sucesso| E["Localiza arquivo de boot"]
+  I -->|Falha| J["Erro"]
+  E -->M
+  M -->|BIOS| F["MBR"]
+  M -->|UEFI| G["GPT"]
+  F-->L
+  G-->L
+  L-->|Inicia|H["Bootloader"]
+  N@{ shape: dbl-circ, label: "Fim"}
+  J-->N
+  H-->N
 ```
 >Diagrama 2: Sequência de acções do `BIOS/UEFI` após o `POST`, onde localizam o arquivo de boot na partição `MBR/ESP`, respectivamente, para iniciar o `bootloader`.
 
