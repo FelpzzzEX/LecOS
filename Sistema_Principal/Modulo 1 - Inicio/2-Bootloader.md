@@ -178,10 +178,10 @@ Uma medida simples, mas serve para garantir que nossa imagem execute sem maiores
 
 ```bash
 # Desmontar o arquivo do diretório /mnt
-sudo umount /mnt
+umount /mnt
 
 # Desacoplar o arquivo do loop device
-sudo losetup -d /dev/loop0
+losetup -d /dev/loop0
 ```
 
 Por fim, iremos copiar o arquivo `lecos.img`, agora contendo o GRUB, para o nosso sistema principal através do comando `docker cp` que vimos anteriormente:
@@ -197,3 +197,10 @@ E após a cópia, executamos o mesmo com o sistema `QEMU`:
 # Utilizamos o QEMU para bootar a imagem
 qemu-system-x86_64 lecos.img
 ```
+
+Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, sendo o causador da mensagem de erro. 
+
+![GRUB_Erro](https://github.com/FelpzzzEX/Imagens/blob/a85a62f695715170a32d078dddebd789ec27c147/Captura_de_tela_20260703_150938.png)
+>Imagem 2: Erro do GRUB por não localizar o kernel na pasta indicada.
+
+Na próxima etapa, iremos nos aprofundar no boot, passando pelo kernel, memória primária e secundária até a inicialização de fato do nosso sistema.
