@@ -115,9 +115,9 @@ Seguindo a mesma lógica que vimos anteriormente, onde, ao montar o `loop0p1` em
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | /mnt (desmontado) | -vazio- |
-| /mnt (loop0p1 montado) | [inserir conteudo] |
+| /mnt (loop0p1 montado) | lost+found |
 
->Tabela 1: Representação do processo de montagem de um arquivo em um diretorio.
+>Tabela 1: Representação do processo de montagem de um arquivo em um diretorio. `lost+found` é o diretório contendo arquivos recuperados após erros ou corrupções no sistema de arquivos.
 
 Após essa etapa, podemos enfim instalar o `GRUB` em nossa partição, e para isso, utilizaremos o comando a seguir, onde a instalação será feita diretamente em `/mnt`, uma vez que é onde `/dev/mapper/loop0p1` esta presente e permite adições:
 
