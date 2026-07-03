@@ -102,6 +102,7 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 | :--: | :--: | :--: | :--: |
 | Container (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
+| Sistema Principal | Arriscado | Excelente | Padrão |
 
 </div>
 

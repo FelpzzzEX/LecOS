@@ -10,6 +10,8 @@ RUN apt update && apt install -y autoconf \
     bison \
     bzip2 \
     dwarves \
+    e2fsprogs \
+    fdisk \
     flex \
     gawk \
     gcc \
@@ -17,8 +19,11 @@ RUN apt update && apt install -y autoconf \
     git \
     gnupg2 \
     gperf \
+    grub-pc \
+    grub-common \
     gzip \
     help2man \
+    kpartx \
     libelf-dev \
     libncurses5-dev \
     libssl-dev \

@@ -24,19 +24,20 @@ Como mencionado anteriormente, o processo consistirá em passar por cada etapa d
 O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas que englobam as diferentes componentes e conceitos, totalizando 4 módulos presentes no processo com 11 etapas ao todo, sendo eles:
 
 * **Módulo 1 - Início**;
+  * BIOS/UEFI;
   * Iniciando o Ambiente;
-  * BIOS/UEFI.
   * Bootloader;
 * **Módulo 2 - Boot**;
   * Kernel;
-  * Memória (primária e secundária).
+  * Memória (primária e secundária);
   * Inicialização;
 * **Módulo 3 - Processos**;
   * Userland;
   * Init System;
-  * Processos.
-* **Módulo 4 - Final**.
+  * Processos;
+* **Módulo 4 - Final**;
   * Entrada/Saída;
+  * Sistema de Arquivos;
   * Interface gráfica.
 
 ---
@@ -99,11 +100,11 @@ flowchart TD
     H["File System Virtual"]
     S@{ shape: fork, label: "Join" }
     I["File System Real"]
-    J["Inicialização"]
-    J -->|Utiliza| S
     S-->H
   end
-
+  
+  J["Inicialização"]
+  J -->|Utiliza| S
   E -->|Monta| S
   D -->|Cria| I
   D --> J

@@ -121,9 +121,11 @@ flowchart TD
   F-->L
   G-->L
   L-->|Inicia|H["Bootloader"]
+  P@{ shape: fork, label: "Join" }
   N@{ shape: dbl-circ, label: "Fim"}
-  J-->N
-  H-->N
+  J-->P
+  H-->P
+  P-->N
 ```
 >Diagrama 2: Sequência de acções do `BIOS/UEFI` após o `POST`, onde localizam o arquivo de boot na partição `MBR/ESP`, respectivamente, para iniciar o `bootloader`.
 
