@@ -68,7 +68,12 @@ Essa é a parte de configuração da partição no fdisk, onde iremos inserir os
 * **[Enter]** - O mesmo para a etapa anterior, pressionaremos `Enter` novamente, levando o sistema a utilizar o restante do espaço presente no arquivo;
 * **w** - Por fim, inserimos a diretriz `w`, que irá salvar nossas escolhas e gravar em nosso arquivo.
 
+<div align="center">
+
 ![Fdisk](https://github.com/FelpzzzEX/Imagens/blob/7dc7f6bb0b48e5216cd383c9857f07f739035ee8/Captura_de_tela_20260703_213323.png)
+
+</div>
+
 >Imagem 2: Sequência de comandos do utilitário `fdisk`, executado no arquivo `lecos.img`.
 
 Com todo o processo finalizado, podemos enfim prosseguir com a geração do nosso arquivo bootável. A partir daqui, estaremos utilizando o formato `ext4`, para isso, precisaremos criar nosso "pendrive virtual" como vimos durante o processo da `base inicial`.
@@ -117,10 +122,14 @@ mount /dev/mapper/loop0p1 /mnt
 
 Seguindo a mesma lógica que vimos anteriormente, onde, ao montar o `loop0p1` em `/mnt`, podemos ter o acesso aos seus arquivos, além de podermos remover e, no nosso caso, adicionar dentro dele, uma vez que não somos capazes de editar o `lecos.img` presente nele, sendo necessário a montagem em um diretorio para que nos possibilite realizar tal tarefa.
 
+<div align="center">
+
 | Diretório\Estado | Conteúdo |
 | :--: | :--: |
 | /mnt (desmontado) | -vazio- |
 | /mnt (loop0p1 montado) | lost+found |
+
+</div>
 
 >Tabela 1: Representação do processo de montagem de um arquivo em um diretorio. O `lost+found` é o diretório contendo arquivos recuperados após erros ou corrupções no sistema de arquivos.
 
@@ -205,7 +214,12 @@ qemu-system-x86_64 lecos.img
 
 Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, sendo o causador da seguinte mensagem de erro:
 
+<div align="center">
+
 ![GRUB_Erro](https://github.com/FelpzzzEX/Imagens/blob/a85a62f695715170a32d078dddebd789ec27c147/Captura_de_tela_20260703_150938.png)
+
+</div>
+
 >Imagem 2: Erro do GRUB por não localizar o kernel na pasta indicada.
 
 Na próxima etapa, iremos nos aprofundar mais no processo de boot, iniciando pelo kernel e sua responsabilidade no sistema operacional, além de inserir o componente em nossa imagem bootável para continuarmos nosso trajeto até o sistema principal. Após isso, entraremos no conteúdo relacionado à memória primária e secundária do sistema até chegarmos enfim na inicialização de fato, onde teremos percorrido metade do processo, nos vemos lá!
