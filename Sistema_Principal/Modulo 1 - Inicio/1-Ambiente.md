@@ -75,7 +75,7 @@ Com nosso objetivo bem definido, não ficaremos presos somente nos componentes q
 ```mermaid
 flowchart TD
   O@{ shape: circle, label: "Início" }
-  P@{ shape: fork, label: "Fork" }
+  P@{ shape: diamond, label: " " }
   Q@{ shape: fork, label: "Join" }
   R@{ shape: fork, label: "Fork" }
 

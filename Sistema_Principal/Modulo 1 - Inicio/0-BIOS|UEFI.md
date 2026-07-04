@@ -110,7 +110,7 @@ flowchart TD
   O@{ shape: circle, label: "Início" }
   I@{ shape: diamond, label: " " }
   L@{ shape: fork, label: "Join" }
-  M@{ shape: fork, label: "Fork" }
+  M@{ shape: diamond, label: " " }
   O-->C["Teste POST"]
   C-->I
   I -->|Sucesso| E["Localiza arquivo de boot"]

@@ -68,6 +68,9 @@ Essa é a parte de configuração da partição no fdisk, onde iremos inserir os
 * **[Enter]** - O mesmo para a etapa anterior, pressionaremos `Enter` novamente, levando o sistema a utilizar o restante do espaço presente no arquivo;
 * **w** - Por fim, inserimos a diretriz `w`, que irá salvar nossas escolhas e gravar em nosso arquivo.
 
+![Fdisk](https://github.com/FelpzzzEX/Imagens/blob/7dc7f6bb0b48e5216cd383c9857f07f739035ee8/Captura_de_tela_20260703_213323.png)
+>Imagem 2: Sequência de comandos do utilitário `fdisk`, executado no arquivo `lecos.img`.
+
 Com todo o processo finalizado, podemos enfim prosseguir com a geração do nosso arquivo bootável. A partir daqui, estaremos utilizando o formato `ext4`, para isso, precisaremos criar nosso "pendrive virtual" como vimos durante o processo da `base inicial`.
 
 ```bash
@@ -89,7 +92,9 @@ Onde:
 * **-P (Partscan)**: Força o kernel a ler a tabela de partições (criadas no fdisk) e tentar criar os nós das partições;
 * **--show**: Imprime na tela qual dispositivo foi usado (ex: /dev/loop0).
 
-Com isso, dentro do loop device, a partição indicada é criada, gerando assim `/dev/loop0p1`, onde p1 indica a partição criada, cujo configuramos anteriormente como a primeira do arquivo. No entanto, mesmo que a partição seja criada, a arquitetura do `Docker` pode acabar conflitando com o sistema, fazendo com que o container não enxergue-a ou que o acesso ao dispositivo seja travado. Para resolver isso, utilizaremos o `kpartx`, utilitário que lê o `loop device` e cria dispositivos virtuais, permitindo o acesso às partições criadas, sendo armazenadas em `/dev/mapper/`. Para realizar essa tarefa, rodamos o seguinte comando:
+Com isso, dentro do loop device, a partição indicada é criada, gerando assim `/dev/loop0p1`, onde p1 indica a partição criada, cujo configuramos anteriormente como a primeira do arquivo. No entanto, mesmo que a partição seja criada, a arquitetura do `Docker` pode acabar conflitando com o sistema, fazendo com que o container não enxergue-a ou que o acesso ao dispositivo seja travado.
+
+Para resolver isso, utilizaremos o `kpartx`, utilitário que lê o `loop device` e cria dispositivos virtuais, permitindo o acesso às partições criadas, sendo armazenadas em `/dev/mapper/`. Para realizar essa tarefa, rodamos o seguinte comando:
 
 ```bash
 # Gera o dispositivo virtual contendo a partição de loop0 
@@ -117,7 +122,7 @@ Seguindo a mesma lógica que vimos anteriormente, onde, ao montar o `loop0p1` em
 | /mnt (desmontado) | -vazio- |
 | /mnt (loop0p1 montado) | lost+found |
 
->Tabela 1: Representação do processo de montagem de um arquivo em um diretorio. `lost+found` é o diretório contendo arquivos recuperados após erros ou corrupções no sistema de arquivos.
+>Tabela 1: Representação do processo de montagem de um arquivo em um diretorio. O `lost+found` é o diretório contendo arquivos recuperados após erros ou corrupções no sistema de arquivos.
 
 Após essa etapa, podemos enfim instalar o `GRUB` em nossa partição, e para isso, utilizaremos o comando a seguir, onde a instalação será feita diretamente em `/mnt`, uma vez que é onde `/dev/mapper/loop0p1` esta presente e permite adições:
 
@@ -184,23 +189,23 @@ umount /mnt
 losetup -d /dev/loop0
 ```
 
-Por fim, iremos copiar o arquivo `lecos.img`, agora contendo o GRUB, para o nosso sistema principal através do comando `docker cp` que vimos anteriormente:
+Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente conigurada. Agora, para podermos realizar o boot em uma máquina virtual, iremos copiar o arquivo `lecos.img` para o nosso sistema principal (fora do container) através do comando `docker cp` que vimos anteriormente:
 
 ```bash
 # Copia 'lecos.img' para o diretório atual do usuário
 docker cp [CONTAINER ID]:/LOS/lecos.img .
 ```
 
-E após a cópia, executamos o mesmo com o sistema `QEMU`:
+Com isso, após realizarmos a cópia, executaremos o mesmo com o sistema `QEMU`, permitindo o boot em um ambiente virtual sem grandes problemas, bastando rodar o seguinte comando em nosso sistema principal:
 
 ```bash
 # Utilizamos o QEMU para bootar a imagem
 qemu-system-x86_64 lecos.img
 ```
 
-Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, sendo o causador da mensagem de erro. 
+Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, sendo o causador da seguinte mensagem de erro:
 
 ![GRUB_Erro](https://github.com/FelpzzzEX/Imagens/blob/a85a62f695715170a32d078dddebd789ec27c147/Captura_de_tela_20260703_150938.png)
 >Imagem 2: Erro do GRUB por não localizar o kernel na pasta indicada.
 
-Na próxima etapa, iremos nos aprofundar no boot, passando pelo kernel, memória primária e secundária até a inicialização de fato do nosso sistema.
+Na próxima etapa, iremos nos aprofundar mais no processo de boot, iniciando pelo kernel e sua responsabilidade no sistema operacional, além de inserir o componente em nossa imagem bootável para continuarmos nosso trajeto até o sistema principal. Após isso, entraremos no conteúdo relacionado à memória primária e secundária do sistema até chegarmos enfim na inicialização de fato, onde teremos percorrido metade do processo, nos vemos lá!
