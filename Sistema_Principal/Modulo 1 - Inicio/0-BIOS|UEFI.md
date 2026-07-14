@@ -50,7 +50,7 @@ sequenceDiagram
 
     BL->>K: Carrega o kernel
     activate K
-    K->>H: Assume o controle do hardware
+    K-->>H: Assume o controle do hardware
     deactivate K
 ```
 >Diagrama 1: Sequência de eventos ao ligar um dispositivo.
