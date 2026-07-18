@@ -1,4 +1,4 @@
-## **Init System**
+# **Init System**
 
 Systemd, Runit, SysVinit...
 
