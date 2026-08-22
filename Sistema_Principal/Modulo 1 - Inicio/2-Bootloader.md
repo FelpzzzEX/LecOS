@@ -188,14 +188,11 @@ Após isso, iremos sincronizar as configurações feitas para garantir sua aplic
 sync
 ```
 
-Uma medida simples, mas serve para garantir que nossa imagem execute sem maiores problemas. Após essa etapa, podemos enfim desmontar nosso arquivo do diretório `/mnt` e desacoplar do `loop0`, pois nosso trabalho com eles já foi concluído.
+Uma medida simples, mas serve para garantir que nossa imagem execute sem maiores problemas. Após essa etapa, podemos enfim desmontar nosso arquivo do diretório `/mnt`, pois nosso trabalho com ele já foi concluído.
 
 ```bash
 # Desmontar o arquivo do diretório /mnt
 umount /mnt
-
-# Desacoplar o arquivo do loop device
-losetup -d /dev/loop0
 ```
 
 Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente conigurada. Agora, para podermos realizar o boot em uma máquina virtual, iremos copiar o arquivo `lecos.img` para o nosso sistema principal (fora do container) através do comando `docker cp` que vimos anteriormente:
@@ -212,14 +209,6 @@ Com isso, após realizarmos a cópia, executaremos o mesmo com o sistema `QEMU`,
 qemu-system-x86_64 lecos.img
 ```
 
-Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, sendo o causador da seguinte mensagem de erro:
-
-<div align="center">
-
-![GRUB_Erro](https://github.com/FelpzzzEX/Imagens/blob/a85a62f695715170a32d078dddebd789ec27c147/Captura_de_tela_20260703_150938.png)
-
-</div>
-
->Imagem 2: Erro do GRUB por não localizar o kernel na pasta indicada.
+Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, impedindo qualquer inicialização de acontecer.
 
 Na próxima etapa, iremos nos aprofundar mais no processo de boot, iniciando pelo kernel e sua responsabilidade no sistema operacional, além de inserir o componente em nossa imagem bootável para continuarmos nosso trajeto até o sistema principal. Após isso, entraremos no conteúdo relacionado à memória primária e secundária do sistema até chegarmos enfim na inicialização de fato, onde teremos percorrido metade do processo, nos vemos lá!

@@ -109,7 +109,17 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 >Tabela 1: Comparativos de abordagens para seguir o tutorial em um ambiente isolado, comparando o sistema `Docker` com máquina virtual.  
 
 
-Além disso, o tutorial assume um ambiente GNU/Linux para o seu desenvolvimento, embora seja completamente possível de se realizar no ecossistema Windows graças a alternativas como o `WSL` presente no sistema.
+Além disso, embora este tutorial tenha sido desenvolvido utilizando um sistema GNU/Linux, ele também pode ser realizado no Windows através do Windows Subsystem for Linux (WSL 2). O WSL fornece um ambiente Linux nativo dentro do Windows, permitindo executar praticamente os mesmos comandos utilizados ao longo deste tutorial.
+
+Para isso, iniciaremos instalando o subsistema:
+
+```powershell
+wsl --install
+```
+
+Ele instala o WSL em sua máquina local, utilizando o sistema operacional Ubuntu, ele será o seu terminal padrão onde você executará todos os passos presentes neste tutorial.
+
+Após essa etapa, 
 
 Com as informações repassadas, podemos dar início à montagem do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
@@ -513,14 +523,16 @@ Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema mi
 >**ATENÇÃO**: A seguinte etapa é para ser realizada em um novo terminal em seu sistema padrão, não em um container. **NÃO** feche o container onde a construção do sistema foi realizada ou o seu progresso será perdido.
 
 ```bash
-# em distribuições Debian e derivadas
-sudo apt install qemu-system-x86
+# em distribuições Debian, Ubuntu e derivadas
+sudo apt install QEMU-system-x86
 
 # em distribuições Fedora e derivadas
-sudo dnf install qemu-system-x86
+sudo dnf install QEMU-system-x86
 ```
 
-Feita a instalação do qemu, podemos iniciar a etapa final. Ainda no mesmo terminal, para fins de organizações, entre no diretório de Documentos e crie um novo diretório chamada 'sistema' e entre na mesma. Em seguida, rode o comando:
+>Aos usuários do Windows, realizem o processo dentro do terminal Ubuntu que utilizaram para seguir o tutorial, bastando instalar o QEMU no sistema através do comando acima.
+
+Feita a instalação do QEMU, podemos iniciar a etapa final. Ainda no mesmo terminal, para fins de organizações, entre no diretório de Documentos e crie um novo diretório chamada 'sistema' e entre na mesma. Em seguida, rode o comando:
 
 ```bash
 docker ps
@@ -544,13 +556,13 @@ docker cp [CONTAINER_ID]:/boot-files/boot .
 
 Que basicamente irá copiar, do container especificado, o arquivo `boot` do diretório `/boot-files` e armazenará no diretório atual (.), completando assim a cópia do nosso arquivo de boot.
 
-Agora, com o arquivo em mãos, podemos enfim rodar em nosso sistema principal utilizando o qemu, iniciando a máquina virtual através do comando:
+Agora, com o arquivo em mãos, podemos enfim rodar em nosso sistema principal utilizando o QEMU, iniciando a máquina virtual através do comando:
 
 ```bash
-qemu-system-x86_64 boot
+QEMU-system-x86_64 boot
 ```
 
-Que iniciará o serviço do qemu na arquitetura `x86_64` e utilizará o arquivo de boot para iniciar o sistema, o que abrirá uma nova interface da máquina virtual rodando.
+Que iniciará o serviço do QEMU na arquitetura `x86_64` e utilizará o arquivo de boot para iniciar o sistema, o que abrirá uma nova interface da máquina virtual rodando.
 
 Por fim, na sessão de boot, o Syslinux aguarda a imagem do kernel e o arquivo de init, devendo ser digitado no campo: `/bzImage -initrd=/init.cpio`. Esta sequência tem a finalidade de indicar o kernel a ser carregado (`bzImage` sendo o que compilamos) e o arquivo de inicialização do sistema (`init.cpio`, que geramos anteriormente) Feito isso, o sistema irá carregar e, enfim, bootar.
 >**IMPORTANTE**: Algumas teclas podem apresentar mapeamentos diferentes dentro do sistema, verifique qual tecla do seu teclado corresponde à `/` (normalmente, é na tecla `dois pontos/ponto e vírgula`, permitindo assim digitar corretamente os parâmetros).
