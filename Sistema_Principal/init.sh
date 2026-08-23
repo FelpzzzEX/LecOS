@@ -14,25 +14,6 @@ echo "
 
 docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS felpzzex/lecos:latest tail -f /dev/null
 
-# echo "
-# [Sistema] - Copia o Kernel pré-compilado para dentro do container"
-
-# cd Componentes_Principais
-# docker cp bzImage LecOS-dev:/LOS/root/boot
-# docker cp init LecOS-dev:/LOS/root/sbin/
-# cd ..
-
-# echo "
-# [Sistema] - Copiando scripts de build para o container"
-
-# cd scripts
-
-# for file in *.sh; do
-#     docker cp "$file" LecOS-dev:/LOS/
-# done
-
-# cd ..
-
 echo "
 [Sistema] - Ambiente completo! Bem-vindo(a) ao ambiente de construção do
 
