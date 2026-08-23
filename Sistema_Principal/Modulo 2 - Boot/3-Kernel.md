@@ -114,7 +114,7 @@ Alguns dos sistemas operacionais mais conhecidos que utilizam a arquitetura incl
 
 </div>
 
-> Imagem 5: **Windows NT** e **MacOS**, exemplos da arquitetura de kernel híbrido.
+> Imagem 5: **Windows NT** e **MacOS**, exemplos de sistemas operacionais que utilizam a arquitetura de kernel híbrido.
 
 ## **Kernel x Shell**
 
