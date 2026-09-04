@@ -1,7 +1,7 @@
-mkdir glibc-build
-
+cd ..
 cd glibc-build
-../glibc/configure --libdir=/lib --prefix=/usr
+
+../glibc-2.41/configure --libdir=/lib --prefix=/usr
 
 make -j$(nproc)
 make DESTDIR=$LOS install

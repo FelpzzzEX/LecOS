@@ -14,9 +14,9 @@ Os componentes desse sistema mínimo são:
 
 Devido ao nível elevado de abstração decorrido da utilização do BusyBox como userland (uma vez que substitui vários componentes como Coreutils em um único binário), ele não será utilizado no sistema final, mas servirá para nossa base mínima.
 
-Além disso, a construção será feita dentro de um container docker rodando uma imagem de um sistema GNU/Linux, sendo utilizado, nesta versão, a `debian:trixie-slim`.
+Além disso, a construção será feita dentro de um contêiner docker rodando uma imagem de um sistema GNU/Linux, sendo utilizado, nesta versão, a `debian:trixie-slim`.
 
->Docker é um sistema utilizado para implantar aplicações em containers virtuais, permitindo o isolamento do sistema principal do usuário e garantir que o software execute da mesma forma, independente do dispositivo que está hospedando.
+>Docker é um sistema utilizado para implantar aplicações em contêiners virtuais, permitindo o isolamento do sistema principal do usuário e garantir que o software execute da mesma forma, independente do dispositivo que está hospedando.
 
 
 O fluxo desse trabalho consiste em:
@@ -58,7 +58,7 @@ flowchart TD
 
     G-->U@{ shape: dbl-circ, label: "Fim"}
 ```
->Diagrama 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pelo acesso ao container `Docker` até a criação da imagem bootável com `Syslinux`.
+>Diagrama 1: Representação da sequência de construção do sistema e seus respectivos componentes, iniciando pelo acesso ao contêiner `Docker` até a criação da imagem bootável com `Syslinux`.
 
 ### **Etapa 2 - Boot**
 
@@ -91,16 +91,16 @@ flowchart TD
 
 Para iniciarmos o desenvolvimento, é de extrema importância que criemos um ambiente virtual/isolado, uma vez que os comandos e tarefas realizados a seguir podem acabar afetando o seu sistema principal/host. Para isso, temos as opções de se utilizar as seguintes tecnologias:
 
-* **Docker** - utilizando um container privilegiado (`--privileged`) e interativo (`-it`);
+* **Docker** - utilizando um contêiner privilegiado (`--privileged`) e interativo (`-it`);
 * **Máquina virtual** - utilizando um sistema virtualizado completo para estar realizando as etapas do tutorial.
 
-O método fica de livre escolha do utilizador, mas por fins de praticidade, recomenda-se a utilização do container **Docker**, uma vez que já fornece o sistema isolado necessário para se realizar o trabalho completo, além de ser o método utilizado neste tutorial, facilitando o acompanhamento. A partir desse sistema virtualizado, podemos seguir com o processo.
+O método fica de livre escolha do utilizador, mas por fins de praticidade, recomenda-se a utilização do contêiner **Docker**, uma vez que já fornece o sistema isolado necessário para se realizar o trabalho completo, além de ser o método utilizado neste tutorial, facilitando o acompanhamento. A partir desse sistema virtualizado, podemos seguir com o processo.
 
 <div align="center">
 
 | Método | Segurança | Praticidade | Tamanho |
 | :--: | :--: | :--: | :--: |
-| Container (Docker) | Boa | Excelente | Leve |
+| Contêiner (Docker) | Boa | Excelente | Leve |
 | Máquina Virtual | Excelente | Mediana | Pesado |
 | Sistema Principal | Arriscado | Excelente | Padrão |
 
@@ -127,16 +127,16 @@ Com as informações repassadas, podemos dar início à montagem do sistema. Par
 docker run --privileged -it debian:trixie-slim
 ```
 
-A diretriz `--privileged` garante ao container um acesso maior a recursos do sistema, sendo necessários em etapas importantes do processo. Já a diretriz `-it` garante que o container será interativo, permitindo utilizar o seu terminal para baixarmos arquivos e executarmos comandos.
+A diretriz `--privileged` garante ao contêiner um acesso maior a recursos do sistema, sendo necessários em etapas importantes do processo. Já a diretriz `-it` garante que o contêiner será interativo, permitindo utilizar o seu terminal para baixarmos arquivos e executarmos comandos.
 
-Já dentro do container, após executarmos o comando anterior, iniciamos a rotina atualizando o repositório de pacotes:
+Já dentro do contêiner, após executarmos o comando anterior, iniciamos a rotina atualizando o repositório de pacotes:
 
 ```bash
 # Atualiza o repositório de pacotes 'apt' (padrão do Debian)
 apt update
 ```
 
->Não utilizaremos nenhum `sudo` neste processo (comando que permite usuários comuns executarem comandos como administador), uma vez que o container já nos joga como usuário `root` (administrador) por padrão, facilitando o processo da construção.
+>Não utilizaremos nenhum `sudo` neste processo (comando que permite usuários comuns executarem comandos como administador), uma vez que o contêiner já nos joga como usuário `root` (administrador) por padrão, facilitando o processo da construção.
 
 Seguimos o processo para a etapa de instalação, onde estaremos fazendo o download de componentes necessários para a construção:
 
@@ -512,7 +512,7 @@ Em termos práticos, o processo funciona da seguinte forma:
 4. Podemos copiar arquivos para ele normalmente;
 5. Ao desmontá-lo com umount, todas as alterações ficam gravadas dentro do arquivo boot.
 
-Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker -- mas não feche/encerre o container ainda!
+Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim dar boot em nosso sistema, o que será feito em nosso sistema host, fora do Docker -- mas não feche/encerre o contêiner ainda!
 
 ---
 
@@ -520,7 +520,7 @@ Esta sequência nos retorna um arquivo de boot funcional, nos permitindo enfim d
 
 Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema minimalista, para isso, estaremos utilizando `QEMU`, que verá nosso arquivo e irá executar em uma máquina virtual, por isso, garanta que, no sistema host (em um novo terminal, para não fechar/encerrar o docker), você tenha o `QEMU` instalado:
 
->**ATENÇÃO**: A seguinte etapa é para ser realizada em um novo terminal em seu sistema padrão, não em um container. **NÃO** feche o container onde a construção do sistema foi realizada ou o seu progresso será perdido.
+>**ATENÇÃO**: A seguinte etapa é para ser realizada em um novo terminal em seu sistema padrão, não em um contêiner. **NÃO** feche o contêiner onde a construção do sistema foi realizada ou o seu progresso será perdido.
 
 ```bash
 # em distribuições Debian, Ubuntu e derivadas
@@ -538,7 +538,7 @@ Feita a instalação do QEMU, podemos iniciar a etapa final. Ainda no mesmo term
 docker ps
 ```
 
-Para o comando a seguir, precisaremos do ID do container, que ficará embaixo do título `CONTAINER_ID`, algo como 'a94abe6c119f', por exemplo.
+Para o comando a seguir, precisaremos do ID do contêiner, que ficará embaixo do título `contêiner_ID`, algo como 'a94abe6c119f', por exemplo.
 
 <div align="center">
 
@@ -546,15 +546,15 @@ Para o comando a seguir, precisaremos do ID do container, que ficará embaixo do
 
 </div>
 
->Imagem 5: Localizando o ID do container.  
+>Imagem 5: Localizando o ID do contêiner.  
 
-Em seguida, faremos a cópia do nosso arquivo de boot dentro do container para o diretório que criamos utilizando o seguinte comando:
+Em seguida, faremos a cópia do nosso arquivo de boot dentro do contêiner para o diretório que criamos utilizando o seguinte comando:
 
 ```bash
-docker cp [CONTAINER_ID]:/boot-files/boot .
+docker cp [contêiner_ID]:/boot-files/boot .
 ```
 
-Que basicamente irá copiar, do container especificado, o arquivo `boot` do diretório `/boot-files` e armazenará no diretório atual (.), completando assim a cópia do nosso arquivo de boot.
+Que basicamente irá copiar, do contêiner especificado, o arquivo `boot` do diretório `/boot-files` e armazenará no diretório atual (.), completando assim a cópia do nosso arquivo de boot.
 
 Agora, com o arquivo em mãos, podemos enfim rodar em nosso sistema principal utilizando o QEMU, iniciando a máquina virtual através do comando:
 

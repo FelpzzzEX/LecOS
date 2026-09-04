@@ -1,4 +1,4 @@
-mkdir nano-build
+cd ..
 
 cd nano
 rm -rf gnulib

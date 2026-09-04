@@ -1,7 +1,7 @@
-mkdir bash-build
+cd ..
 cd bash-build
 
-../bash/configure --prefix=/usr
+../bash-5.2.37/configure --prefix=/usr
 
 make -j$(nproc)
 make DESTDIR=$LOS install

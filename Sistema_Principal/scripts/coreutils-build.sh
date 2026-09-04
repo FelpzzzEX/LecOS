@@ -1,4 +1,4 @@
-mkdir coreutils-build
+cd ..
 
 cd coreutils
 ./bootstrap

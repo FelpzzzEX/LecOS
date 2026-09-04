@@ -1,4 +1,4 @@
-wget https://ftp.gnu.org/gnu/ncurses/ncurses-6.5.tar.gz
+wget https://ftp.gnu.org/gnu/ncurses/ncurses-6.6.tar.gz
 
 tar -xvzf ncurses-6.5.tar.gz
 
