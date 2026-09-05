@@ -29,6 +29,8 @@ Sistema principal do framework.
 
 **[Em construção...]**
 
+<div align="center">
+
 | **Componente** | **Versão utilizada** |
 | :--: | :--: |
 | **Kernel Linux** | 6.12.108 |
@@ -38,6 +40,10 @@ Sistema principal do framework.
 | **Glibc** | 2.41 |
 | **Ncurses** | 6.6 |
 | **Util-Linux** | 2.41.5 |
+| **Systemd** | 257.13 |
+| **XFCE** | 4.20 |
+
+</div>
 
 As versões dos componentes foram selecionadas com base na distribuição **Debian Stable**, uma vez que é um dos sistemas mais confiáveis em questão de compatibilidade e estabilidade de componentes. No entanto, não conterá os patches e correções específicas do Debian, garantindo a reprodutibilidade e independência do framework com as versões upstream desses componentes.
 

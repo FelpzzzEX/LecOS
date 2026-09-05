@@ -1,11 +1,8 @@
-wget https://ftp.gnu.org/gnu/ncurses/ncurses-6.6.tar.gz
-
-tar -xvzf ncurses-6.5.tar.gz
-
+cd ..
 mkdir ncurses-build
 
 cd ncurses-build
-../ncurses-6.5/configure --with-shared --with-termlib --enable-widec --with-versioned-syms --prefix=/usr
+../ncurses-6.6/configure --with-shared --with-termlib --enable-widec --with-versioned-syms --prefix=/usr
 
 make -j$(nproc)
 make DESTDIR=$LOS install

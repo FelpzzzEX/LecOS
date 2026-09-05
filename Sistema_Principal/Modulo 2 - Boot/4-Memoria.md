@@ -90,12 +90,13 @@ O único propósito de um initramfs é o de montar o sistema de arquivos raiz, s
 
 Para a inicialização de um sistema, ele precisa de um processo inicial, o `PID 1`. Como vimos na Base Inicial, este processo é o que inicia e mantém o sistema operacional funcionando de forma contínua, sem ele, entramos no já conhecido `kernel panic`, onde simplesmente deixa de funcionar por conta do PID 1 não existir no sistema.
 
-Para criar o **initramfs**, precisaremos preparar o ambiente, necessitando somente de dois componentes iniciais para nos permitir interagir e testar, sendo eles:
+Para criar o **initramfs**, precisaremos preparar o ambiente, necessitando somente de três componentes iniciais para nos permitir interagir e testar, sendo eles:
 
 * **Bash**, o shell básico do sistema
-* **Glibc**, biblioteca C padrão
+* **Glibc**, biblioteca C padrão do sistema
+* **Ncurses**, biblioteca para interfaces de texto no terminal
 
-Esses serão os componentes mínimos que precisaremos para interagir com o sistema, de forma a verificar a volatilidade da memória RAM ao realizarmos alterações no sistema em si e, após isso, reiniciarmos o mesmo. Tendo isso em mente, precisaremos baixar e compilar os pacotes necessários.
+Esses serão os componentes mínimos que precisaremos para interagir com o sistema, de forma a verificar a volatilidade da memória RAM ao realizarmos alterações no sistema em si e, após isso, reiniciarmos o mesmo. Tendo isso em mente, precisaremos baixar e compilar os pacotes necessários uma vez que o **GNU Bash** depende da **Glibc** e do **Ncurses** para funcionar corretamente.
 
 > **NOTA**: Para fins de reprodutibilidade, estaremos usando versões fixas e estáveis dos componentes, tendo como base a distribuição `Debian`.
 
@@ -105,7 +106,7 @@ Esses serão os componentes mínimos que precisaremos para interagir com o siste
 
 </div>
 
-> Imagem 2: **GNU Bash** e **GNU C Library**, componentes utilizados nessa etapa.
+> Imagem 2: **GNU Bash** e **GNU C Library (Glibc)**, dois dos componentes utilizados nessa etapa.
 
 ### **GNU Bash**
 
@@ -206,6 +207,11 @@ wget [LINK_GLIBC]
 
 Após, basta realizar o mesmo procedimento feito com o **GNU Bash**, extraindo o conteúdo do tarball para podermos trabalhar com ele.
 
+```bash
+# Extrai o conteúdo do tarball da Glibc
+tar -xzf glibc-2.41.tar.gz
+```
+
 <div align="center">
 
 ![tarball2](https://github.com/FelpzzzEX/Imagens/blob/344b1fad890d68738876a9b121e04c56d4e0a853/Etapa4-framework/Captura%20de%20tela_2026-09-01_16-45-50.png)
@@ -213,6 +219,28 @@ Após, basta realizar o mesmo procedimento feito com o **GNU Bash**, extraindo o
 </div>
 
 > Imagem 9: Extraindo o tarball da Glibc.
+
+Tendo a **GLibc** baixada, seguiremos para o último componente necessário para o pleno funcionamento, sendo ele o **Ncurses**, sendo um pacote que serve para transformar telas pretas com linhas de comando simples em interfaces visuais interativas, utilizando apenas caracteres de texto, algo fundamental para o **GNU Bash**.
+
+### **Ncurses**
+
+Com o **GNU Bash** e a **Glibc** baixadas no ambiente, chegou o momento do **Ncurses**. Assim como os outros dois componentes anteriores, o processo seguirá exatamente o mesmo, iniciando pelo download via wget do pacote `ncurses-6.6.tar.gz`, também encontrado no site do projeto GNU.
+
+```bash
+# Baixa o tarball do ncurses
+wget [LINK_NCURSES]
+
+# Extrai o conteúdo 
+tar -xzf ncurses-6.6.tar.gz
+```
+
+<div align="center">
+
+![ncurses](https://github.com/FelpzzzEX/Imagens/blob/755eb31c6b42093949f767ba2cbd5fd0e961d1a4/Etapa4-framework/ncurses.png)
+
+</div>
+
+> Imagem 10: Baixando e extraindo tarball do **Ncurses**.
 
 Com isso, temos os componentes necessários para estarmos criando nosso **initramfs** e testarmos a capacidade da memória primária em ação. Nos próximos passos, estaremos montando o arquivo e inserindo em nossa imagem bootável temporariamente -- o **initramfs** será utilizado somente nesta etapa, sendo removido na próxima.
 
@@ -222,7 +250,7 @@ Com todos os componentes necessários em nosso ambiente de desenvolvimento, cheg
 
 ```bash
 # Exclui os tarballs do GNU Bash e da Glibc
-rm bash-5.2.37.tar.gz glibc-2.41.tar.gz
+rm bash-5.2.37.tar.gz glibc-2.41.tar.gz ncurses-6.6.tar.gz
 ```
 
 Após a execução deste comando, teremos somente os diretórios gerados após a extração dos arquivos, nos permitindo trabalhar de forma tranquila e mais organizada.
@@ -233,9 +261,9 @@ Após a execução deste comando, teremos somente os diretórios gerados após a
 
 </div>
 
-> Imagem 10: Removendo os tarballs do GNU Bash e da Glibc
+> Imagem 11: Removendo os tarballs do GNU Bash e da Glibc
 
-Com tudo organizado, agora estaremos criando os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível somente apagar o conteúdo gerado e tentar novamente. Como estaremos compilando o **GNU Bash** e a **Glibc**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
+Com tudo organizado, agora estaremos criando os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível somente apagar o conteúdo gerado e tentar novamente. Como estaremos compilando o **GNU Bash**, a **Glibc** e o **Ncurses**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
 
 ```bash
 # Cria o diretório de build da Glibc
@@ -251,7 +279,7 @@ mkdir bash-build
 
 </div>
 
-> Imagem 11:
+> Imagem 12: Criando os diretórios de build do **GNU Bash** e da **Glibc**.
 
 Com os diretórios de build criados, seguiremos para a criação do diretório responsável pelo **initramfs**, onde iremos armazenar os componentes necessários para a utilização do ambiente. Para isso, faremos a seguinte sequência de comandos, retornando ao diretório raiz **LOS** e criando nele o diretório **initramfs** e seus sub-diretórios **bin**, **lib** e **lib64**, sendo a estrutura mínima necessária para essa demonstração.
 
@@ -263,7 +291,7 @@ cd ..
 mkdir -p initramfs/bin initramfs/lib initramfs/lib64
 ```
 
-Com isso, já teremos a estrutura de diretórios mínima para criar nosso **initramfs**, estando pronta para receber os arquivos que compilaremos, sendo eles a **Glibc** e o **GNU Bash**.
+Com isso, já teremos a estrutura de diretórios mínima para criar nosso **initramfs**, estando pronta para receber os arquivos que compilaremos, sendo eles a **Glibc**, o **GNU Bash** e o **Ncurses**.
 
 <div align="center">
 
@@ -271,9 +299,9 @@ Com isso, já teremos a estrutura de diretórios mínima para criar nosso **init
 
 </div>
 
-> Imagem 12: 
+> Imagem 13: Criando os diretórios necessários do **initramfs**.
 
-### **Compilando a Glibc**
+### **Compilando os componentes**
 
 Para iniciar, estaremos iniciando a compilação da biblioteca C, responsável pelos componentes necessários em nosso sistema. Para isso, usaremos um script padrão que se encontra pronto para executar, estando presente no diretório `scripts` do nosso repositório, sendo ele o `glibc-build.sh`. 
 
@@ -293,7 +321,7 @@ docker cp scripts [ID-DO-CONTÊINER]:/LOS/Componentes
 
 </div>
 
-> Imagem
+> Imagem 14: Copiando o diretório de `scripts` para dentro do contêiner
 
 <div align="center">
 
@@ -301,7 +329,7 @@ docker cp scripts [ID-DO-CONTÊINER]:/LOS/Componentes
 
 </div>
 
-> Imagem
+> Imagem 15: Diretório presente no ambiente de desenvolvimento.
 
 Com isso, iremos dar as devidas permissões de execução para os scripts através do comando `chmod`. Dentro do contêiner, no diretório `Componentes/scripts`:
 
@@ -309,29 +337,43 @@ Com isso, iremos dar as devidas permissões de execução para os scripts atrav�
 # Fornece a permissão de execução aos scripts
 chmod +x glibc-build.sh
 chmod +x bash-build.sh
+chmod +x ncurses-build.sh
 ```
 
-Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente. Os componentes serão compilados em nosso diretório real para aproveitar o trabalho, mas após todo o processo, basta copiar o binários compilados para dentro do initramfs que funcionarão corretamente. Voltando ao diretório raiz (**LOS**), executaremos o seguinte comando:
+Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente. Os componentes serão compilados em nosso diretório real (`/LOS/root`) para aproveitar o trabalho, mas após todo o processo, basta copiar o binários compilados para dentro do initramfs que funcionarão corretamente. 
+
+Após a compilação de todos os componentes do sistema, estaremos voltando ao diretório raiz (**LOS**) para executar o seguinte comando, com a finalidade de copiar o bash compilado para o diretório de nosso **initramfs**:
 
 ```bash
 # Copia o binário do Bash para o initramfs
 cp root/bin/bash initramfs/bin/bash
 ```
 
-Com o binário já copiado para o diretório do **initramfs**, criaremos os demais diretórios necessários para o sistema e, após isso, copiaremos as dependências do **GNU Bash** para dentro dele.
+Com o binário já copiado para o diretório do **initramfs**, criaremos o último diretório necessário para o sistema e, após isso, copiaremos as dependências do **GNU Bash** para dentro dele, podendo ser verificadas através do comando `ldd /bin/bash`.
 
 ```bash
-# Criar os diretórios necessários no initramfs
-mkdir -p initramfs/lib/x86_64-linux-gnu
-mkdir -p initramfs/lib64
-
-# Copiar as bibliotecas necessárias do Bash
-cp /lib/x86_64-linux-gnu/libtinfo.so.6 initramfs/lib/x86_64-linux-gnu/
-cp /lib/x86_64-linux-gnu/libc.so.6 initramfs/lib/x86_64-linux-gnu/
-cp /lib64/ld-linux-x86-64.so.2 initramfs/lib64/
+# Verifica as dependências do componente 
+ldd /bin/bash
 ```
 
-Essas bibliotecas são necessárias uma vez que a compilação foi feita em nosso ambiente host, ele necessita das bibliotecas utilizadas por ele para funcionar corretamente.
+> O comando `ldd` (**List Dynamic Dependencies**) mostra as bibliotecas compartilhadas que um componente necessita para funcionar, sendo parte da **Glibc**.
+
+Com isso, ele listará as seguintes bibliotecas:
+
+* `linux-vdso.so.1 (0x00007f2172016000)` - aplicada pelo próprio kernel
+* `libtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0x00007f2171e86000)` - parte do **Ncurses**
+* `libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f2171c92000)` - parte da **Glibc**
+* `/lib64/ld-linux-x86-64.so.2 (0x00007f2172018000)` - parte da **Glibc**
+
+Isso nos mostra quais os outros pacotes são necessários para a utilização do **GNU Bash**, sendo necessárias estas bibliotecas compartilhadas pelos componentes. Com isso em mente e com a **Glibc** e o **Ncurses** compilados e instalados em nosso sistema, basta copiar essas bibliotecas para os devidos diretórios -- sendo do nosso diretório `root` para o `initramfs`.
+
+```bash
+# Copiar as bibliotecas necessárias do Bash (a flag -L serve 
+# para copiar os arquivos reais (resolvendo os links simbólicos).
+cp -L root/lib/libtinfo.so.6 initramfs/lib/
+cp -L root/lib64/libc.so.6 initramfs/lib/
+cp -L root/lib64/ld-linux-x86-64.so.2 initramfs/lib64/
+```
 
 Seguindo, agora estando dentro de **initramfs**, criaremos nosso arquivo de inicialização, sendo algo simples que somente inicializa o **Bash** no sistema, nos permitindo interagir com ele:
 
@@ -431,7 +473,7 @@ E, enfim, nosso sistema está pronto para inicializar, possuindo em sua composi�
 
 * Um **bootloader** funcional - **GNU GRUB**
 * **Kernel Linux** reconhecido pelo bootloader
-* **Init** funcional, embora temporário
+* **Init** funcional, embora temporário e volátil
 
 O initramfs atual, como já mencionado, é algo temporário utilizado somente para esta etapa a fim de se verificar na prática a questão da volatilidade da memória primária, sendo algo provisório mas que já nos permite utilizar o sistema. 
 
@@ -451,15 +493,15 @@ qemu-system-x86_64 lecos.img
 
 </div>
 
-> Imagem
+> Imagem 16: Boot realizado na memória RAM (initramfs).
 
 Ao realizar o boot, cairemos na interface do bash, nos permitindo interagir com o sistema dessa vez, o teclado funciona seguindo os padrões abnt, garantindo uma experiência mais fluida. Para realizar os testes de volatilidade, faremos os seguintes scripts abaixo.
 
 > **NOTA**: Por estar rodando no QEMU, a função de colar não funciona como esperado, por isso, digite manualmente no terminal a sequência abaixo, com exceção das hashtags.
 
 ```bash
-# Cria um arquivo aleatório
-echo "Teste" > /teste.txt
+# Cria um arquivo aleatório - INSIRA A MATRÍCULA DE UM MEMBRO DO GRUPO
+echo "[Numero de Matricula]" > /teste.txt
 
 # Verifica se o arquivo existe 
 if [ -f /teste.txt ]; then # Nessa parte, aperte 'Enter', pois o comando continua na linha de baixo
@@ -485,7 +527,7 @@ Ele não achará o arquivo mais, uma vez que, durante o reinicio, todos os dados
 
 </div>
 
-> Imagem
+> Imagem 17: Criando um arquivo e interagindo com o sistema via Bash.
 
 <div align="center">
 
@@ -493,7 +535,7 @@ Ele não achará o arquivo mais, uma vez que, durante o reinicio, todos os dados
 
 </div>
 
-> Imagem
+> Imagem 18: Conteúdo perdido após o reinicio do sistema, provando a volatilidade.
 
 ## **Próximos passos**
 
