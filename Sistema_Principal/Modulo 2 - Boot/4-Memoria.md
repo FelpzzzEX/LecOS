@@ -420,13 +420,10 @@ find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs.cpio.gz
 Após essa etapa, nosso initramfs está pronto para ser utilizado, restando agora somente iserí-lo em nossa imagem bootável. Para isso, precisamos voltar ao diretório raiz onde `lecos.img` se encontra para **montar** o diretório novamente em **/mnt**, nos permitindo manipular seus arquivos:
 
 ```bash
-# Voltamos ao diretório raiz 
+# Voltamos ao diretório raiz (/LOS)
 cd ..
 
 # Montamos novamente a imagem em /mnt
-mount /dev/mapper/loop0p1 /mnt
-
-# Ou, se tiver reiniciado o contêiner 
 mknod /dev/loop0 b 7 0
 losetup -fP --show lecos.img
 kpartx -av /dev/loop0
@@ -462,11 +459,13 @@ menuentry 'LecOS' {
 Após isso, salvaremos as edições (novamente, utilizando `Ctrl` + `O`) e sairemos da interface do **Nano** (utilizando `Ctrl` + `X`). Com isso, poderemos desmontar a imagem de **/mnt** e sincronizar as alterações.
 
 ```bash
-# Desmonta 'lecos.img' de '/mnt'
-umount /mnt
-
 # Sincronize as alterações
-sync # Rode 3 vezes
+sync
+
+# Desmonta 'lecos.img' de '/mnt' e remoção do loop device
+umount /mnt
+kpartx -d /dev/loop0
+losetup -d /dev/loop0
 ```
 
 E, enfim, nosso sistema está pronto para inicializar, possuindo em sua composição:

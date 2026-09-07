@@ -165,7 +165,7 @@ nano /mnt/boot/grub/grub.cfg
 E inserimos o seguinte texto:
 
 ```nano
-menuentry 'LecOS' {
+menuentry '[Seu nome]-OS' {
         set root='(hd0,1)'
         linux /boot/bzImage root=/dev/sda1 rw
 }
@@ -191,8 +191,10 @@ sync
 Uma medida simples, mas serve para garantir que nossa imagem execute sem maiores problemas. Após essa etapa, podemos enfim desmontar nosso arquivo do diretório `/mnt`, pois nosso trabalho com ele já foi concluído.
 
 ```bash
-# Desmontar o arquivo do diretório /mnt
+# Desmontar o arquivo do diretório /mnt e remoção do loop device
 umount /mnt
+kpartx -d /dev/loop0
+losetup -d /dev/loop0
 ```
 
 Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente conigurada. Agora, para podermos realizar o boot em uma máquina virtual, iremos copiar o arquivo `lecos.img` para o nosso sistema principal (fora do container) através do comando `docker cp` que vimos anteriormente:

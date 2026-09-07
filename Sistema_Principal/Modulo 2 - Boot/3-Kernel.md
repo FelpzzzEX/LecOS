@@ -195,27 +195,24 @@ Basicamente, o comando `docker cp [ITEM] [NOME-CONTAINER]:/CAMINHO` copia determ
 
 > Imagem 8: Binário presente no ambiente de desenvolvimento após a execução do comando.
 
-Com isso, já temos o que é necessário para inserir o kernel em nossa imagem e, após, gerá-la novamente. Para isso, repetiremos o processo que vimos na etapa anterior, onde criamos a imagem bootável e instalamos o **GNU GRUB** nela. Aqui, estaremos apenas inserindo o kernel Linux, permitindo que apenas montemos a imagem novamente. Abaixo, os comandos necessários para isso:
+Com isso, já temos o que é necessário para inserir o kernel em nossa imagem e, após, gerá-la novamente. Para isso, repetiremos o processo que vimos na etapa anterior, onde criamos a imagem bootável e instalamos o **GNU GRUB** nela. Aqui, estaremos apenas inserindo o kernel Linux, permitindo que montemos a imagem novamente.
+
+Como destruímos os dispositivos virtuais na etapa anterior por segurança, precisamos refazer o mapeamento do arquivo `lecos.img` antes de montá-lo em `/mnt`:
 
 ```bash
-# Montamos novamente a imagem em /mnt
+# Cria o loop device e associa a imagem
+mknod /dev/loop0 b 7 0
+losetup -fP --show lecos.img
+
+# Recria os mapeamentos virtuais da partição
+kpartx -av /dev/loop0
+
+# Monta a imagem no diretório /mnt
 mount /dev/mapper/loop0p1 /mnt
 
-#Inserimos o kernel em /mnt/boot
-cp root/boot/bzImage /mnt/boot 
+# Insere o kernel recém-copiado no diretório de boot da imagem
+cp root/boot/bzImage /mnt/boot
 ```
-
-> **NOTA**: Se uma pausa foi efetuada e o computador foi desligado ou o contêiner foi reiniciado, as configurações podem ter sido perdidas. Para resolver, basta executar os seguintes comandos, na ordem indicada:
-> ```bash
-> # Comandos utilizados na etapa 2 - Bootloader
-> mknod /dev/loop0 b 7 0
-> losetup -fP --show lecos.img
-> kpartx -av /dev/loop0
-> mount /dev/mapper/loop0p1 /mnt
->
-> # Inserindo o kernel em /mnt/boot
-> cp root/boot/bzImage /mnt/boot 
-> ```
 
 Com isso, temos enfim nosso kernel inserido no sistema, permitindo que o bootloader (GRUB) o localize e carregue-o, tornando possível a primeira etapa da inicialização.
 
@@ -234,8 +231,13 @@ Após estarmos com tudo montado, é hora de realizarmos o segundo boot, dessa ve
 > **Host**: Sistema que você utiliza em sua máquina, o principal.
 
 ```bash
-# Desmontar o arquivo do diretório /mnt
+# Sincronize as alterações
+sync
+
+# Desmontar o arquivo do diretório /mnt e remover o loop device
 umount /mnt
+kpartx -d /dev/loop0
+losetup -d /dev/loop0
 ```
 Com a imagem desmontada, abra outro terminal fora do contêiner docker, de modo a acessarmos e utilizarmos nosso sistema principal. Com isso, rode os seguinte comando:
 

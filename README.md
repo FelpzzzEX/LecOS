@@ -45,6 +45,8 @@ Sistema principal do framework.
 
 </div>
 
+> Tabela 1: Componentes utilizados na construção do Sistema Principal e suas respectivas versões.
+
 As versões dos componentes foram selecionadas com base na distribuição **Debian Stable**, uma vez que é um dos sistemas mais confiáveis em questão de compatibilidade e estabilidade de componentes. No entanto, não conterá os patches e correções específicas do Debian, garantindo a reprodutibilidade e independência do framework com as versões upstream desses componentes.
 
 ---

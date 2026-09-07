@@ -9,6 +9,7 @@ RUN apt update && apt install -y autoconf \
     binutils \
     bison \
     bzip2 \
+    cpio \
     dwarves \
     e2fsprogs \
     fdisk \

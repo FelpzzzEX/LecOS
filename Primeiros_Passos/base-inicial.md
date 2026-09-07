@@ -108,18 +108,27 @@ O método fica de livre escolha do utilizador, mas por fins de praticidade, reco
 
 >Tabela 1: Comparativos de abordagens para seguir o tutorial em um ambiente isolado, comparando o sistema `Docker` com máquina virtual.  
 
+___
 
-Além disso, embora este tutorial tenha sido desenvolvido utilizando um sistema GNU/Linux, ele também pode ser realizado no Windows através do Windows Subsystem for Linux (WSL 2). O WSL fornece um ambiente Linux nativo dentro do Windows, permitindo executar praticamente os mesmos comandos utilizados ao longo deste tutorial.
+## **Preparando o ambiente no Windows (WSL 2)**
 
-Para isso, iniciaremos instalando o subsistema:
+Embora este tutorial tenha sido desenvolvido utilizando um sistema GNU/Linux, ele também pode ser realizado no Windows através do Windows Subsystem for Linux (WSL 2). O WSL fornece um ambiente Linux nativo dentro do Windows, permitindo executar praticamente os mesmos comandos utilizados ao longo deste tutorial de forma transparente.
+
+Para isso, iniciaremos instalando o subsistema. Abra o terminal do `PowerShell` como Administrador e insira o seguinte comando:
 
 ```powershell
 wsl --install
 ```
 
-Ele instala o WSL em sua máquina local, utilizando o sistema operacional Ubuntu, ele será o seu terminal padrão onde você executará todos os passos presentes neste tutorial.
+Este comando instala o WSL em sua máquina local utilizando o sistema operacional Ubuntu por padrão. Ele será o seu terminal de referência onde você executará todos os passos presentes neste tutorial quando o `sistema host` for mencionado. Na primeira vez abrindo o WSL, ele pedirá para você criar um nome de usuário e senha para utilizar.
 
-Após essa etapa, 
+> **NOTA**: Na grande maioria das vezes, é necessário reiniciar o computador após a execução deste comando para concluir a instalação do subsistema adequadamente.
+
+Tendo o WSL instalado, iremos instalar o sistema [Docker Desktop](https://www.docker.com/products/docker-desktop/). Utilizaremos esta aplicação por ser uma ferramenta comum no mercado para gerenciar contêineres de desenvolvimento, garantindo um ambiente isolado, prático e de excelente reprodutibilidade.
+
+___
+
+## **Iniciando o desenvolvimento**
 
 Com as informações repassadas, podemos dar início à montagem do sistema. Para começar, tendo o Docker já instalado, inserimos o seguinte comando para inicializar nosso ambiente isolado para o desenvolvimento do projeto:
 
