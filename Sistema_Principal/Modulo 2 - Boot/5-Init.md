@@ -216,7 +216,13 @@ Após a cópia ser concluída, basta realizarmos o boot através do `QEMU` mais 
 qemu-system-x84_86 lecos img 
 ```
 
-E, depois de uma bela jornada, temos enfim, o nosso sistema operacional rodando completamente! Dessa vez, sem memória RAM, tudo através do disco virtual criado na imagem, garantindo que quaisquer modificações e alterações feitas dentro do sistema serão gravadas e mantidas, independente de reiniciarmos o ambiente (vá, faça o teste!). Com isso, temos a base completa do nosso trabalho, todos os componentes comunica
+E, depois de uma bela jornada, temos enfim, o nosso sistema operacional rodando completamente! Dessa vez, sem memória RAM, tudo através do disco virtual criado na imagem, garantindo que quaisquer modificações e alterações feitas dentro do sistema serão gravadas e mantidas, independente de reiniciarmos o ambiente (vá, faça o teste!). Com isso, temos a base completa do nosso trabalho, todos os componentes funcionando e interagindo com o sistema de forma esperada. É uma base sólida para o que estaremos trabalhando a seguir!
+
+<div align="center">
+
+![lecoscomplete]()
+
+</div>
 
 ## **Próximos passos**
 
