@@ -45,10 +45,7 @@ RUN apt update && apt install -y autoconf \
     xz-utils && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /LOS && mkdir /LOS/root && mkdir /LOS/root/boot \
-    && mkdir /LOS/root/proc && mkdir /LOS/root/sys && mkdir /LOS/root/dev \
-    && mkdir /LOS/root/usr && mkdir /LOS/root/usr/lib && mkdir /LOS/root/usr/lib64 \
-    && mkdir /LOS/root/usr/bin && mkdir /LOS/root/usr/sbin
+    mkdir -p /LOS/root/{proc,sys,dev,usr/{lib,lib64,bin,sbin}}
 
 # Criando uma variável para facilitar o trabalho nas instalações - $LOS = /LOS/root
 ENV LOS=/LOS/root

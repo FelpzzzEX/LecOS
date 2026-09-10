@@ -7,7 +7,7 @@ cd ncurses-build
 make -j$(nproc)
 make DESTDIR=$LOS install
 cd ..
-
+cd ..
 cd root
 ln -s libncursesw.so.6 lib/libncurses.so.6
 ln -s libtinfow.so.6 lib/libtinfo.so.6

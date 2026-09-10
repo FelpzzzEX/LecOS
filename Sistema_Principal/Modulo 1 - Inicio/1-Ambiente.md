@@ -8,14 +8,16 @@ Após a inicialização correta do hardware, a responsabilidade da inicializaç�
 
 Por se tratar de um sistema mais completo visando uma melhor didática, teremos alguns componentes a mais na composição, diferenciando da utilização do `BusyBox` na etapa anterior, onde sozinho ele substituia boa parte dos componentes necessários para se utilizar um sistema operacional. Os componentes que utilizaremos são:
 
-* Kernel Linux (64-bit);
-* GNU Coreutils;
-* Bash;
-* Glibc;
-* Nano;
-* Ncurses;
-* Util-Linux;
-* GNU GRUB (bootloader).
+* Kernel Linux (64-bit)
+* GNU Coreutils
+* GNU Bash
+* GNU C Library (Glibc)
+* GNU Nano
+* GNU GRUB (bootloader)
+* Ncurses
+* Util-Linux
+* Systemd
+* XFCE
 
 >Todos os componentes do projeto serão detalhados em suas respectivas etapas.
 

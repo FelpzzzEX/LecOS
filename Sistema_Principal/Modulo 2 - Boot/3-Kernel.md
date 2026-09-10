@@ -174,7 +174,7 @@ Com o binário localizado, é hora de inserí-lo em nossa estrutura de diretóri
 cd Sistema_Principal/Componentes_Principais
 
 # Estando dentro dele, inserimos o comando a seguir
-docker cp bzImage LecOS-dev:/LOS/root/boot
+docker cp bzImage LecOS-dev:/LOS
 ```
 
 Basicamente, o comando `docker cp [ITEM] [NOME-CONTAINER]:/CAMINHO` copia determinado arquivo que queremos em nosso sistema principal para o diretório no caminho que especificarmos dentro do contêiner. Com isso, nós apenas copiamos o binário presente para `/root/boot` dentro de nosso ambiente de desenvolvimento, sendo este diretório onde o kernel Linux deve estar para que o bootloader `GNU GRUB` o localize e possa carregá-lo durante o boot inicial.
@@ -211,7 +211,7 @@ kpartx -av /dev/loop0
 mount /dev/mapper/loop0p1 /mnt
 
 # Insere o kernel recém-copiado no diretório de boot da imagem
-cp root/boot/bzImage /mnt/boot
+cp bzImage /mnt/boot
 ```
 
 Com isso, temos enfim nosso kernel inserido no sistema, permitindo que o bootloader (GRUB) o localize e carregue-o, tornando possível a primeira etapa da inicialização.

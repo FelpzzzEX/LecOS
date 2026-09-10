@@ -410,9 +410,6 @@ chmod +x initramfs/init
 Com o init finalizado, podemos enfim montar o nosso **initramfs** para utilizarmos em nosso framework. Para realizar este passo, estaremos instalando em nosso ambiente o utilitário `cpio`, uma vez que é necesário para empacotar nosso diretório no formato comumente utilizado pelo kernel (como fizemos na Base Inicial), bastando realizar os seguintes comandos:
 
 ```bash
-# Baixamos o programa 'cpio' para utilizarmos
-apt update && apt install -y cpio
-
 # Ainda dentro de 'initramfs', rodamos o seguinte comando
 find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs.cpio.gz
 ```

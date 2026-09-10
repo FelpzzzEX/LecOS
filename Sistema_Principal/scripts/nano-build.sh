@@ -1,13 +1,12 @@
 cd ..
+mkdir nano-build
 
-cd nano
-rm -rf gnulib
-git clone --depth 1 https://github.com/coreutils/gnulib.git
+cd nano-8.4
 ./autogen.sh
 cd ..
 
 cd nano-build
-../nano/configure --prefix=/usr
+../nano-8.4/configure --prefix=/usr
 
 make -j$(nproc)
 make DESTDIR=$LOS install
