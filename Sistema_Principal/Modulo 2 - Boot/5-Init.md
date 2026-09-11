@@ -51,6 +51,14 @@ cd Componentes_Principais
 docker cp init LecOS-dev:/LOS/root/sbin 
 ```
 
+<div align="center">
+
+![copiadocker](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/init.png)
+
+</div>
+
+> Imagem 1: Copiando o script de inicialização para `/LOS/root/sbin`.
+
 Com isso, nosso script de inicialização estará pronto para ser utilizado no diretório `root/sbin`, permitindo que o kernel Linux localize e execute o arquivo. No entanto, para isso ser possível, precisamos dar a permissão de execução para o script, utilizando mais uma vez do comando `chmod +x`:
 
 ```bash
@@ -59,6 +67,14 @@ chmod +x root/sbin/init
 ```
 
 > O arquivo `init` pode ser colocado em `/`, `/bin` ou `/sbin`, desde que seja executável. O `/sbin/init` é o local tradicional para o processo de inicialização, sendo um dos caminhos procurados pelo kernel quando nenhum outro `init` é especificado.
+
+<div align="center">
+
+![chmod](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/init2.png)
+
+</div>
+
+> Imagem 2: Fornecendo a permissão de execução para o script de inicialização.
 
 ## **Removendo o initramfs**
 
@@ -98,11 +114,11 @@ Feitas as alterações, basta salvar o arquivo e fechar o editor (`Ctrl` + `O` e
 
 <div align="center">
 
-![reminitram]()
+![reminitram](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/rminitfs.png)
 
 </div>
 
-> Imagem 1: 
+> Imagem 3: Removendo o initramfs do nosso ambiente e da imagem bootável.
 
 ## **Compilando os componentes finais**
 
@@ -122,7 +138,7 @@ O GNU Coreutils é um componente bastante consolidado nos sistemas operacionais 
 Para instalarmos o componente em nosso sistema, estaremos utilizando o script presente no diretório `Componentes/scripts/`, sendo ele o `coreutils-build.sh`. Com isso em mente, primeiro precisamos fornecer a permissão de execução ao script, utilizando novamente o comando `chmod +x` seguido da execução do script.
 
 ```bash
-# Fornece a permissão de execução para o script 
+# Dentro de 'scripts', fornece a permissão de execução para o script 
 chmod +x coreutils-build.sh
 
 # Executa o script
@@ -131,11 +147,11 @@ chmod +x coreutils-build.sh
 
 <div align="center">
 
-![coreutil]()
+![coreutil](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/coreutils.png)
 
 </div>
 
-> Imagem 2:
+> Imagem 4: Instalando o tarball do GNU Coreutils.
 
 Com isso, conseguimos instalar com sucesso o GNU Coreutils em nosso sistema, encaminhando para o próximo componente, o **GNU Nano**.
 
@@ -155,11 +171,11 @@ chmod +x nano-build.sh
 
 <div align="center">
 
-![nanoi]()
+![nanoi](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/nano.png)
 
 </div>
 
-> Imagem 3:
+> Imagem 5: Instala o tarball do GNU Nano.
 
 Tendo o GNU Nano instalado, podemos partir para o então útimo componente, o **Util-Linux**.
 
@@ -177,13 +193,21 @@ chmod +x uLinux-build.sh
 ./uLinux-build.sh
 ```
 
+<div align="center">
+
+![ulinuki](https://github.com/FelpzzzEX/Imagens/blob/9db97f9242f5ae12cf28aa4c038b542d92b70751/ulinux.png)
+
+</div>
+
+> Imagem 6: Instala o tarball do Util-Linux.
+
 Com isso, teremos enfim todos os componentes necessários para iniciar o nosso ambiente completo, partindo então para o boot definitivo do nosso sistema operacional!
 
 ## **O boot definitivo**
 
 Seguindo para a etapa final do nosso projeto, agora que temos todos os componentes instalados, podemos enfim preparar a nossa imagem bootável. Para isso, iremos copiar **todo** o conteúdo do diretório `root` para dentro da imagem, até então montada em `/mnt`, consolidando assim a sua estrutura.
 
-Ainda dentro do nosso ambiente de desenvolvimento, utilizaremos o seguinte comando para copiar o conteúdo para dentro da nossa imagem bootável:
+Ainda dentro do nosso ambiente de desenvolvimento, no diretório principal (**LOS**), utilizaremos o seguinte comando para copiar o conteúdo para dentro da nossa imagem bootável:
 
 ```bash
 # Copia o conteúdo de 'root' para '/mnt'
@@ -209,7 +233,7 @@ Então, com tudo feito, passaremos para o nosso sistema principal, onde copiarem
 docker cp [ID_CONTAINER]:/LOS/lecos.img .
 ```
 
-Após a cópia ser concluída, basta realizarmos o boot através do `QEMU` mais uma vez:
+Após a cópia ser concluída, basta realizarmos o boot através do `QEMU` mais uma vez, inserindo o seguinte comando no terminal:
 
 ```bash
 # Realiza o boot no QEMU
@@ -220,9 +244,19 @@ E, depois de uma bela jornada, temos enfim, o nosso sistema operacional rodando 
 
 <div align="center">
 
-![lecoscomplete]()
+![lecoscomplete](https://github.com/FelpzzzEX/Imagens/blob/aacd9869f39ec8c1e5d47626ae1b6feb9ac1c0b5/Etapa5-framework/Captura%20de%20tela_2026-09-11_20-12-10.png)
 
 </div>
+
+> Imagem 7: Interagino com o sistema operacional após o boot.
+
+<div align="center">
+
+![lecoscompletereboot](https://github.com/FelpzzzEX/Imagens/blob/aacd9869f39ec8c1e5d47626ae1b6feb9ac1c0b5/Etapa5-framework/Captura%20de%20tela_2026-09-11_20-14-19.png)
+
+</div>
+
+> Imagem 8: Persistência dos dados e alterações após o reboot do sistema.
 
 ## **Próximos passos**
 
