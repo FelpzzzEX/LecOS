@@ -31,7 +31,9 @@ RUN apt update && apt install -y autoconf \
     libtool \
     m4 \
     make \
+    meson \
     nano \
+    ninja-build \
     openssl \
     pahole \
     perl-base \
@@ -45,7 +47,13 @@ RUN apt update && apt install -y autoconf \
     xz-utils && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /LOS/root/{proc,sys,dev,usr/{lib,lib64,bin,sbin}}
+    mkdir -p /LOS/root/proc \
+             /LOS/root/sys \
+             /LOS/root/dev \
+             /LOS/root/usr/lib \
+             /LOS/root/usr/lib64 \
+             /LOS/root/usr/bin \
+             /LOS/root/usr/sbin
 
 # Criando uma variável para facilitar o trabalho nas instalações - $LOS = /LOS/root
 ENV LOS=/LOS/root
