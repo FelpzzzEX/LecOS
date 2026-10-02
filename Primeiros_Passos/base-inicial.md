@@ -533,10 +533,10 @@ Chegamos, enfim, na etapa final do processo, realizar o boot do nosso sistema mi
 
 ```bash
 # em distribuições Debian, Ubuntu e derivadas
-sudo apt install QEMU-system-x86
+sudo apt install qemu-system-x86
 
 # em distribuições Fedora e derivadas
-sudo dnf install QEMU-system-x86
+sudo dnf install qemu-system-x86
 ```
 
 >Aos usuários do Windows, realizem o processo dentro do terminal Ubuntu que utilizaram para seguir o tutorial, bastando instalar o QEMU no sistema através do comando acima.
@@ -568,7 +568,7 @@ Que basicamente irá copiar, do contêiner especificado, o arquivo `boot` do dir
 Agora, com o arquivo em mãos, podemos enfim rodar em nosso sistema principal utilizando o QEMU, iniciando a máquina virtual através do comando:
 
 ```bash
-QEMU-system-x86_64 boot
+qemu-system-x86_64 boot
 ```
 
 Que iniciará o serviço do QEMU na arquitetura `x86_64` e utilizará o arquivo de boot para iniciar o sistema, o que abrirá uma nova interface da máquina virtual rodando.
