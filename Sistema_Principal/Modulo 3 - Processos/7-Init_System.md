@@ -338,8 +338,8 @@ Antes da instalação do Systemd:
 
 ```mermaid
 flowchart TD
-  A["Kernel"] -->|Inicia| C["PID 1"]
-  B["GNU Bash"] -->|Assume| C
+  A["Kernel"] -->|Inicia| B
+  B["GNU Bash"] -->|Assume| C["PID 1"]
   D["Usuário"] <-->|Interage| B
 ```
 
