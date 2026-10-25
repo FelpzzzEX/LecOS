@@ -18,11 +18,9 @@ Quando um programa precisa realizar uma operação que depende do kernel, como a
 
 <div align="center">
 
-![ukspace]()
+![syscall](https://github.com/FelpzzzEX/Imagens/blob/c4bc4f6010e17dca0b6359b1bef858267002e440/Etapa6-framework/userkernelspace.png)
 
 </div>
-
-> Imagem 1:
 
 ## **O Kernelspace**
 
@@ -130,12 +128,6 @@ flowchart TD
 É importante observar que funções como `open()` e `isatty()` não devem ser entendidas necessariamente como as próprias `system calls`. Elas são interfaces utilizadas pelo programa e podem, internamente, realizar chamadas ao kernel quando precisam de serviços que somente ele pode fornecer.
 
 Dessa forma, o Bash é um bom exemplo para compreender a relação entre `userland` e `kernelspace`: O programa é executado no espaço do usuário, mas utiliza as interfaces do sistema para solicitar ao kernel operações sobre os recursos que ele administra.
-
-<div align="center">
-
-![syscall](https://github.com/FelpzzzEX/Imagens/blob/c4bc4f6010e17dca0b6359b1bef858267002e440/Etapa6-framework/userkernelspace.png)
-
-</div>
 
 > **NOTA**: Em caso de curiosidade, o código fonte principal do **GNU Bash** está disponível no diretório `Componentes_Principais`, dentro de `Codigo-Fonte` como `shell.c`.
 
