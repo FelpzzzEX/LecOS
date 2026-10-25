@@ -64,7 +64,7 @@ O **Systemd** é um sistema de inicialização e gerenciamento de serviços para
 
 <div align="center">
 
-![systemd]()
+![systemd](https://github.com/FelpzzzEX/Imagens/blob/f0387ea15d806c5a784121a867f3a510b39baef8/Etapa7-framework/systemd-logo-4170522600.png)
 
 </div>
 
@@ -336,26 +336,22 @@ Com isso, podemos dizer que nosso sistema, enfim, está com todos os seus compon
 
 Antes da instalação do Systemd:
 
-```text
-Kernel
-   ↓
-Bash (PID 1)
-   ↓
-Comandos executados pelo usuário
+```mermaid
+flowchart TD
+  A["Kernel"] -->|Inicia| C["PID 1"]
+  B["GNU Bash"] -->|Assume| C
+  D["Usuário"] <-->|Interage| B
 ```
 
 Depois:
 
-```text
-Kernel
-   ↓
-/sbin/init
-   ↓
-Systemd (PID 1)
-   ↓
-Unidades e serviços
-   ↓
-Console e shell
+```mermaid
+flowchart TD
+  A["Kernel"] -->|Executa| B["Script de init"]
+  B -->|Chama/Inicia| C["Systemd"]
+  C -->|Assume| D["PID 1"]
+  C -->|Coordena| E["Processos e serviços"]
+  C -->|Inicia| F["Console e shell"]
 ```
 
 Essa é uma mudança importante na arquitetura do LecOS. O Bash continua fazendo parte da `userland`, mas deixa de ser responsável pela inicialização do sistema. Ele passa a ser apenas um **shell**, executado quando uma sessão ou outro processo precisar dele.
