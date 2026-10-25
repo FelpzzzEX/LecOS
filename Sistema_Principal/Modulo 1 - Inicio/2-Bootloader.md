@@ -137,7 +137,7 @@ Após essa etapa, podemos enfim instalar o `GRUB` em nossa partição, e para is
 
 ```bash
 # Copiamos o diretorio 'boot', onde a configuração do GRUB será feita
-cp -R /root/boot /mnt
+mkdir /mnt/boot 
 
 # Comando para instalar o GRUB
 grub-install --target=i386-pc --root-directory=/mnt --no-floppy --modules="normal part_msdos ext2 multiboot" /dev/loop0
@@ -165,7 +165,7 @@ nano /mnt/boot/grub/grub.cfg
 E inserimos o seguinte texto:
 
 ```nano
-menuentry '[Seu nome]-OS' {
+menuentry '[NOME-DO-SISTEMA]' {
         set root='(hd0,1)'
         linux /boot/bzImage root=/dev/sda1 rw
 }
@@ -211,6 +211,6 @@ Com isso, após realizarmos a cópia, executaremos o mesmo com o sistema `QEMU`,
 qemu-system-x86_64 lecos.img
 ```
 
-Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente `LecOS`. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, impedindo qualquer inicialização de acontecer.
+Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente o nome de nosso sistema (no caso deste tutorial, será `LecOS`). Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, impedindo qualquer inicialização de acontecer.
 
 Na próxima etapa, iremos nos aprofundar mais no processo de boot, iniciando pelo kernel e sua responsabilidade no sistema operacional, além de inserir o componente em nossa imagem bootável para continuarmos nosso trajeto até o sistema principal. Após isso, entraremos no conteúdo relacionado à memória primária e secundária do sistema até chegarmos enfim na inicialização de fato, onde teremos percorrido metade do processo, nos vemos lá!

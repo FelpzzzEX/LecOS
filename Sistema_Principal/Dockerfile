@@ -50,10 +50,14 @@ RUN apt update && apt install -y autoconf \
     mkdir -p /LOS/root/proc \
              /LOS/root/sys \
              /LOS/root/dev \
+             /LOS/root/tmp \
+             /LOS/root/run \
              /LOS/root/usr/lib \
              /LOS/root/usr/lib64 \
              /LOS/root/usr/bin \
-             /LOS/root/usr/sbin
+             /LOS/root/usr/sbin \
+    chmod 1777 "$LOS/tmp" \
+    chmod 755 "$LOS/run"
 
 # Criando uma variável para facilitar o trabalho nas instalações - $LOS = /LOS/root
 ENV LOS=/LOS/root

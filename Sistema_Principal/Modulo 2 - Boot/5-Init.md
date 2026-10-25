@@ -28,6 +28,7 @@ Para isso, o script já está pronto no diretório `Componentes_Principais` do n
 
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
 
 while true; do
     /bin/bash

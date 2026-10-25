@@ -5,6 +5,8 @@ cd bash-build
 
 make -j$(nproc)
 make DESTDIR=$LOS install
+
 cd ..
+cd..
 
 ln -s bash root/bin/sh

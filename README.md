@@ -36,12 +36,15 @@ Sistema principal do framework.
 | **Kernel Linux** | 6.12.108 |
 | **GNU Bash** | 5.2.37 |
 | **GNU Coreutils** | 9.7 |
+| **GNU Inetutils** | 2.6 |
 | **GNU Nano** | 8.4 |
 | **Glibc** | 2.41 |
 | **Ncurses** | 6.6 |
 | **Util-Linux** | 2.41.5 |
+| **Shadow-Utils** | 4.17.4 |
+| **Linux-PAM** | 1.7.0 |
+| **Libxcrypt** | 4.5.2 |
 | **Systemd** | 257.13 |
-| **XFCE** | 4.20 |
 
 </div>
 
