@@ -1,0 +1,79 @@
+#!/bin/bash
+# lps - listador de processos simples do LecOS
+# Lê as informações direto do /proc, sem depender do 'ps'.
+#
+# Uso:
+#   lps            lista os processos de espaço de usuário
+#   lps -t         mostra os processos em formato de árvore
+#   lps -k         inclui as threads do kernel (use junto com -t se quiser)
+#   lps -i PID     mostra os detalhes de um processo
+
+declare -A NOME ESTADO PAI FILHOS
+
+# Lê o arquivo /proc/PID/status e preenche as variáveis nome, estado e ppid
+ler_status() {
+    nome="" estado="" ppid=""
+    while read -r chave valor; do
+        case $chave in
+            Name:)  nome=$valor ;;
+            State:) estado=${valor%% *} ;;
+            PPid:)  ppid=$valor ;;
+        esac
+    done 2>/dev/null < "/proc/$1/status"
+}
+
+# Mostra os campos mais interessantes de um processo
+detalhes() {
+    [ -r "/proc/$1/status" ] || { echo "lps: processo $1 não encontrado"; return 1; }
+    while read -r chave valor; do
+        case $chave in
+            Name:|State:|Pid:|PPid:|Threads:|VmRSS:|voluntary_ctxt_switches:|nonvoluntary_ctxt_switches:)
+                printf '%-28s %s\n' "$chave" "$valor" ;;
+        esac
+    done < "/proc/$1/status"
+}
+
+# Imprime um processo e, recursivamente, seus filhos
+arvore() {
+    local pid=$1 recuo=$2 f
+    printf '%s%s (%s) [%s]\n' "$recuo" "${NOME[$pid]}" "$pid" "${ESTADO[$pid]}"
+    for f in $(printf '%s\n' ${FILHOS[$pid]} | sort -n); do
+        arvore "$f" "$recuo    "
+    done
+}
+
+MODO=lista; KERNEL=nao
+while [ $# -gt 0 ]; do
+    case $1 in
+        -t) MODO=arvore ;;
+        -k) KERNEL=sim ;;
+        -i) detalhes "$2"; exit $? ;;
+        *)  echo "uso: lps [-t] [-k] | lps -i PID"; exit 1 ;;
+    esac
+    shift
+done
+
+# Coleta todos os processos existentes
+for dir in /proc/[0-9]*; do
+    pid=${dir#/proc/}
+    ler_status "$pid"
+    [ -z "$nome" ] && continue
+    # Threads do kernel têm PPid 2 (kthreadd); o próprio kthreadd é o PID 2
+    if [ "$KERNEL" = nao ] && { [ "$pid" = 2 ] || [ "$ppid" = 2 ]; }; then
+        continue
+    fi
+    NOME[$pid]=$nome; ESTADO[$pid]=$estado
+    FILHOS[$ppid]+="$pid "
+    PAI[$pid]=$ppid
+done
+
+if [ "$MODO" = lista ]; then
+    printf '%-7s %-7s %-4s %s\n' PID PPID EST NOME
+    for pid in $(printf '%s\n' "${!NOME[@]}" | sort -n); do
+        printf '%-7s %-7s %-4s %s\n' "$pid" "${PAI[$pid]}" "${ESTADO[$pid]}" "${NOME[$pid]}"
+    done
+else
+    for raiz in $(printf '%s\n' ${FILHOS[0]} | sort -n); do
+        arvore "$raiz" ""
+    done
+fi

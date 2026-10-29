@@ -2,15 +2,17 @@
 
 Após termos construído nossa `userland`, chegou o momento de substituir o **Bash**, que até então estava atuando como **PID 1**, por um sistema de inicialização próprio. Para isso, utilizaremos o **Systemd**.
 
-O Systemd será responsável por assumir o processo de inicialização do LecOS e gerenciar os serviços e processos que serão executados durante o funcionamento do sistema.
+O Systemd será responsável por assumir o papel de processo principal do LecOS, coordenando a inicialização do sistema e o gerenciamento dos serviços e processos necessários durante seu funcionamento.
 
 Diferentemente do estágio anterior, no qual o Bash era iniciado diretamente pelo kernel e permanecia como o processo principal, agora teremos uma estrutura de inicialização mais próxima daquela encontrada em distribuições GNU/Linux convencionais.
 
-## **Sobre o Init-System**
+## **Sobre o Init System**
 
-O `init-system` é o componente responsável por assumir o controle do sistema após o kernel terminar sua própria inicialização.
+O `init-system` é o componente responsável por iniciar e organizar o ambiente de espaço de usuário após a etapa inicial de inicialização do kernel.
 
-O kernel é carregado pelo bootloader e começa sua execução. Depois de inicializar os recursos básicos necessários para o funcionamento do sistema, ele procura pelo processo de inicialização, que será executado como **PID 1**.
+Durante o boot, o bootloader carrega o kernel Linux, que inicializa os recursos fundamentais do sistema e prepara o ambiente necessário para executar o primeiro processo em espaço de usuário. Esse processo recebe o identificador **PID 1** e assume um papel central na inicialização do restante do sistema.
+
+No LecOS, utilizaremos o Systemd para ocupar essa posição.
 
 ```mermaid
 sequenceDiagram
@@ -18,65 +20,154 @@ sequenceDiagram
     participant BL as Bootloader
     participant K as Kernel Linux
     participant S as Systemd (PID 1)
-    participant P as Serviços e demais processos
-    participant U as Userland
+    participant P as Serviços e processos
 
-    F->>BL: Localiza e carrega o bootloader
+    F->>BL: Localiza e inicia o bootloader
     BL->>K: Carrega o kernel Linux
     activate K
-    K->>S: Inicia o primeiro processo (PID 1)
+    K->>K: Inicializa os recursos fundamentais
+    K->>S: Executa o processo de inicialização
     deactivate K
 
     activate S
-    S->>S: Inicializa e organiza os serviços
+    S->>S: Organiza a inicialização do sistema
     S->>P: Inicia os serviços e demais processos
-    P->>U: Disponibiliza o ambiente de usuário
     deactivate S
 ```
 
-Enquanto, no estágio anterior do LecOS, o Bash ocupava temporariamente esse papel:
+> Diagrama 1: Sequência simplificada do processo de inicialização do LecOS utilizando o Systemd.
+
+Enquanto isso, no estágio anterior do LecOS, essa posição era ocupada pelo nosso script `init`, interpretado pelo **Bash**: ele montava os sistemas de arquivos virtuais e mantinha um shell em execução, reiniciando-o sempre que o usuário saía:
 
 ```mermaid
 sequenceDiagram
     participant K as Kernel Linux
-    participant B as Bash (PID 1)
+    participant I as Script init (PID 1)
+    participant B as Shell (filho do init)
     participant U as Usuário
 
-    K->>B: Inicia o Bash como primeiro processo
+    K->>I: Executa /sbin/init
+    activate I
+    I->>I: Monta /proc, /sys e /dev
+    I->>B: Inicia o shell
     activate B
-    B->>B: Aguarda comandos
     U->>B: Executa comandos
     B-->>U: Apresenta os resultados
+    U->>B: exit
     deactivate B
+    I->>B: Inicia um novo shell
+    deactivate I
 ```
 
-> Diagramas 1 e 2: Sequência do processo de inicialização, comparanto as alternativas do Systemd (init-system real) com o GNU Bash.
+> Diagrama 2: Funcionamento simplificado da etapa anterior, com o script `init` como PID 1 e o shell como seu processo filho.
 
-Isso foi suficiente para demonstrarmos a relação entre o kernel e a `userland`, mas não é uma estrutura adequada para administrar um sistema completo.
+Essa abordagem foi suficiente para demonstrar a relação entre o kernel e o espaço de usuário, permitindo executar comandos e interagir com o sistema. Entretanto, ela não oferece, por si só, os mecanismos necessários para organizar a inicialização de um sistema mais completo.
 
-Um `init-system` precisa, entre outras funções, iniciar processos, supervisionar serviços, organizar a inicialização do sistema e participar do desligamento e reinicialização da máquina.
+Um `init-system` deve, entre outras funções, iniciar processos, coordenar serviços, acompanhar seu funcionamento e participar das operações de desligamento e reinicialização da máquina.
 
-É justamente nessa função que entra o Systemd.
+É justamente nesse papel que entra o Systemd.
 
-## **Sobre o Systemd**
+## **O que o PID 1 precisa fazer?**
 
-O **Systemd** é um sistema de inicialização e gerenciamento de serviços para sistemas GNU/Linux. Ele assume o papel de **PID 1** e fornece mecanismos para inicializar o sistema, iniciar e supervisionar serviços, gerenciar sessões e controlar operações como desligamento e reinicialização.
+O PID 1 não é um processo comum. Além de ser o ancestral de todos os outros, ele carrega responsabilidades que nenhum outro programa possui:
+
+* **Preparar o espaço de usuário**: montar os sistemas de arquivos virtuais, preparar diretórios de execução e iniciar os serviços na ordem correta.
+* **Supervisionar os serviços**: saber se um serviço terminou ou falhou e, quando configurado, iniciá-lo novamente.
+* **Adotar processos órfãos e recolher zumbis**: quando um processo termina sem que seu pai tenha recolhido seu estado, ou quando o pai termina antes do filho, é o PID 1 que assume essa tarefa (veremos isso na prática na próxima etapa).
+* **Conduzir o desligamento**: encerrar os serviços de forma ordenada, desmontar os sistemas de arquivos e só então pedir ao kernel que desligue ou reinicie a máquina.
+
+Além disso, como vimos na etapa anterior, o kernel não tolera a ausência desse processo: se o PID 1 terminar, o resultado é um **kernel panic**.
+
+Nosso script `init` cumpria apenas uma pequena parte dessas tarefas. Comparando com o que o Systemd passa a fazer:
 
 <div align="center">
 
-![systemd](https://github.com/FelpzzzEX/Imagens/blob/f0387ea15d806c5a784121a867f3a510b39baef8/Etapa7-framework/systemd-logo-4170522600.png)
+| **Tarefa** | **Script `init` (etapa anterior)** | **Systemd** |
+| :--: | :--: | :--: |
+| Montar `/proc`, `/sys` e `/dev` | Comandos `mount` escritos manualmente no script | Montados automaticamente nas fases iniciais do boot |
+| Manter o console disponível | Laço `while true` que reinicia o Bash | Serviço de login no console, reiniciado quando termina |
+| Ordem de inicialização | Sequência fixa de linhas do script | Dependências entre units, resolvidas pelo Systemd |
+| Acompanhar falhas | Nenhum acompanhamento | Estado de cada unit (`systemctl --failed`) |
+| Desligar e reiniciar | Sem mecanismo próprio | `systemctl poweroff` e `systemctl reboot` |
 
 </div>
 
-> Imagem 1: Logo do Systemd. 
+>Tabela 1: Comparativo entre o script `init` da etapa anterior e o Systemd.
 
-Além do processo principal, o Systemd fornece diversas ferramentas e componentes. Entre eles estão o `systemctl`, utilizado para controlar serviços e unidades, o `journalctl`, utilizado para consultar os registros do sistema, e componentes como `systemd-logind`, responsável pelo gerenciamento de sessões de usuários.
+### **Um pouco de história**
 
-Para o LecOS, o Systemd será utilizado principalmente para substituir o Bash como `PID 1` e fornecer a estrutura necessária para que o sistema possa evoluir para uma distribuição GNU/Linux mais completa, ainda se mantendo em um escopo minimalista.
+Durante muitos anos, o padrão em sistemas GNU/Linux foi o **SysVinit**, herdado dos Unix tradicionais. Nele, a inicialização executa uma sequência de scripts de shell (geralmente em `/etc/init.d`), organizados em níveis de execução (*runlevels*). É um modelo simples e fácil de entender, mas que executa os serviços um após o outro e não acompanha o que acontece com eles depois de iniciados.
 
-Pensando nisso, não precisamos habilitar todos os recursos oferecidos pelo Systemd. O objetivo é construir uma base funcional e compreensível sem a necessidade de se compilar e instalar a versão completa do mesmo, pois tornaria nosso sistema um tanto quanto mais pesado pelas inúmeras dependências que o Systemd carrega.
+O **Systemd** surgiu para resolver essas limitações, iniciando serviços em paralelo, controlando suas dependências e supervisionando-os durante toda a execução. Hoje, ele é o init padrão de grande parte das distribuições, incluindo o Debian, o Fedora e o Arch Linux que mencionamos na etapa do Kernel. Isso não significa que seja o único: alternativas como o **OpenRC** (Alpine e Gentoo) e o **runit** (Void Linux) seguem em uso, principalmente em sistemas que priorizam a simplicidade.
 
-Neste framework, estamos utilizando a versão **257.13** do Systemd, mantendo uma versão fixa assim como os demais componentes a fim de se evitar problemas de compatibilidade.
+## **Sobre o Systemd**
+
+O **Systemd** é um sistema de inicialização e gerenciamento de serviços para sistemas GNU/Linux. Ele assume o papel de **PID 1** e fornece mecanismos para inicializar o sistema, gerenciar serviços, organizar dependências entre componentes e controlar operações como desligamento e reinicialização.
+
+![systemd](https://github.com/FelpzzzEX/Imagens/blob/f0387ea15d806c5a784121a867f3a510b39baef8/Etapa7-framework/systemd-logo-4170522600.png)
+
+> Imagem 1: Logo do Systemd.
+
+Uma das características importantes do Systemd é a utilização de **units**, que representam recursos gerenciados pelo sistema. Entre elas, destacam-se as `service units`, utilizadas para definir e controlar serviços, e as `target units`, utilizadas para agrupar unidades e organizar etapas do processo de inicialização.
+
+Além do processo principal, o projeto fornece ferramentas e componentes auxiliares. Entre eles estão:
+
+- `systemctl`: utilizado para consultar e controlar serviços e outras unidades do Systemd.
+- `journalctl`: utilizado para consultar os registros produzidos pelo sistema e por seus serviços, quando o mecanismo de logging correspondente está disponível.
+- `systemd-logind`: componente responsável pelo gerenciamento de sessões de usuários, entre outras funções relacionadas.
+
+Para o LecOS, nosso objetivo inicial não é explorar todos esses recursos, mas estabelecer uma base funcional de inicialização que permita executar o Systemd como PID 1 e iniciar os componentes necessários ao funcionamento do sistema.
+
+### **Como o Systemd organiza o sistema**
+
+Em vez de scripts executados em sequência, o Systemd trabalha com **units**: arquivos de configuração que descrevem *o que* deve ser gerenciado e *como* ele se relaciona com o resto do sistema. Os tipos mais comuns são:
+
+* **service**: um serviço, ou seja, um programa que o Systemd inicia e supervisiona;
+* **target**: um agrupamento de units que representa uma etapa do boot (ou um "estado" do sistema);
+* **mount**: um ponto de montagem de sistema de arquivos;
+* **socket** e **timer**: units que iniciam serviços quando chega uma conexão ou quando um horário é atingido.
+
+Uma `service unit` é um arquivo de texto simples. O exemplo abaixo é fictício e simplificado, apenas para visualizarmos sua estrutura:
+
+```ini
+[Unit]
+Description=Meu serviço de exemplo
+After=basic.target
+
+[Service]
+ExecStart=/usr/bin/meu-programa
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+* **[Unit]**: descreve a unit e suas relações. O `After=` define *ordem* ("inicie depois de..."), enquanto `Wants=` e `Requires=` definem *dependência* ("puxe esta unit junto" e "só funcione se ela funcionar"). São coisas diferentes: ordem e dependência são declaradas separadamente.
+* **[Service]**: define o que executar (`ExecStart=`) e o que fazer se o programa terminar (`Restart=`).
+* **[Install]**: define em qual target a unit deve ser incluída quando for habilitada. Aqui, `WantedBy=multi-user.target` significa "inicie este serviço quando o sistema alcançar o modo multiusuário".
+
+Como cada unit declara suas próprias dependências, o Systemd monta o "mapa" do boot sozinho e consegue iniciar em paralelo tudo o que não depende uma coisa da outra. Os **targets** funcionam como marcos desse caminho:
+
+```mermaid
+flowchart LR
+  A["sysinit.target<br/>(base do sistema)"] --> B["basic.target<br/>(sockets, timers, paths)"]
+  B --> C["multi-user.target<br/>(sistema multiusuário)"]
+  C --> D["graphical.target<br/>(interface gráfica)"]
+```
+
+> Diagrama 3: Principais targets alcançados durante a inicialização. O Systemd tenta alcançar o `default.target`, que aponta para um deles.
+
+### **Escopo da implementação**
+
+O Systemd oferece diversos recursos e pode ser compilado com diferentes opções e dependências. Por isso, não precisamos habilitar ou instalar indiscriminadamente todos os seus componentes para alcançar nosso objetivo.
+
+Neste framework, priorizaremos uma configuração minimalista, habilitando os recursos necessários à inicialização do LecOS e evitando dependências e funcionalidades que não façam parte do escopo atual do projeto.
+
+É importante destacar que **uma compilação bem-sucedida não garante, por si só, que o Systemd conseguirá inicializar o sistema**. Também precisamos garantir que o executável, suas bibliotecas, os diretórios necessários e os recursos disponibilizados pelo kernel estejam corretamente preparados na raiz do sistema (`rootfs`).
+
+Na etapa prática, trabalharemos justamente nessa integração, substituindo o Bash como PID 1 e preparando o ambiente para que o Systemd possa assumir a inicialização do LecOS.
+
+Neste framework, utilizaremos a versão **257.13** do Systemd, mantendo uma versão fixa, assim como nos demais componentes, para facilitar a reprodução do processo de construção e reduzir possíveis incompatibilidades entre versões.
 
 ## **Instalando e configurando**
 
@@ -157,6 +248,8 @@ Para que o kernel possa encontrá-lo pelo caminho convencional de inicializaçã
 ```bash
 ln -sf /usr/lib/systemd/systemd "$LOS/sbin/init"
 ```
+
+> O caminho `/sbin/init` é o mesmo onde colocamos o nosso script na etapa anterior. Como a opção `-f` (*force*) sobrescreve o arquivo existente, **o link passa a substituir o script**: o kernel agora executa o Systemd diretamente, sem intermediários.
 
 Tendo tudo pronto, podemos enfim configurar o `Systemd` para atuar como **PID 1** do nosso sistema, e para isso, foi preparado o script `systemd-setup.sh`, o qual cuidará de todo o processo de configuração dele em nosso ambiente de desenvolvimento. Para isso, dê as `permissões` necessárias para executar e, no diretório de scripts, insira o comando:
 
@@ -263,7 +356,7 @@ Depois de iniciar novamente o nosso sistema no QEMU, nos depararemos com a nova 
 
 </div>
 
-> Imagem :
+> Imagem 2: Criação da senha do usuário root durante o primeiro boot com o Systemd.
 
 Com o setup feito, seguiremos da nossa tela de login oficial, onde devemos fazer o login como o usuário `root` junto da senha que criamos anteriormente, entrando oficialmente em nosso sistema.
 
@@ -273,7 +366,7 @@ Com o setup feito, seguiremos da nossa tela de login oficial, onde devemos fazer
 
 </div>
 
-> Imagem :
+> Imagem 3: Tela de login do LecOS após a inicialização com o Systemd.
 
 Estando dentro do sistema, podemos consultar o estado geral agora que o Systemd está funcionando corretamente. Para isso, utilizaremos os comandos a seguir:
 
@@ -290,7 +383,7 @@ O resultado pode ser `degraded` se algum serviço opcional falhar. Nesta configu
 
 </div>
 
-> Imagem :
+> Imagem 4: Consulta ao estado geral do sistema com `systemctl`.
 
 Para consultar o serviço do console:
 
@@ -307,7 +400,7 @@ Se o Systemd estiver executando como PID 1, o console estiver acessível e o tec
 
 </div>
 
-> Imagem :
+> Imagem 5: Verificação do serviço de configuração do console.
 
 Por fim, para finalizar as configurações, iremos criar e setar novamente a variável `PS1` para exibir o nome do usuário e do sistema, como fizemos na etapa anterior (dessa vez, de forma permanente). Com isso, inserimos o comando a seguir, já dentro do sistema:
 
@@ -328,7 +421,50 @@ source /etc/profile
 
 </div>
 
-> Imagem :
+> Imagem 6: Prompt personalizado com o usuário e o nome do sistema, definido em `/etc/profile`.
+
+### **Explorando o Systemd**
+
+Com o sistema no ar, vale aproveitar para ver na prática os conceitos que acabamos de estudar. Primeiro, vamos confirmar que o Systemd é, de fato, o PID 1:
+
+```bash
+# Nome e executável do processo de PID 1
+cat /proc/1/comm
+ls -l /proc/1/exe
+
+# O caminho que o kernel executou durante o boot
+ls -l /sbin/init
+```
+
+O primeiro comando deve exibir `systemd`, e os dois `ls -l` devem apontar para `/usr/lib/systemd/systemd`. O diretório `/proc` será explorado com mais calma na próxima etapa.
+
+Em seguida, vamos consultar como o Systemd enxerga o sistema:
+
+```bash
+# Qual target o Systemd tenta alcançar no boot?
+systemctl get-default
+
+# Quais targets estão ativos agora?
+systemctl list-units --type=target --no-pager
+
+# Quais serviços estão em execução?
+systemctl list-units --type=service --no-pager
+
+# Como é uma unit de verdade? (compare com o exemplo que vimos)
+systemctl cat systemd-vconsole-setup.service --no-pager
+
+# Quais units o multi-user.target puxa para o boot?
+systemctl list-dependencies multi-user.target --no-pager
+```
+
+Ao analisar os resultados, procure relacionar com o que vimos:
+
+* Os targets listados correspondem aos marcos do Diagrama 3;
+* Cada serviço ativo é um programa que o Systemd iniciou e continua acompanhando;
+* A unit exibida pelo `systemctl cat` segue a mesma estrutura de `[Unit]`, `[Service]` e `[Install]`;
+* A árvore de dependências mostra o "mapa" do boot que o Systemd montou sozinho.
+
+> Os nomes e a quantidade de units dependem das opções com que o Systemd foi compilado, por isso a sua saída pode ser diferente da de outros sistemas. Em uma distribuição completa, a lista é bem maior.
 
 Com isso, podemos dizer que nosso sistema, enfim, está com todos os seus componentes instalados e funcionando corretamente! Com eles, poderemos prosseguir para os últimos passos do nosso framework, onde iremos ver mais alguns conceitos envolvendo os sistemas operacionais através dessas ferramentas, como os processos, que veremos na próxima etapa, que se conectam diretamente ao Systemd.
 
@@ -347,14 +483,14 @@ Depois:
 
 ```mermaid
 flowchart TD
-  A["Kernel"] -->|Executa| B["Script de init"]
-  B -->|Chama/Inicia| C["Systemd"]
+  A["Kernel"] -->|Executa| B["/sbin/init (link)"]
+  B -->|Aponta para| C["Systemd"]
   C -->|Assume| D["PID 1"]
   C -->|Coordena| E["Processos e serviços"]
-  C -->|Inicia| F["Console e shell"]
+  C -->|Inicia| F["Console de login e shell"]
 ```
 
-Essa é uma mudança importante na arquitetura do LecOS. O Bash continua fazendo parte da `userland`, mas deixa de ser responsável pela inicialização do sistema. Ele passa a ser apenas um **shell**, executado quando uma sessão ou outro processo precisar dele.
+Essa é uma mudança importante na arquitetura do LecOS. O trabalho que o nosso script fazia manualmente (montar os sistemas de arquivos virtuais e manter um shell disponível) agora é responsabilidade do Systemd, que ainda acrescenta dependências, supervisão e desligamento ordenado. O Bash continua fazendo parte da `userland`, mas deixa de ser responsável pela inicialização do sistema. Ele passa a ser apenas um **shell**, executado quando uma sessão ou outro processo precisar dele.
 
 ## **Próximos passos**
 
