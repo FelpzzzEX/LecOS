@@ -346,6 +346,8 @@ cat simbolico.txt
 
 ![sa4](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-47-19.png)
 
+</div>
+
 > Imagem 4: Perda do link simbólico ao remover o original.
 
 O link físico continua funcionando, pois o inode (e o conteúdo) só é liberado quando o último nome é removido. O link simbólico **quebrou**: ele guardava o caminho `original.txt`, que já não existe.
