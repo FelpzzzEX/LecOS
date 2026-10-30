@@ -225,7 +225,7 @@ kpartx -d /dev/loop0
 losetup -d /dev/loop0
 ```
 
-> **ATENÇÃO**: desta vez, **não** copie todo o conteúdo de `root` para a imagem como fizemos na etapa do Init System. Isso sobrescreveria alterações feitas dentro do próprio sistema, como a senha do `root` e o arquivo `/etc/profile`. Copiamos apenas o `lps`.
+> **ATENÇÃO**: desta vez, **não** copie todo o conteúdo de `root` para a imagem como fizemos na etapa do Init System. Copiamos apenas o `lps`.
 
 Por fim, copiamos a imagem para o sistema principal e iniciamos o LecOS no QEMU:
 
@@ -239,7 +239,7 @@ qemu-system-x86_64 lecos.img
 
 Após o login, já podemos utilizar o `lps`. Vamos aos experimentos!
 
-> **NOTA**: assim como na etapa da Memória, a função de colar não funciona no QEMU. Digite os comandos manualmente, sem os comentários (o que vem após o `#`).
+> **NOTA**: A função de colar não funciona no QEMU. Digite os comandos manualmente, sem os comentários (o que vem após o `#`).
 
 ### **Experimento 1: quem é o PID 1 e quem sou eu?**
 
@@ -269,6 +269,14 @@ systemd (1) [S]
 
 Repare que o `lps` aparece como filho do seu `bash`, que é filho do programa de login, que por sua vez é filho do `systemd` (PID 1). É exatamente a cadeia do Diagrama 2. Também vale executar `lps -k` para ver as threads do kernel, que aparecem como filhas do PID 2.
 
+<div align="center">
+
+![proc1](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_00-39-24.png)
+
+</div>
+
+> Imagem 1: Verificando o PID dos processos.
+
 ### **Experimento 2: fork e exec na prática**
 
 Lembra do `fork()`? Cada vez que executamos um comando, o shell cria um filho. Podemos provar isso pedindo para o filho nos dizer quem é o seu pai:
@@ -277,6 +285,14 @@ Lembra do `fork()`? Cada vez que executamos um comando, o shell cria um filho. P
 echo "Shell: $$"
 bash -c 'echo "Filho: $$ | Pai: $PPID"'
 ```
+
+<div align="center">
+
+![proc2](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_00-42-08.png)
+
+</div>
+
+> Imagem 2: Processo filho gerado pelo Bash.
 
 O PID do pai exibido pelo filho é exatamente o PID do nosso shell. Execute o segundo comando algumas vezes e observe que o PID do filho muda a cada execução: cada comando é um processo novo.
 
@@ -295,6 +311,14 @@ echo "PID do processo: $P"
 # Detalhes do processo
 lps -i $P
 ```
+
+<div align="center">
+
+![proc3](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_00-43-30.png)
+
+</div>
+
+> Imagem 3: Criando e verificando o processo.
 
 No resultado, observe os campos:
 
@@ -317,6 +341,14 @@ ls -l /proc/$P/exe /proc/$P/cwd
 ls -l /proc/$P/fd
 ```
 
+<div align="center">
+
+![proc4](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_00-44-57.png)
+
+</div>
+
+> Imagem 4: Verificando o diretório `/proc`, com as informações dos processos.
+
 O `exe` aponta para o programa `sleep` (o que aprendemos sobre programa e processo!). Na pasta `fd`, os números `0`, `1` e `2` correspondem à entrada, à saída e ao erro padrão, e todos apontam para o terminal em que estamos. Isso será o ponto de partida da próxima etapa, sobre entrada e saída.
 
 ### **Experimento 4: mudando o estado de um processo**
@@ -332,6 +364,14 @@ lps -i $P
 kill -CONT $P
 lps -i $P
 ```
+
+<div align="center">
+
+![proc5](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_00-45-53.png)
+
+</div>
+
+> Imagem 5: Parando e reiniciando o processo.
 
 Observe o campo **State**: após o `SIGSTOP`, ele passa para `T (stopped)` e, após o `SIGCONT`, volta para `S (sleeping)`. O processo continuou existindo o tempo todo; apenas o kernel deixou de escaloná-lo.
 
@@ -351,6 +391,14 @@ sleep 3
 lps
 ```
 
+<div align="center">
+
+![proc6](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-01-14.png)
+
+</div>
+
+> Imagem 6: Criando e verificando o processo zumbi.
+
 Na listagem, procure um processo `sleep` com estado **Z** e cujo PPID seja o `$Z`. É o nosso zumbi: ele já terminou, mas o seu pai ainda não leu o seu estado de saída.
 
 Agora vamos remover o pai do zumbi e ver o que acontece:
@@ -360,6 +408,14 @@ kill $Z
 sleep 1
 lps
 ```
+
+<div align="center">
+
+![proc7](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-01-41.png)
+
+</div>
+
+> Imagem 7: Processo zumbi desaparecendo, sendo adotado pelo `Systemd` (PID 1).
 
 O zumbi desapareceu. Com a morte do pai, ele foi **adotado pelo PID 1**, e o Systemd recolheu o seu estado de saída (o `wait()` que faltava). Esse é um exemplo prático do papel do init que estudamos na etapa anterior.
 
@@ -371,6 +427,14 @@ Vamos ver a adoção acontecendo de forma direta. O comando abaixo inicia um she
 bash -c 'sleep 300 & echo "Filho: $!"'
 lps
 ```
+
+<div align="center">
+
+![proc8](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-02-30.png)
+
+</div>
+
+> Imagem 8: Processo órfão sendo adotado pelo **PID 1**.
 
 Procure pelo `sleep` na lista: o seu PPID não é mais o do shell que o criou, e sim **1**. Em `lps -t`, ele aparece diretamente abaixo do `systemd`. Foi o kernel quem fez essa troca de pai, e é por isso que o PID 1 precisa permanecer em execução durante todo o funcionamento do sistema.
 
@@ -397,6 +461,14 @@ sleep 1
 lps -i $T
 ```
 
+<div align="center">
+
+![proc9](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-04-18.png)
+
+</div>
+
+> Imagem 9: Processo ignorando o pedido de encerramento.
+
 Dessa vez, o processo foi encerrado pelo kernel, sem chance de reação, e o `lps` informa que ele não existe mais. O `SIGKILL` deve ser o último recurso, pois o programa não tem a chance de salvar dados ou liberar recursos antes de terminar.
 
 ### **Visão do Systemd sobre os processos**
@@ -406,6 +478,14 @@ Por fim, podemos ver como o Systemd agrupa os processos do sistema. Ele organiza
 ```bash
 systemd-cgls --no-pager
 ```
+
+<div align="center">
+
+![proc10](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-05-07.png)
+
+</div>
+
+> Imagem 10: Árvore de grupos e seus respectivos processos.
 
 O resultado mostra uma árvore de grupos, e dentro de cada serviço, os processos que ele iniciou, incluindo o seu próprio shell, que pertence ao serviço de login do console. É o Systemd supervisionando os processos que ele iniciou.
 
@@ -421,6 +501,14 @@ kill $P
 lps
 kill [PID_DO_SLEEP_ORFAO]
 ```
+
+<div align="center">
+
+![proc11](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa8-framework/Captura%20de%20tela_2026-10-30_01-05-47.png)
+
+</div>
+
+> Imagem 11: Finalizando os processos restantes.
 
 ## **O que vimos na prática**
 

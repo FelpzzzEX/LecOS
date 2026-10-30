@@ -172,8 +172,6 @@ Alguns arquivos de dispositivo não correspondem a nenhum hardware físico, mas 
 
 Chegou a hora de observar tudo isso no LecOS. Utilizaremos apenas o que já temos instalado: o Bash, o GNU Coreutils e o `lps` que criamos na etapa anterior. Todos os experimentos acontecem **dentro do LecOS**, então inicie o sistema no QEMU e faça o login normalmente.
 
-> **NOTA**: assim como nas etapas anteriores, a função de colar não funciona no QEMU. Digite os comandos manualmente, sem os comentários (o que vem após o `#`).
-
 ### **Experimento 1: conhecendo os arquivos de dispositivo**
 
 Vamos listar alguns dos arquivos de dispositivo que mencionamos:
@@ -190,6 +188,14 @@ Para ver como o kernel enxerga os discos e as partições:
 cat /proc/partitions
 ```
 
+<div align="center">
+
+![es1](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-07-16.png)
+
+</div>
+
+> Imagem 1: Como o particionamento e a montagem são identificados pelo sistema.
+
 A lista deve conter o `sda` (o disco inteiro, de aproximadamente 10 GB) e o `sda1` (a partição que criamos com o `fdisk` na etapa do Bootloader).
 
 ### **Experimento 2: fluxos padrão e redirecionamento**
@@ -202,7 +208,7 @@ ls -l /proc/$$/fd
 
 Os descritores `0`, `1` e `2` apontam para o terminal (`/dev/tty1`). Pode aparecer também um `255`, que é utilizado internamente pelo Bash.
 
-Agora, vamos separar a saída dos erros. O comando `ls` abaixo recebe dois caminhos: um que existe e outro que não:
+Agora, vamos separar a saída dos erros. O comando `ls` abaixo recebe dois caminhos: um que existe e outro que não.
 
 ```bash
 # Saída e erro misturados no terminal
@@ -212,12 +218,28 @@ ls /etc /nao-existe
 ls /etc /nao-existe > saida.txt 2> erro.txt
 ```
 
+<div align="center">
+
+![es2](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-11-57.png)
+
+</div>
+
+> Imagens 2: Erro na saída do comando.
+
 No segundo comando, nada aparece na tela. A lista de arquivos foi para `saida.txt` e a mensagem de erro foi para `erro.txt`:
 
 ```bash
 cat erro.txt
 wc -l < saida.txt
 ```
+
+<div align="center">
+
+![es3](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-12-51.png)
+
+</div>
+
+> Imagem 3: Jogando a saída e o erro para um arquivo de texto.
 
 O `wc -l`, que conta linhas, recebeu o conteúdo do arquivo pela entrada padrão (`<`), sem que precisássemos informar o nome do arquivo a ele.
 
@@ -236,6 +258,14 @@ sleep 100 | sleep 200 &
 lps -t
 ```
 
+<div align="center">
+
+![es4](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-14-34.png)
+
+</div>
+
+> Imagem 4: Árvore contendo os processos `sleep` que criamos.
+
 Na árvore, os dois `sleep` aparecem como **filhos do mesmo shell**: o Bash criou dois processos. Guardaremos o PID de cada um (o `$!` guarda o último processo do pipeline, e o `jobs -p`, o primeiro) e vamos olhar os seus descritores:
 
 ```bash
@@ -250,6 +280,14 @@ A saída padrão do primeiro e a entrada padrão do segundo apontam para o mesmo
 ```bash
 kill $P1 $P2
 ```
+
+<div align="center">
+
+![es5](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-15-49.png)
+
+</div>
+
+> Imagem 5: Identificação do `pipe` criado que conecta os processos e seu encerramento.
 
 ### **Experimento 4: um pipe nomeado**
 
@@ -270,6 +308,14 @@ echo "Olá pelo canal" > canal
 rm canal
 ```
 
+<div align="center">
+
+![es6](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-17-59.png)
+
+</div>
+
+> Imagem 6: Criando e utilizando o `pipe` nomeado.
+
 No `ls -l`, a primeira letra é `p`, de *pipe*. Assim que o `echo` escreve, o `cat` (que estava bloqueado em `read()`) recebe a mensagem e a exibe. O arquivo `canal` nunca guardou o texto no disco: ele apenas indica o ponto de encontro dos dois processos, e os dados passaram pelo buffer do kernel.
 
 ### **Experimento 5: dispositivos especiais**
@@ -287,7 +333,15 @@ head -c 8 /dev/zero | od -An -tx1
 head -c 8 /dev/urandom | od -An -tx1
 ```
 
-O `/dev/zero` fornece sempre `00`, enquanto o `/dev/urandom` fornece valores diferentes a cada execução.
+<div align="center">
+
+![es7](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-19-59.png)
+
+</div>
+
+> Imagem 7: Utilizando os dispositivos especiais `null`, `zero` e `urandom`.
+
+O `/dev/zero`, como já vimos nas etapas iniciais, fornece sempre `0`, enquanto o `/dev/urandom` fornece valores diferentes a cada execução. Já o `/dev/null` funciona como um "vácuo" ou sumidouro de dados: qualquer informação escrita nele é descartada imediatamente, sem ser armazenada.
 
 ### **Experimento 6: o terminal como dispositivo**
 
@@ -310,6 +364,14 @@ stty -echo
 
 Digite qualquer coisa: nada aparece na tela, pois o kernel deixou de exibir as teclas digitadas. Para restaurar, digite `stty echo` e pressione `Enter` (mesmo sem enxergar o que digitou).
 
+<div align="center">
+
+![es8](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-24-07.png)
+
+</div>
+
+> Imagem 8: As utilidades do terminal e o impacto nas saídas.
+
 ### **Experimento 7: interrupções do teclado**
 
 O kernel mantém um contador de interrupções para cada dispositivo. Vamos olhar os primeiros registros:
@@ -323,6 +385,14 @@ Procure a linha referente ao teclado (geralmente `i8042`). Cada coluna numérica
 ```bash
 head -n 5 /proc/interrupts
 ```
+
+<div align="center">
+
+![es9](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-24-54.png)
+
+</div>
+
+> Imagem 9: Número de interrupções aumentando após digitarmos no terminal.
 
 O contador do teclado aumentou. Cada tecla que você pressionou gerou interrupções que o driver precisou tratar, exatamente como no Diagrama 2.
 
@@ -361,30 +431,15 @@ echo "Escritas: $e | Setores gravados: $g"
 rm teste.bin
 ```
 
+<div align="center">
+
+![es10](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa9-framework/Captura%20de%20tela_2026-10-30_01-29-16.png)
+
+</div>
+
+> Imagem 10: Acompanhando o processo de escrita.
+
 Compare os dois resultados: o número de **setores gravados** aumentou em cerca de 100 mil. Isso faz sentido: um setor tem 512 bytes, e 50 MB ÷ 512 bytes ≈ 102 mil setores (o valor exato é um pouco maior por conta dos dados de controle do sistema de arquivos, que veremos na próxima etapa). Esse experimento também ilustra a relação com a memória que estudamos: o `dd` primeiro escreve na **memória primária** (RAM), e o `sync` obriga o kernel a transferir os dados para a **memória secundária** (disco). Foi exatamente por isso que repetimos o `sync` antes de desmontar a imagem em várias etapas do framework.
-
-### **Experimento 10: a rede não é um arquivo**
-
-As interfaces de rede não aparecem em `/dev`, mas o kernel também as expõe:
-
-```bash
-# Interfaces de rede conhecidas pelo kernel
-ls /sys/class/net
-
-# Contadores de bytes e pacotes de cada interface
-cat /proc/net/dev
-```
-
-A interface `lo` (*loopback*) existe em qualquer sistema e serve para o computador conversar consigo mesmo. Vamos gerar tráfego nela com o `ping`, do GNU Inetutils, e comparar os contadores:
-
-```bash
-ping -c 3 127.0.0.1
-cat /proc/net/dev
-```
-
-Os contadores de pacotes recebidos e transmitidos da `lo` aumentaram. Mesmo sem nenhum arquivo em `/dev`, o kernel contabiliza toda a E/S de rede.
-
-> Para sair do comando `ping` antes do fim, utilize `Ctrl` + `C`, que, como vimos, é entregue ao processo como o sinal `SIGINT`.
 
 ## **O que vimos na prática**
 
@@ -401,7 +456,6 @@ Os contadores de pacotes recebidos e transmitidos da `lo` aumentaram. Mesmo sem 
 | 7 | Interrupções de hardware |
 | 8 | Leitura direta do disco: MBR e tabela de partições |
 | 9 | Do cache na RAM ao disco: `sync` e setores gravados |
-| 10 | E/S de rede e os contadores do kernel |
 
 </div>
 

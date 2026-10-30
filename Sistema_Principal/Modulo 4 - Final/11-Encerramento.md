@@ -115,15 +115,13 @@ kpartx -d /dev/loop0
 losetup -d /dev/loop0
 ```
 
-> **ATENÇÃO**: **não** copie todo o conteúdo de `root` para a imagem. Isso sobrescreveria arquivos criados dentro do próprio sistema, como o `/etc/profile` e a senha do `root`.
-
 ### **Concluindo o desafio**
 
 Quando terminar, execute todas as verificações da Tabela 2 e confirme que cada objetivo foi atendido. Para registrar a conquista, execute o `lecosfetch` com dois logos diferentes e tire uma captura de tela de cada um.
 
 <div align="center">
 
-![lecosfetch]()
+![lecosfetch](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa11-framework/Captura%20de%20tela_2026-10-30_02-45-22.png)
 
 </div>
 

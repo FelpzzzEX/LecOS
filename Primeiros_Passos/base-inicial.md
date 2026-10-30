@@ -126,6 +126,8 @@ Este comando instala o WSL em sua máquina local utilizando o sistema operaciona
 
 Tendo o WSL instalado, iremos instalar o sistema [Docker Desktop](https://www.docker.com/products/docker-desktop/). Utilizaremos esta aplicação por ser uma ferramenta comum no mercado para gerenciar contêineres de desenvolvimento, garantindo um ambiente isolado, prático e de excelente reprodutibilidade.
 
+> Não se esqueça de ativar a integração do **WSL** no `Docker Desktop` e, após entrar no terminal, novamente, rode `sudo usermod -aG docker $USER` para garantir que o usuário do contêiner terá as permissões necessárias.
+
 ___
 
 ## **Iniciando o desenvolvimento**

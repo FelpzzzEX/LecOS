@@ -245,8 +245,6 @@ Um exemplo que já conhecemos é o `/sbin/init`: na etapa do Init System, criamo
 
 Vamos observar os conceitos em funcionamento. Assim como na etapa anterior, os experimentos acontecem **dentro do LecOS** e utilizam apenas o que já temos instalado (Bash, Coreutils e Util-Linux, que fornece o `mount`).
 
-> **NOTA**: lembre-se de que a função de colar não funciona no QEMU. Digite os comandos manualmente, sem os comentários (o que vem após o `#`).
-
 ### **Experimento 1: o que está montado?**
 
 Vamos começar vendo quais sistemas de arquivos estão montados, e de que tipo:
@@ -254,6 +252,14 @@ Vamos começar vendo quais sistemas de arquivos estão montados, e de que tipo:
 ```bash
 df -hT
 ```
+
+<div align="center">
+
+![sa1](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-36-37.png)
+
+</div>
+
+> Imagem 1: Sistemas de arquivos que estão montados.
 
 O `df` (*disk free*), do Coreutils, mostra o espaço de cada sistema de arquivos montado. Procure pela linha do `/dev/sda1`, do tipo `ext4`, montada em `/`, com aproximadamente 10 GB. As demais (`devtmpfs`, `tmpfs`) são os sistemas virtuais que vimos na Tabela 4. A fonte desses dados é o `/proc`, como em toda a etapa de Processos:
 
@@ -266,6 +272,14 @@ E o Systemd também enxerga essas montagens, pois cada uma é gerenciada por uma
 ```bash
 systemctl list-units --type=mount --no-pager
 ```
+
+<div align="center">
+
+![sa2](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-40-04.png)
+
+</div>
+
+> Imagem 2: Montagens exibidas pelo Systemd.
 
 ### **Experimento 2: explorando a árvore**
 
@@ -300,6 +314,14 @@ ln -s original.txt simbolico.txt
 ls -li
 ```
 
+<div align="center">
+
+![sa3](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-46-33.png)
+
+</div>
+
+> Imagem 3: Criando o arquivo e seus respectivos links.
+
 A opção `-i` do `ls` exibe o número do **inode** na primeira coluna. Observe que:
 
 * `original.txt` e `fisico.txt` possuem o **mesmo número de inode**. São dois nomes para o mesmo arquivo, e o contador de links (segunda coluna) mostra `2`;
@@ -319,6 +341,12 @@ rm original.txt
 cat fisico.txt
 cat simbolico.txt
 ```
+
+<div align="center">
+
+![sa4](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-47-19.png)
+
+> Imagem 4: Perda do link simbólico ao remover o original.
 
 O link físico continua funcionando, pois o inode (e o conteúdo) só é liberado quando o último nome é removido. O link simbólico **quebrou**: ele guardava o caminho `original.txt`, que já não existe.
 
@@ -347,6 +375,14 @@ chmod 600 script.sh
 stat -c '%A %a %U %G' script.sh
 ```
 
+<div align="center">
+
+![sa5](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-49-38.png)
+
+</div>
+
+> Imagem 5: Verificando e configurando as permissões ao script.
+
 O resultado deve ser `-rw------- 600 root root`: leitura e escrita somente para o dono, que é o `root`, e nenhuma permissão para os demais.
 
 ### **Experimento 5: blocos e inodes**
@@ -357,6 +393,14 @@ Vamos ver como o sistema de arquivos organiza o espaço:
 stat -f /
 df -i /
 ```
+
+<div align="center">
+
+![sa6](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_01-50-28.png)
+
+</div>
+
+> Imagem 6: Verificando o tamanho e quantidade de blocos/inodes.
 
 No `stat -f`, procure o **tamanho de bloco** (normalmente `4096`) e o total de blocos e de inodes. O tipo pode aparecer como `ext2/ext3`, pois as três gerações do sistema de arquivos compartilham o mesmo identificador. Já o `df -i` mostra quantos inodes existem e quantos estão em uso.
 
@@ -391,6 +435,14 @@ df -hT /mnt/ram
 echo "Estou na RAM" > /mnt/ram/arquivo.txt
 ls -l /mnt/ram
 ```
+
+<div align="center">
+
+![sa7](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_02-04-50.png)
+
+</div>
+
+> Imagem 7: Montando o sistema de arquivos temporário (na memória primária).
 
 O `df` mostra um sistema de arquivos do tipo `tmpfs` com 16 MB, montado em `/mnt/ram`. Tudo o que for gravado ali vive na memória primária. Para finalizar:
 
@@ -452,6 +504,14 @@ cat /root/persistente.txt
 # O Systemd gerou uma unit a partir da linha do fstab
 systemctl status mnt-ram.mount --no-pager
 ```
+
+<div align="center">
+
+![sa8](https://github.com/FelpzzzEX/Imagens/blob/956c72345e5d06ef6a31d16b9b17d557dd29e975/Etapa10-framework/Captura%20de%20tela_2026-10-30_02-43-01.png)
+
+</div>
+
+> Imagem 8: Sistema de arquivos montado pelo Systemd.
 
 O `/mnt/ram` já está montado, sem nenhum comando nosso: foi o Systemd, lendo o `fstab`, que criou a `mnt-ram.mount` e montou o sistema de arquivos. Porém, o `volatil.txt` desapareceu, pois estava na RAM, enquanto o `persistente.txt` continua ali, gravado no ext4 do disco. É a volatilidade da memória primária e a persistência da secundária, que vimos lá na etapa da Memória, agora vistas pelo lado do sistema de arquivos.
 
