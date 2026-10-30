@@ -204,9 +204,9 @@ Dentro do contêiner, no diretório `/LOS`, guardamos o script na nossa `root` (
 
 ```bash
 # Instala o 'lps' na árvore do sistema
-mkdir -p root/usr/local/bin
-cp lps root/usr/local/bin/lps
-chmod +x root/usr/local/bin/lps
+mkdir -p root/usr/bin
+cp lps root/usr/bin/lps
+chmod +x root/usr/bin/lps
 
 # Montamos novamente a imagem em /mnt
 mknod /dev/loop0 b 7 0
@@ -215,8 +215,8 @@ kpartx -av /dev/loop0
 mount /dev/mapper/loop0p1 /mnt
 
 # Copia somente o script para dentro da imagem
-mkdir -p /mnt/usr/local/bin
-cp root/usr/local/bin/lps /mnt/usr/local/bin/lps
+mkdir -p /mnt/usr/bin
+cp root/usr/bin/lps /mnt/usr/bin/lps
 
 # Sincroniza, desmonta e remove o loop device
 sync

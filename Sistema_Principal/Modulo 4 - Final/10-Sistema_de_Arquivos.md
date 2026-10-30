@@ -163,8 +163,8 @@ Em sistemas GNU/Linux, a organização dos diretórios segue uma convenção cha
 | `/boot` | Arquivos de inicialização | Kernel (`bzImage`) e GRUB |
 | `/bin` e `/sbin` | Comandos essenciais | Coreutils, Bash e o `init` |
 | `/lib` e `/lib64` | Bibliotecas essenciais | Glibc, Ncurses |
-| `/usr` | Programas e bibliotecas | Systemd, em `/usr/lib/systemd` |
-| `/usr/local` | Programas instalados localmente | O `lps`, em `/usr/local/bin` |
+| `/usr` | Programas e bibliotecas | Systemd, em `/usr/lib/systemd`, e o `lps`, em `/usr/bin` |
+| `/usr/local` | Programas instalados localmente | |
 | `/etc` | Arquivos de configuração | `hostname`, `os-release`, `machine-id`, `profile` |
 | `/var` | Dados variáveis (registros, cache) | Dados gerados pelo Systemd |
 | `/tmp` | Arquivos temporários | |
@@ -495,36 +495,3 @@ rmdir /mnt/ram /mnt/disco
 ## **Conclusão**
 
 Nesta etapa, vimos como os blocos de um disco se transformam em arquivos e diretórios, com nomes, donos e permissões. Entendemos o papel do inode, do journal e do VFS, vimos que o Linux organiza tudo em uma única árvore através da montagem e comprovamos que, por trás de tudo isso, existem apenas bytes em posições combinadas entre o kernel e o disco.
-
-## **Conclusão do framework**
-
-Com esta etapa, chegamos ao fim da nossa jornada. Partimos de um computador desligado e, passo a passo, percorremos todo o caminho até um sistema operacional GNU/Linux em pleno funcionamento, construído por nós:
-
-```mermaid
-flowchart LR
-  A["BIOS/UEFI<br/>(POST)"] --> B["Bootloader<br/>(GRUB)"]
-  B --> C["Kernel Linux"]
-  C --> D["Init system<br/>(Systemd, PID 1)"]
-  D --> E["Processos"]
-  E --> F["Entrada e saída<br/>(dispositivos)"]
-  F --> G["Sistema de arquivos<br/>(ext4)"]
-```
-
->Diagrama 4: O caminho percorrido pelo framework, do botão de ligar aos arquivos.
-
-<div align="center">
-
-| **Módulo** | **Etapas** | **O que aprendemos** |
-| :--: | :--: | :--: |
-| **1 - Início** | BIOS/UEFI, Ambiente, Bootloader | Como o hardware desperta e entrega o controle ao software |
-| **2 - Boot** | Kernel, Memória, Init | O papel do kernel, a diferença entre RAM e disco e o primeiro processo |
-| **3 - Processos** | Init System, Processos | O Systemd como PID 1 e o ciclo de vida dos processos |
-| **4 - Final** | Entrada e Saída, Sistema de Arquivos | Como o sistema conversa com o hardware e organiza os dados |
-
-</div>
-
->Tabela 10: Resumo dos módulos do framework.
-
-Ao longo do caminho, vimos que cada conceito está conectado aos demais: o `/dev` que o kernel preenche, o `/proc` que nos mostrou os processos, o `sync` que levou os dados da RAM ao disco, o Systemd que monta, inicia e supervisiona. Um sistema operacional não é uma peça única, e sim um conjunto de componentes simples e bem definidos que cooperam entre si.
-
-O LecOS é, de propósito, minimalista. Uma distribuição completa soma a ele componentes como um gerenciador de pacotes, configuração de rede, gerenciamento de usuários e uma interface gráfica, todos sobre essa mesma base. Agora, quando você instalar ou utilizar qualquer distribuição GNU/Linux, saberá exatamente o que acontece desde o momento em que aperta o botão de ligar. Parabéns por ter chegado até aqui!
