@@ -37,7 +37,7 @@ sequenceDiagram
 
 > Diagrama 1: Sequência simplificada do processo de inicialização do LecOS utilizando o Systemd.
 
-Enquanto isso, no estágio anterior do LecOS, essa posição era ocupada pelo nosso script `init`, interpretado pelo **Bash**: ele montava os sistemas de arquivos virtuais e mantinha um shell em execução, reiniciando-o sempre que o usuário saía:
+Já no estágio anterior do LecOS, essa posição era ocupada pelo nosso script `init`, interpretado pelo **Bash**: ele montava os sistemas de arquivos virtuais e mantinha um shell em execução, reiniciando-o sempre que o usuário saía:
 
 ```mermaid
 sequenceDiagram
@@ -73,10 +73,10 @@ O PID 1 não é um processo comum. Além de ser o ancestral de todos os outros, 
 
 * **Preparar o espaço de usuário**: montar os sistemas de arquivos virtuais, preparar diretórios de execução e iniciar os serviços na ordem correta.
 * **Supervisionar os serviços**: saber se um serviço terminou ou falhou e, quando configurado, iniciá-lo novamente.
-* **Adotar processos órfãos e recolher zumbis**: quando um processo termina sem que seu pai tenha recolhido seu estado, ou quando o pai termina antes do filho, é o PID 1 que assume essa tarefa (veremos isso na prática na próxima etapa).
+* **Adotar processos órfãos e recolher zumbis**: quando um processo termina, seu pai precisa recolher o seu estado; se o pai terminar antes do filho, o filho fica órfão e é adotado pelo PID 1, que passa a ser responsável por recolher esse estado (veremos isso na prática na próxima etapa).
 * **Conduzir o desligamento**: encerrar os serviços de forma ordenada, desmontar os sistemas de arquivos e só então pedir ao kernel que desligue ou reinicie a máquina.
 
-Além disso, como vimos na etapa anterior, o kernel não tolera a ausência desse processo: se o PID 1 terminar, o resultado é um **kernel panic**.
+Além disso, como vimos nas etapas anteriores, o kernel não tolera a ausência desse processo: se o PID 1 terminar, o resultado é um **kernel panic**.
 
 Nosso script `init` cumpria apenas uma pequena parte dessas tarefas. Comparando com o que o Systemd passa a fazer:
 
@@ -142,7 +142,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-* **[Unit]**: descreve a unit e suas relações. O `After=` define *ordem* ("inicie depois de..."), enquanto `Wants=` e `Requires=` definem *dependência* ("puxe esta unit junto" e "só funcione se ela funcionar"). São coisas diferentes: ordem e dependência são declaradas separadamente.
+* **[Unit]**: descreve a unit e suas relações. O `After=` define *ordem* ("inicie depois de..."), enquanto `Wants=` e `Requires=` definem *dependência* ("puxe esta unit junto" e "só funcione se ela funcionar", respectivamente). São coisas diferentes: ordem e dependência são declaradas separadamente.
 * **[Service]**: define o que executar (`ExecStart=`) e o que fazer se o programa terminar (`Restart=`).
 * **[Install]**: define em qual target a unit deve ser incluída quando for habilitada. Aqui, `WantedBy=multi-user.target` significa "inicie este serviço quando o sistema alcançar o modo multiusuário".
 
@@ -173,13 +173,13 @@ Neste framework, utilizaremos a versão **257.13** do Systemd, mantendo uma vers
 
 A compilação do Systemd depende de ferramentas de desenvolvimento e de bibliotecas que precisam estar disponíveis no ambiente de construção. Para evitar que o aluno tenha de executar manualmente uma longa sequência de comandos, todo esse processo será automatizado pelo script de build preparado para o LecOS.
 
-O Systemd utiliza o **Meson** como sistema de configuração e o **Ninja** como ferramenta de compilação, se diferenciando dos demais componentes que vimos no decorrer do trabalho que utilizam o `make` para essa finalidade. Também utiliza ferramentas como `gperf`, Python e Jinja2 durante o processo de construção. A documentação do próprio projeto lista essas ferramentas entre os requisitos de compilação. 
+O Systemd utiliza o **Meson** como sistema de configuração e o **Ninja** como ferramenta de compilação, diferenciando-se dos demais componentes que vimos no decorrer do trabalho, que utilizam o `make` para essa finalidade. Também utiliza ferramentas como `gperf`, Python e Jinja2 durante o processo de construção. A documentação do próprio projeto lista essas ferramentas entre os requisitos de compilação. 
 
-> Não precisaremos nos preocupar em instalar, uma vez que nosso ambiente de desenvolvimento já fornece parte dessas ferramentas, com exceção das que necessitam de serem baixadas através do `wget`.
+> Não precisaremos nos preocupar em instalá-las, uma vez que nosso ambiente de desenvolvimento já fornece parte dessas ferramentas, com exceção das que precisam ser baixadas através do `wget`.
 
-O script compila e instala as dependências selecionadas — `libcap 2.75`, `kmod 34.2` e `zstd 1.5.7` — e depois configura, compila e instala o Systemd 257.13. Para isso, como em componentes anteriores, estaremos baixando os **tarballs** dos mesmos através do `wget`, garantindo o código fonte em nosso ambiente de construção e permitindo o script correr como deveria. 
+O script compila e instala as dependências selecionadas — `libcap 2.75`, `kmod 34.2` e `zstd 1.5.7` — e depois configura, compila e instala o Systemd 257.13. Para isso, como em componentes anteriores, baixaremos os **tarballs** deles através do `wget`, garantindo o código-fonte em nosso ambiente de construção e permitindo que o script execute como esperado. 
 
-Além disso, precisaremos também instalar os `headers do kernel`, sendo uma dependência essencial para o systemd. Com isso em mente, ao fazer o download do tarball do Kernel Linux `6.12.108` e extrair o conteúdo com o comando **tar**, basta rodar os seguintes comandos, na pasta do kernel:
+Além disso, precisaremos também instalar os `headers do kernel`, uma dependência essencial para o Systemd. Com isso em mente, ao fazer o download do tarball do Kernel Linux `6.12.108` e extrair o conteúdo com o comando **tar**, basta rodar os seguintes comandos, na pasta do kernel:
 
 ```bash
 cd /LOS/Componentes/linux-6.12.108
@@ -190,13 +190,14 @@ make ARCH=x86_64 headers_install \
 
 > Os headers do kernel Linux são arquivos que contêm definições e declarações das interfaces disponibilizadas pelo kernel, permitindo que programas e bibliotecas do sistema utilizem essas interfaces durante a compilação. No LecOS, eles são necessários para atender às dependências de componentes como o Systemd.
 
-Componentes baixados e headers instalados, podemos enfim prosseguir para a compilação e instalação dos mesmos, além do próprio **Systemd**, certifique-se de que os códigos-fonte dos componentes esperados pelo script estejam disponíveis em `/LOS/Componentes` em suas respectivas versões. Após garantir que todos os componentes estão presentes, execute o script de build do Systemd:
+Com os componentes baixados e os headers instalados, podemos enfim prosseguir para a compilação e instalação deles, além do próprio **Systemd**. Certifique-se de que os códigos-fonte dos componentes esperados pelo script estejam disponíveis em `/LOS/Componentes` em suas respectivas versões. Após garantir que todos os componentes estão presentes, execute o script de build do Systemd:
 
 ```bash
 # Acesse o diretório de scripts 
 cd /LOS/Componentes/scripts
 
 # Forneça a permissão de execução e, após, execute o script
+chmod +x systemd-build.sh
 ./systemd-build.sh
 ```
 
@@ -251,10 +252,11 @@ ln -sf /usr/lib/systemd/systemd "$LOS/sbin/init"
 
 > O caminho `/sbin/init` é o mesmo onde colocamos o nosso script na etapa anterior. Como a opção `-f` (*force*) sobrescreve o arquivo existente, **o link passa a substituir o script**: o kernel agora executa o Systemd diretamente, sem intermediários.
 
-Tendo tudo pronto, podemos enfim configurar o `Systemd` para atuar como **PID 1** do nosso sistema, e para isso, foi preparado o script `systemd-setup.sh`, o qual cuidará de todo o processo de configuração dele em nosso ambiente de desenvolvimento. Para isso, dê as `permissões` necessárias para executar e, no diretório de scripts, insira o comando:
+Tendo tudo pronto, podemos enfim configurar o `Systemd` para atuar como **PID 1** do nosso sistema. Para isso, foi preparado o script `systemd-setup.sh`, o qual cuidará de todo o processo de configuração dele em nosso ambiente de desenvolvimento. Dê as `permissões` necessárias para executá-lo e, no diretório de scripts, insira o comando:
 
 ```bash
 # Forneça as permissões de execução e, em seguida, execute
+chmod +x systemd-setup.sh
 ./systemd-setup.sh
 ```
 
@@ -288,7 +290,7 @@ Quando o kernel iniciar o LecOS, esse caminho permitirá que o Systemd seja exec
 
 ## **Após a instalação**
 
-O Systemd utiliza algumas informações básicas para identificar a instalação. Podemos definir um hostname persistente. Dentro do nosso ambiente de desenvolvimento, inserimos dentro de hostname:
+O Systemd utiliza algumas informações básicas para identificar a instalação. Podemos definir um hostname persistente. Dentro do nosso ambiente de desenvolvimento, inserimos o nome do sistema no arquivo `hostname`:
 
 ```bash
 echo "lecos" > "$LOS/etc/hostname"
@@ -296,7 +298,7 @@ echo "lecos" > "$LOS/etc/hostname"
 
 > **ATENÇÃO**: Utilize o nome do seu sistema.
 
-Tendo o hostname instanciado, podemos seguir para a criação de um arquivo simples de identificação da distribuição, muito comum em diversos sistemas GNU/Linux. Para isso, estaremos inserindo o seguinte comando:
+Tendo o hostname definido, podemos seguir para a criação de um arquivo simples de identificação da distribuição, muito comum em diversos sistemas GNU/Linux. Para isso, inseriremos o seguinte comando:
 
 ```bash
 cat > "$LOS/etc/os-release" <<'EOF'
@@ -309,17 +311,17 @@ EOF
 
 O `/etc/hostname` define o nome persistente da máquina, enquanto `/etc/os-release` permite que ferramentas identifiquem a distribuição.
 
-Também precisamos criar o identificador único da instalação através da criação de `/etc/machine-id`, fazendo parte da preparação de uma instalação Systemd. Ela deve ser feita no ambiente alvo, quando a ferramenta correspondente estiver disponível e puder ser executada corretamente. Para isso, estaremos utilizando o `chroot`:
+Também precisamos criar o identificador único da instalação através da criação de `/etc/machine-id`, que faz parte da preparação de uma instalação Systemd. Essa etapa deve ser feita no ambiente alvo, quando a ferramenta correspondente estiver disponível e puder ser executada corretamente. Para isso, utilizaremos o `chroot`:
 
 ```bash
 chroot "$LOS" /usr/bin/systemd-machine-id-setup
 ```
 
-Esse comando cria `/etc/machine-id`, que é utilizado pelo Systemd para identificar de forma única a instalação do sistema. O LFS também realiza essa etapa após a instalação do Systemd.
+Esse comando cria `/etc/machine-id`, que é utilizado pelo Systemd para identificar de forma única a instalação do sistema. O Linux From Scratch (LFS) também realiza essa etapa após a instalação do Systemd.
 
 > **Change root** (`chroot`): comando que altera temporariamente o diretório raiz (`/`) de um processo, fazendo com que ele enxergue um diretório específico como a raiz do sistema. Isso permite executar ferramentas dentro do ambiente alvo do LecOS, utilizando os arquivos e as configurações desse sistema, em vez dos arquivos do sistema hospedeiro.
 
-Feito tudo isso, podemos enfim adicionar os novos componentes para o nosso sistema. Para isso, como de costume, estaremos montando `lecos.img` no diretório `/mnt`, removendo os diretórios presentes dentro e inserindo a nova versão contendo o Systemd. Para isso, executaremos os comandos:
+Feito tudo isso, podemos enfim adicionar os novos componentes ao nosso sistema. Para isso, como de costume, montaremos `lecos.img` no diretório `/mnt`, removeremos os diretórios presentes nele e inseriremos a nova versão contendo o Systemd. Para isso, executaremos os comandos:
 
 ```bash
 # Montamos novamente a imagem em /mnt
@@ -340,7 +342,7 @@ cp -a root/. /mnt/
 # Sincronize as alterações
 sync
 
-# Desmonta 'lecos.img' de '/mnt' e remoção do loop device
+# Desmonta 'lecos.img' de '/mnt' e remove o loop device
 umount /mnt
 kpartx -d /dev/loop0
 losetup -d /dev/loop0
@@ -358,7 +360,7 @@ Depois de iniciar novamente o nosso sistema no QEMU, nos depararemos com a nova 
 
 > Imagem 2: Criação da senha do usuário root durante o primeiro boot com o Systemd.
 
-Com o setup feito, seguiremos da nossa tela de login oficial, onde devemos fazer o login como o usuário `root` junto da senha que criamos anteriormente, entrando oficialmente em nosso sistema.
+Com o setup feito, seguiremos para a nossa tela de login oficial, onde devemos fazer o login como o usuário `root` junto da senha que criamos anteriormente, entrando oficialmente em nosso sistema.
 
 <div align="center">
 
@@ -402,7 +404,7 @@ Se o Systemd estiver executando como PID 1, o console estiver acessível e o tec
 
 > Imagem 5: Verificação do serviço de configuração do console.
 
-Por fim, para finalizar as configurações, iremos criar e setar novamente a variável `PS1` para exibir o nome do usuário e do sistema, como fizemos na etapa anterior (dessa vez, de forma permanente). Com isso, inserimos o comando a seguir, já dentro do sistema:
+Por fim, para finalizar as configurações, criaremos e definiremos novamente a variável `PS1` para exibir o nome do usuário e do sistema, como fizemos na etapa anterior (dessa vez, de forma permanente). Com isso, inserimos o comando a seguir, já dentro do sistema:
 
 ```bash
 # Criamos /etc/profile 
@@ -466,7 +468,7 @@ Ao analisar os resultados, procure relacionar com o que vimos:
 
 > Os nomes e a quantidade de units dependem das opções com que o Systemd foi compilado, por isso a sua saída pode ser diferente da de outros sistemas. Em uma distribuição completa, a lista é bem maior.
 
-Com isso, podemos dizer que nosso sistema, enfim, está com todos os seus componentes instalados e funcionando corretamente! Com eles, poderemos prosseguir para os últimos passos do nosso framework, onde iremos ver mais alguns conceitos envolvendo os sistemas operacionais através dessas ferramentas, como os processos, que veremos na próxima etapa, que se conectam diretamente ao Systemd.
+Com isso, podemos dizer que nosso sistema, enfim, está com todos os seus componentes instalados e funcionando corretamente! Com eles, poderemos prosseguir para os últimos passos do nosso framework, onde veremos mais alguns conceitos envolvendo os sistemas operacionais através dessas ferramentas, como os processos, que se conectam diretamente ao Systemd e serão vistos na próxima etapa.
 
 ### **O que mudou no processo de inicialização?**
 
@@ -496,4 +498,4 @@ Essa é uma mudança importante na arquitetura do LecOS. O trabalho que o nosso 
 
 Com o Systemd assumindo o PID 1 e o console ABNT2 configurado, o LecOS passa a ter uma base de inicialização mais próxima daquela encontrada em distribuições GNU/Linux convencionais.
 
-Na próxima etapa, estaremos nos aprofundando um pouco mais nos processos, sendo uma parte fundamental no aprendizado de sistemas operacionais. Estamos quase finalizando o módulo 3, um excelente trabalho até aqui, e nos vemos na próxima etapa!
+Na próxima etapa, nos aprofundaremos um pouco mais nos processos, que são uma parte fundamental no aprendizado de sistemas operacionais. Estamos quase finalizando o módulo 3, um excelente trabalho até aqui, e nos vemos na próxima etapa!

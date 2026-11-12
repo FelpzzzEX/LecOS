@@ -1,33 +1,36 @@
 # **BIOS | UEFI**
 
-Após finalizarmos os [Primeiros Passos](Primeiros_Passos/base-inicial.md) do nosso framework através da `base inicial`, iniciaremos agora a etapa definitiva do projeto, onde focaremos não no processo de montar um sistema operacional, mas no entendimento por trás dos componentes e conceitos de sistemas operacionais.
+Após concluirmos os [Primeiros Passos](../../Primeiros_Passos/base-inicial.md) do nosso framework, por meio da construção de uma **base inicial**, iniciaremos agora uma nova etapa do projeto. Diferentemente da abordagem anterior, cujo objetivo era construir um sistema operacional mínimo e funcional, nosso foco passará a ser o entendimento dos componentes, mecanismos e conceitos que fundamentam a arquitetura de uma distribuição GNU/Linux.
 
-Sabendo disso, ao aprendermos a estrutura de um sistema operacional, não podemos nos limitar somente ao software em si, uma vez que o S.O. nada mais é do que uma forma de possibilitar o ser humano de se utilizar e comunicar com o hardware através do software. Por este motivo, passaremos pelo primeiro "componente" do sistema operacional, embora não venha do software em si, mas sim o próprio hardware através de um firmware na placa-mãe.
+Nesse contexto, compreender a estrutura de um sistema operacional exige ir além do próprio software. Afinal, um sistema operacional atua como intermediário entre o hardware e as aplicações, oferecendo mecanismos para que os recursos físicos do computador sejam utilizados e gerenciados pelo software.
+
+Por esse motivo, antes de entrarmos nos componentes que constituem o ambiente de execução do sistema operacional propriamente dito, precisamos compreender o processo que permite sua inicialização. Começaremos, portanto, pelo *firmware* da placa-mãe, responsável pelas primeiras etapas de inicialização do computador: a **BIOS (Basic Input/Output System)** e sua evolução, a **UEFI (Unified Extensible Firmware Interface)**.
 
 ## **Início**
 
-Ao ligarmos a máquina, é de grande importância que o hardware esteja preparado para inicializar o sistema operacional. Sabendo disso, as fabricantes de dispositivos utilizam firmwares específicos para essa finalidade, sendo eles: 
+Ao ligarmos um computador, é necessário que o hardware passe por uma série de procedimentos de inicialização antes que o sistema operacional possa ser carregado. Para isso, as placas-mãe possuem um *firmware* responsável por realizar as primeiras configurações e verificações do hardware, preparando o ambiente para a inicialização do sistema.
 
-* `BIOS` (_Basic Input/Output System_), sendo o firmware legado de 1980 muito utilizado em máquinas mais antigas;
-* `UEFI` (_Unified Extensible Firmware Interface_), a alternativa moderna para a inicialização do hardware. 
+Historicamente, existem duas tecnologias principais utilizadas para essa finalidade:
+* `BIOS` (_Basic Input/Output System_), *firmware* legado de 1980 muito utilizado em computadores mais antigos;
+* `UEFI` (_Unified Extensible Firmware Interface_), a alternativa moderna para substituir as limitações da arquitetura tradicional do BIOS.
 
-Ambos acabam tendo o mesmo objetivo prático, porém com filosofias e implementações diferentes devido as épocas em que foram desenvolvidos, visto que o UEFI contém funções nativas que o BIOS não possui, o que, apesar de aumentar sua complexidade, o torna mais confiável e eficiente para máquinas modernas, motivo esse que leva a maioria dos dispositivos já possuir o UEFI de fábrica.
+Embora ambos tenham o mesmo objetivo geral, suas arquiteturas e implementações são bastante diferentes, principalmente devido às limitações tecnológicas existentes na época em que o BIOS foi desenvolvido. O UEFI oferece recursos mais modernos, maior flexibilidade e suporte a funcionalidades que não fazem parte da arquitetura original do BIOS, tornando-se o padrão predominante nos computadores atuais.
 
-Esses firmwares visam testar a integridade e inicialização do hardware através do teste `POST` (_Power-On Self-Test_), sendo este um processo de diagnóstico que ocorre logo após o computador ser ligado. Sua função principal é garantir que todos os componentes de hardware essenciais estejam funcionando corretamente antes de carregar o sistema operacional.
+Esses firmwares são responsáveis pelas primeiras etapas de inicialização do computador, incluindo o `POST` (*Power-On Self-Test*), um conjunto de verificações e procedimentos executados logo após o equipamento ser ligado. Sua finalidade é identificar possíveis problemas nos componentes essenciais e preparar o hardware para que o processo de inicialização possa continuar.
 
-O BIOS/UEFI checam se todos os componentes do hardware estão prontos para iniciar. Caso algum apresente algum problema, a inicialização é interrompida junto de uma mensagem de erro -- eles não iniciam caso o hardware não esteja capacitado para ligar. 
-
-As checagens incluem componentes como:
-
-* SSD;
+Durante essa etapa, o *firmware* verifica e inicializa componentes como:
 * Memória RAM;
-* Periféricos essenciais. 
+* Processador;
+* Controladores e dispositivos de armazenamento;
+* Periféricos e demais dispositivos essenciais à inicialização.
 
-Por isso, não ocorrem normalmalmente desligamento ou falha em caso de, por exemplo, estar faltando mouse e teclado durante o processo. É uma etapa extremamente importante, uma vez que muitos programas cruciais estão sendo carregados quando a máquina é inicializada. Ter chips com defeito ou fonte com defeito pode afetar negativamente esse processo e levar a mais problemas.
+Caso seja identificado algum problema crítico, o processo poderá ser interrompido, acompanhado de uma mensagem de erro ou de sinais sonoros e luminosos, dependendo da implementação do fabricante.
 
->**Curiosidade**: No passado, a falta de teclado conectado ao dispositivo impedia o boot do sistema, gerando o erro `Keyboard not found. Press F1 to continue`, mas que foram resolvidas conforme novas opções foram sendo implementadas.
+É importante destacar que nem todos os dispositivos precisam estar conectados para que o computador seja inicializado. A ausência de periféricos como mouse e teclado, por exemplo, normalmente não impede o processo, uma vez que eles não são essenciais para o carregamento do sistema operacional.
 
-Após essa etapa, o sistema repassa para o firmware que irá localizar e carregar o `bootloader` (que será aprofundado no próximo módulo), o qual coordena o processo de inicializar o software -- no caso, o sistema operacional.
+>**Curiosidade**: No passado, a falta de teclado conectado ao computador impedia o boot do sistema, gerando o erro `"Keyboard not found. Press F1 to continue"`. Com a evolução dos *firmwares*, passaram a existir opções de configuração que permitem ignorar determinadas verificações de periféricos.
+
+Após concluir as verificações e inicializar os dispositivos necessários, o *firmware* identifica um dispositivo de inicialização e carrega o respectivo `bootloader` (que será aprofundado posteriormente). A partir desse momento, o bootloader assume a responsabilidade de dar continuidade ao processo de inicialização do sistema operacional.
 
 ```mermaid
 sequenceDiagram
@@ -50,16 +53,16 @@ sequenceDiagram
 
     BL->>K: Carrega o kernel
     activate K
-    K-->>H: Assume o controle do hardware
+    K-->>H: Assume o gerenciamento dos recursos
     deactivate K
 ```
->Diagrama 1: Sequência de eventos ao ligar um dispositivo.
+>Diagrama 1: Sequência simplificada de eventos durante a inicialização um computador.
 
 ### **BIOS**
 
-Após o POST, o BIOS busca a partição `MBR` (_Master Boot Record_) no disco rígido. O MBR contém informações sobre a partição ativa e o código do bootloader. O BIOS, então, transfere o controle para o bootloader, que inicia o sistema operacional.
+Após a conclusão do POST, o BIOS identifica o dispositivo de inicialização configurado e realiza a leitura de seu primeiro setor, tradicionalmente denominado `MBR` (*Master Boot Record*). O MBR é uma estrutura localizada no primeiro setor do disco e contém informações sobre a organização das partições, além de um pequeno trecho de código responsável por iniciar o processo de carregamento do *bootloader*. Nesse modelo, o BIOS transfere a execução para o código presente no MBR, que dá continuidade ao processo de inicialização, permitindo carregar o *bootloader* completo e, posteriormente, o sistema operacional.
 
-O BIOS possui uma interface de configuração simples, geralmente baseada em texto, que é acessada através do pressionamento de uma tecla específica durante a inicialização - geralmente `F2` ou `Delete`. Isso se deve por ser um sistema bastante antigo, sendo utilizado hoje em dia praticamente em sistemas legados e hardwares com baixo desempenho técnico, uma vez que a grande parte dos hardwares modernos já estão vindo com o UEFI instalado de fábrica, afinal, é a alternativa moderna e eficiente para inicialização dos equipamentos.
+O BIOS possui uma interface de configuração simples, geralmente baseada em texto, que é acessada através do pressionamento de uma tecla específica durante a inicialização - geralmente `F2` ou `Delete`. Por se tratar de uma tecnologia legada, sua utilização foi gradualmente substituída pelo UEFI, embora ainda existam equipamentos e sistemas que ofereçam suporte ao modo de inicialização tradicional.
 
 <div align="center">
 
@@ -67,15 +70,15 @@ O BIOS possui uma interface de configuração simples, geralmente baseada em tex
 
 </div>
 
->Imagem 1: Interface do BIOS
+>Imagem 1: Exemplo de interface de configuração do BIOS.
 
 ### **UEFI**
 
-O UEFI, por sua vez, busca o bootloader em uma partição específica, a `ESP` (_EFI System Partition_), formatada em `GPT` (_GUID Partition Table_). O UEFI pode carregar múltiplos bootloaders e permite uma inicialização mais rápida e eficiente, além da possibilidade de utilizar discos rígidos maiores dos que são suportados pelo BIOS.
+O UEFI, por sua vez, apresenta uma arquitetura mais moderna para o processo de inicialização. Diferentemente do BIOS tradicional, ele não depende da execução de um pequeno código localizado no primeiro setor do disco para carregar o bootloader. Em vez disso, o UEFI consegue identificar e executar diretamente aplicações compatíveis com sua arquitetura, normalmente armazenadas em uma partição específica denominada `ESP` (*EFI System Partition*). Essa partição utiliza o sistema de arquivos FAT e armazena os arquivos executáveis responsáveis pela inicialização, geralmente com a extensão `.efi`.
 
-Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuário, possuindo suporte à utilizar o mouse e proporcionando uma navegação mais intuitiva. Além disso, o firmware possui suporte nativo à tecnologia de `Secure Boot`, sendo uma especificação importante em ambientes corporativos como em servidores, por exemplo.
+A ESP é normalmente utilizada em discos particionados com `GPT` (*GUID Partition Table*), um padrão moderno que substitui as limitações do MBR e permite trabalhar com discos de capacidade muito superior ao limite tradicional do BIOS (2 TiB). Além disso, o UEFI permite registrar diferentes opções de inicialização, possibilitando a existência de múltiplos bootloaders ou sistemas operacionais no mesmo equipamento.
 
-> **Secure Boot** é um sistema que protege a inicialização do sistema operacional, bloqueando qualquer tentativa de `boot` que não possua uma assinatura válida registrada pelos fabricantes do hardware, garantindo uma segurança a mais para a infraestrutura presente.
+Em relação à interface, o UEFI permite implementações mais sofisticadas, podendo oferecer interfaces gráficas, suporte ao mouse e opções adicionais de configuração. Entretanto, esses recursos dependem de cada fabricante e não são obrigatórios na especificação.
 
 <div align="center">
 
@@ -83,9 +86,15 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 
 </div>
 
->Imagem 2: Interface da UEFI
+>Imagem 2: Exemplo de interface de configuração do UEFI.
+
+Outra funcionalidade importante é o `Secure Boot`, um mecanismo de segurança que verifica as assinaturas digitais dos componentes executados durante a inicialização, utilizando certificados e chaves previamente reconhecidos pelo firmware. Dessa forma, é possível impedir a execução de bootloaders e outros componentes que não atendam aos critérios de confiança configurados.
+
+> **Secure Boot:** mecanismo de segurança que protege o processo de inicialização contra a execução de componentes não autorizados. Sua validação utiliza uma cadeia de confiança baseada em chaves e certificados digitais, dificultando a execução de bootloaders maliciosos ou modificados sem autorização.
 
 ## **Comparativo**
+
+A seguir, podemos consolidar as principais diferenças entre as duas tecnologias:
 
 <div align="center">
 
@@ -103,34 +112,43 @@ Diferente do BIOS, o UEFI possui uma interface um pouco mais amigável ao usuár
 
 ## **Sequência de Boot - Início**
 
-Vendo todas as informações repassadas, podemos verificar que o processo inicial possui um fluxo bem simples e intuitivo, contendo componentes e processos bem definidos. A seguir, temos um fluxograma contendo as informações de uma forma mais visual a fim de consolidarmos as informações.
+Com as informações apresentadas, podemos compreender melhor como ocorre a primeira etapa do processo de inicialização de um computador. Embora existam diferenças importantes entre as arquiteturas BIOS e UEFI, ambas seguem uma sequência geral semelhante: inicializam o hardware, identificam um dispositivo de inicialização e transferem o controle para o componente responsável por carregar o sistema operacional.
+
+A principal diferença está na maneira como cada firmware localiza e executa o bootloader. No BIOS tradicional, isso ocorre por meio do código de inicialização presente no MBR. Já no UEFI, o firmware identifica e executa um arquivo compatível com sua arquitetura, normalmente armazenado na ESP.
+
+O fluxograma a seguir representa essa sequência de maneira simplificada:
 
 ```mermaid
 flowchart TD
-  O@{ shape: circle, label: "Início" }
-  I@{ shape: diamond, label: " " }
-  L@{ shape: fork, label: "Join" }
-  M@{ shape: diamond, label: " " }
-  O-->C["Teste POST"]
-  C-->I
-  I -->|Sucesso| E["Localiza arquivo de boot"]
-  I -->|Falha| J["Erro"]
-  E -->M
-  M -->|BIOS| F["MBR"]
-  M -->|UEFI| G["GPT"]
-  F-->L
-  G-->L
-  L-->|Inicia|H["Bootloader"]
-  P@{ shape: fork, label: "Join" }
-  N@{ shape: dbl-circ, label: "Fim"}
-  J-->P
-  H-->P
-  P-->N
+    O@{ shape: circle, label: "Início" }
+    I@{ shape: diamond, label: "POST concluído?" }
+    M@{ shape: diamond, label: "Modo de boot?" }
+    P@{ shape: fork, label: "Join" }
+    N@{ shape: dbl-circ, label: "Fim" }
+
+    O --> C["Inicialização do hardware"]
+    C --> I
+
+    I -->|Falha| J["Erro de inicialização"]
+    I -->|Sucesso| M
+
+    M -->|BIOS| F["Lê o setor de boot (MBR)"]
+    M -->|UEFI| G["Localiza aplicação EFI na ESP"]
+
+    F --> H["Executa o código de boot"]
+    G --> H
+
+    H --> B["Carrega o bootloader"]
+
+    J --> P
+    B --> P
+    P --> N
 ```
->Diagrama 2: Sequência de acções do `BIOS/UEFI` após o `POST`, onde localizam o arquivo de boot na partição `MBR/ESP`, respectivamente, para iniciar o `bootloader`.
+
+> Diagrama 2: Sequência simplificada de inicialização do BIOS/UEFI após a execução do POST, destacando as diferenças na localização e execução do bootloader.
 
 ## Próxima etapa
 
-Após o teste `POST` ser concluído com sucesso, o BIOS/UEFI passa a responsabilidade para o bootloader, iniciando assim o processo de boot do sistema operacional no dispositivo. Em nosso framework, não será diferente, onde utilizaremos o `GNU GRUB` para essa tarefa. No entanto, antes de iniciarmos o trabalho, precisamos subir o nosso ambiente de desenvolvimento, uma vez que, novamente, realizar o projeto em nosso sistema principal (`host`) pode acabar afetando o seu dispositivo, exigindo novamente um isolamento da máquina.
+Após a conclusão das verificações iniciais e a identificação do dispositivo de inicialização, o BIOS/UEFI transfere o controle para o bootloader, dando continuidade ao processo de inicialização do sistema operacional. Em nosso framework, não será diferente: utilizaremos o `GNU GRUB` (*GRand Unified Bootloader*) como responsável por essa etapa. Entretanto, antes de iniciarmos sua configuração e integração ao sistema, precisamos preparar novamente nosso ambiente de desenvolvimento.
 
-Na próxima etapa, estaremos seguindo passo a passo o processo de se subir o nosso ambiente isolado para podermos trabalhar, iniciando assim a montagem do novo sistema principal enquanto nos aprofundamos nos conceitos de sistemas operacionais.
+Assim como na construção da base inicial, utilizaremos um ambiente isolado para evitar que os procedimentos de compilação, configuração e instalação dos componentes interfiram diretamente no sistema principal (`host`). Na próxima etapa, seguiremos o processo de preparação desse ambiente, estabelecendo a estrutura necessária para construir nossa distribuição Linux e aprofundar o estudo dos componentes que constituem um sistema operacional completo.

@@ -1,6 +1,6 @@
 # **Sistema de Arquivos**
 
-Na etapa anterior, vimos que o `/dev/sda1` é, para o kernel, apenas uma sequência de blocos de bytes. Porém, não é assim que utilizamos o sistema: nós criamos arquivos, organizamos diretórios, damos nomes, definimos permissões. Nenhuma dessas ideias existe no disco "cru". Quem as constrói é o **sistema de arquivos**, a última peça do nosso quebra-cabeça.
+Na etapa anterior, vimos que o `/dev/sda1` é, para o kernel, apenas uma sequência de blocos de bytes. Porém, não é assim que utilizamos o sistema: nós criamos arquivos, organizamos diretórios, damos nomes, definimos permissões. Nenhuma dessas ideias existe no disco "cru". Quem as constrói é o **sistema de arquivos**, uma das últimas peças do nosso quebra-cabeça.
 
 Na verdade, ele esteve presente durante todo o framework: formatamos a partição com `mkfs.ext4`, montamos a imagem em `/mnt` diversas vezes e passamos `root=/dev/sda1` ao kernel. Agora, é hora de entender o que cada um desses passos significa.
 
@@ -91,7 +91,7 @@ O Linux é capaz de trabalhar com diversos sistemas de arquivos, que se dividem 
 | `ext4` | Disco | Padrão em diversas distribuições, com journaling. Utilizado no LecOS |
 | `XFS` | Disco | Bom desempenho com grandes volumes e arquivos |
 | `Btrfs` | Disco | Recursos avançados, como *snapshots* e verificação de integridade |
-| `FAT32` (`vfat`) | Disco | Simples e compatível com praticamente qualquer sistema. É o formato exigido pela **ESP** do UEFI |
+| `FAT32` (`vfat`) | Disco | Simples e compatível com praticamente qualquer sistema. É o formato utilizado pela **ESP** (*EFI System Partition*) do UEFI |
 | `NTFS` | Disco | Sistema de arquivos do Windows |
 | `tmpfs` | Virtual | Armazena os arquivos na **memória RAM**. O conteúdo some ao desligar |
 | `proc` e `sysfs` | Virtual | Expõem informações do kernel como arquivos (`/proc` e `/sys`) |
@@ -123,7 +123,7 @@ flowchart TD
 
 ## **Uma árvore, vários dispositivos: a montagem**
 
-Diferente de outros sistemas, que atribuem uma letra a cada unidade (como `C:` e `D:`), o Linux possui **uma única árvore de diretórios**, que começa na raiz (`/`). Para tornar o conteúdo de outro dispositivo ou sistema de arquivos acessível, nós o **montamos** em um diretório existente, chamado de **ponto de montagem**. Foi exatamente isso que fizemos várias vezes durante o framework com o `mount /dev/mapper/loop0p1 /mnt`.
+Diferentemente de outros sistemas, que atribuem uma letra a cada unidade (como `C:` e `D:`), o Linux possui **uma única árvore de diretórios**, que começa na raiz (`/`). Para tornar o conteúdo de outro dispositivo ou sistema de arquivos acessível, nós o **montamos** em um diretório existente, chamado de **ponto de montagem**. Foi exatamente isso que fizemos várias vezes durante o framework com o `mount /dev/mapper/loop0p1 /mnt`.
 
 Quando o LecOS inicia, a montagem acontece em etapas:
 
@@ -186,7 +186,7 @@ Em sistemas GNU/Linux, a organização dos diretórios segue uma convenção cha
 
 ### **Tipos de arquivo**
 
-Já encontramos a primeira letra da saída do `ls -l` algumas vezes, e agora podemos listar todas as possibilidades:
+Já encontramos a primeira letra da saída do `ls -l` algumas vezes, e agora podemos listar as principais possibilidades:
 
 <div align="center">
 
@@ -383,7 +383,7 @@ stat -c '%A %a %U %G' script.sh
 
 </div>
 
-> Imagem 5: Verificando e configurando as permissões ao script.
+> Imagem 5: Verificando e configurando as permissões do script.
 
 O resultado deve ser `-rw------- 600 root root`: leitura e escrita somente para o dono, que é o `root`, e nenhuma permissão para os demais.
 
@@ -402,7 +402,7 @@ df -i /
 
 </div>
 
-> Imagem 6: Verificando o tamanho e quantidade de blocos/inodes.
+> Imagem 6: Verificando o tamanho e a quantidade de blocos/inodes.
 
 No `stat -f`, procure o **tamanho de bloco** (normalmente `4096`) e o total de blocos e de inodes. O tipo pode aparecer como `ext2/ext3`, pois as três gerações do sistema de arquivos compartilham o mesmo identificador. Já o `df -i` mostra quantos inodes existem e quantos estão em uso.
 
@@ -522,7 +522,7 @@ O `/mnt/ram` já está montado, sem nenhum comando nosso: foi o Systemd, lendo o
 Para finalizar os testes, vamos desfazer o que criamos:
 
 ```bash
-# Remove a montagem permanente (apaga a linha do tmpfs do fstab)
+# Desmonta o tmpfs e remove a montagem permanente (apaga o fstab inteiro)
 umount /mnt/ram
 rm /etc/fstab
 systemctl daemon-reload

@@ -1,12 +1,12 @@
 # **Ambiente - LecOS**
 
-Após a inicialização correta do hardware, a responsabilidade da inicialização passa a ser do software daqui pra frente, uma vez que agora ele tem a liberdade de poder executar devido aos componentes da máquina estarem funcionando corretamente. O responsável pela próxima etapa é o `bootloader`, no entanto, antes de iniciarmos de fato o tutorial, precisamos subir nosso ambiente de desenvolvimento primeiro, dessa vez utilizando uma nova distribuição, mais completa e de propósito geral, como base para repassarmos nos conceitos fundamentais da disciplina enquanto realizamos na prática.
+Após a inicialização correta do hardware, a responsabilidade da inicialização passa a ser do software daqui para frente, uma vez que ele agora tem a liberdade de executar, já que os componentes da máquina estão funcionando corretamente. O responsável pela próxima etapa é o `bootloader`. No entanto, antes de iniciarmos de fato o tutorial, precisamos subir primeiro o nosso ambiente de desenvolvimento, dessa vez utilizando uma nova distribuição, mais completa e de propósito geral, como base para repassarmos os conceitos fundamentais da disciplina enquanto os realizamos na prática.
 
 ---
 
 ## **Componentes**
 
-Por se tratar de um sistema mais completo visando uma melhor didática, teremos alguns componentes a mais na composição, diferenciando da utilização do `BusyBox` na etapa anterior, onde sozinho ele substituia boa parte dos componentes necessários para se utilizar um sistema operacional. Os componentes que utilizaremos são:
+Por se tratar de um sistema mais completo, visando uma melhor didática, teremos alguns componentes a mais na composição, diferentemente da utilização do `BusyBox` na etapa anterior, onde sozinho ele substituía boa parte dos componentes necessários para se utilizar um sistema operacional. Os componentes que utilizaremos são:
 
 * Kernel Linux (64-bit)
 * GNU Coreutils
@@ -17,13 +17,12 @@ Por se tratar de um sistema mais completo visando uma melhor didática, teremos 
 * Ncurses
 * Util-Linux
 * Systemd
-* XFCE
 
 >Todos os componentes do projeto serão detalhados em suas respectivas etapas.
 
-Como mencionado anteriormente, o processo consistirá em passar por cada etapa do processo do sistema operacional, desde a etapa de `ligar` o computador até o início de seus processos, visando o entendimento de forma prática dos conceitos e sistemas, ao invés de simplesmente entender como montar um sistema operacional uma segunda vez.
+Como mencionado anteriormente, o processo consistirá em passar por cada etapa do funcionamento do sistema operacional, desde o momento de `ligar` o computador até o início de seus processos, visando o entendimento prático dos conceitos e sistemas, em vez de simplesmente aprender a montar um sistema operacional uma segunda vez.
 
-O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas que englobam as diferentes componentes e conceitos, totalizando 4 módulos presentes no processo com 11 etapas ao todo, sendo eles:
+O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas que englobam os diferentes componentes e conceitos, totalizando 4 módulos presentes no processo com 11 etapas ao todo, sendo eles:
 
 * **Módulo 1 - Início**;
   * BIOS/UEFI;
@@ -46,7 +45,7 @@ O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas qu
 
 ## **Ambiente**
 
-Assim como na etapa inicial, o trabalho será desenvolvido também dentro de um container `Docker`, visando novamente uma segurança maior para evitar problemas no sistema principal. No entanto, em vez de iniciarmos tudo manualmente através de comandos simples, contaremos com um script de inicialização completo do ambiente, visando um desenvolvimento mais dinâmico e direto ao ponto uma vez que já passamos pelo conceito e processo de compilação nos primeiros passos, garantindo uma boa reprodutibilidade.
+Assim como na etapa inicial, o trabalho também será desenvolvido dentro de um container `Docker`, visando novamente uma segurança maior para evitar problemas no sistema principal. No entanto, em vez de iniciarmos tudo manualmente através de comandos simples, contaremos com um script de inicialização completo do ambiente, buscando um desenvolvimento mais dinâmico e direto ao ponto, uma vez que já passamos pelo conceito e pelo processo de compilação nos primeiros passos, além de garantir uma boa reprodutibilidade.
 
 <div align="center">
 
@@ -56,7 +55,7 @@ Assim como na etapa inicial, o trabalho será desenvolvido também dentro de um 
 
 >Imagem 1: Mensagem de boas-vindas ao executar o script de construção do ambiente.
 
-Além disso, nesse ambiente possuímos persistência de dados graças ao volume construído junto do container, ou seja, você pode pausar o processo e retornar quando quiser, não sendo necessário fazer tudo de uma só vez, evitando perda de progresso e permitindo seguir no próprio ritmo.
+Além disso, nesse ambiente há persistência de dados graças ao volume construído junto do container, ou seja, você pode pausar o processo e retornar quando quiser, não sendo necessário fazer tudo de uma só vez, evitando perda de progresso e permitindo seguir no próprio ritmo.
 
 >Ao desligar o computador, o container será parado, mas o seu progresso permanece salvo no volume criado. Para retornar ao ambiente, execute `docker restart LecOS-dev` e, para entrar novamente, `docker exec -it LecOS-dev bash`.
 
@@ -66,13 +65,13 @@ Além disso, nesse ambiente possuímos persistência de dados graças ao volume 
 
 </div>
 
->Imagem 2: "Take a break" - Faça uma pausa. O sistema permite que pare quando quiser, podendo retornar de onde parou quando quiser.
+>Imagem 2: "Take a break" - Faça uma pausa. O sistema permite que você pare quando quiser e retome de onde parou.
 
 ---
 
 ## **Fluxo**
 
-Com nosso objetivo bem definido, não ficaremos presos somente nos componentes que iremos montar, mas também repassaremos em conceitos fundamentais dos sistemas operacionais, o que também inclui o hardware que executa o sistema. Com isso, seguindo todas as etapas presentes, temos o seguinte fluxo:
+Com nosso objetivo bem definido, não ficaremos presos somente aos componentes que iremos montar, mas também repassaremos conceitos fundamentais dos sistemas operacionais, o que inclui o hardware que executa o sistema. Com isso, seguindo todas as etapas presentes, temos o seguinte fluxo:
 
 ```mermaid
 flowchart TD
@@ -120,9 +119,9 @@ flowchart TD
 
 ## **Inicialização do ambiente**
 
-Para iniciarmos o nosso trabalho, precisamos criar o nosso ambiente de desenvolvimento. Para isso, estaremos utilizando o script mencionado para isso, o `init.sh`. Esse script contém os comandos necessários para a inicialização do container onde seguiremos o framework, automatizando o processo de criação e já fornecendo todas as ferramentas que precisaremos para realizar essa tarefa.
+Para iniciarmos o nosso trabalho, precisamos criar o nosso ambiente de desenvolvimento. Para isso, utilizaremos o script mencionado, o `init.sh`. Esse script contém os comandos necessários para a inicialização do container onde seguiremos o framework, automatizando o processo de criação e já fornecendo todas as ferramentas de que precisaremos para realizar essa tarefa.
 
-No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente. Por isso, certifique-se de que seu dispositivo possui o sistema `Git` -- sendo esse o sistema de versionamento de códigos mais utilizado nos projetos modernos, e execute o seguinte comando:
+No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente. Por isso, certifique-se de que seu dispositivo possui o `Git` — o sistema de versionamento de código mais utilizado nos projetos modernos — e execute o seguinte comando:
 
 ```bash
 # Comando clona o repositório do GitHub para sua máquina local
@@ -130,9 +129,9 @@ git clone --depth 1 https://github.com/FelpzzzEX/LecOS.git
 ```
 
 ![Git](https://github.com/FelpzzzEX/Imagens/blob/78d7a925ce7e18193418b571830eb4395e2395bd/Captura_de_tela_20260627_012605.png)
->Imagem 3: Comando git sendo executado e o resultado de sua execução.
+>Imagem 3: Comando `git` sendo executado e o resultado de sua execução.
 
-Para executarmos o script, precisamos primeiramente fornecer a permissão de execução para que ele possa ser executado, uma vez que mesmo o script sendo criado, ele não possui por padrão a capacidade de rodar os comandos sem permissão. Portanto, acessando o diretório [Sistema Principal](Sistema_Principal), inserimos o seguinte comando:
+Para executarmos o script, precisamos primeiro conceder a ele a permissão de execução, pois, mesmo depois de criado, ele não possui por padrão a capacidade de rodar os comandos sem essa permissão. Portanto, acessando o diretório [Sistema Principal](Sistema_Principal), inserimos os seguintes comandos:
 
 ```bash
 # Acessa o diretório 'Sistema_Principal'
@@ -142,17 +141,17 @@ cd LecOS/Sistema_Principal
 chmod +x init.sh
 ```
 
-Esse comando, basicamente, torna o script `init.sh` executável para o nosso sistema, possibilitando subir todo o ambiente com apenas essa instrução, deixando o _setup_ do ambiente mais prático e rápido - não estamos aprendendo a subir o ambiente novamente (visto que já fizemos isso na base inicial), mas sim a entender os conceitos de sistemas operacionais enquanto montamos um neste ambiente.
+Esse comando, basicamente, torna o script `init.sh` executável para o nosso sistema, possibilitando subir todo o ambiente com apenas essa instrução e deixando o _setup_ mais prático e rápido — não estamos aprendendo a subir o ambiente novamente (visto que já fizemos isso na base inicial), mas sim a entender os conceitos de sistemas operacionais enquanto montamos um sistema neste ambiente.
 
-Após fornecer a permissão ao script, podemos enfim iniciar nosso trabalho. Ainda dentro do diretório `Sistema_Principal`, executaremos:
+Após fornecer a permissão ao script, podemos, enfim, iniciar nosso trabalho. Ainda dentro do diretório `Sistema_Principal`, executaremos:
 
 ```bash
 ./init.sh
 ```
 
-Esse script nada mais é que uma sequência de comandos de terminal que são executados automaticamente. Ao executá-lo, ele roda os comandos necessários que foram configurados para deixar nosso ambiente de trabalho pronto para utilização. Abaixo seguem exemplos dos comandos.
+Esse script nada mais é que uma sequência de comandos de terminal que são executados automaticamente. Ao executá-lo, ele roda os comandos necessários que foram configurados para deixar nosso ambiente de trabalho pronto para utilização. Abaixo seguem exemplos desses comandos.
 
->**ATENÇÃO**: Não é necessário executar os comandos abaixo, pois o script já irá realizar a tarefa automaticamente, estando presente somente para curiosidade.
+>**ATENÇÃO**: Não é necessário executar os comandos abaixo, pois o script já realizará a tarefa automaticamente; eles estão presentes somente por curiosidade.
 
 ```bash
 # Cria um volume para persistência de dados
@@ -164,7 +163,7 @@ docker volume create lecos_data
 docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS felpzzex/lecos:latest tail -f /dev/null
 ```
 
-Por fim, o script também copia arquivos essenciais para dentro do nosso ambiente, como o `kernel Linux` já previamente compilado, o arquivo de inicialização do sistema e os scripts de build para cada componente da nossa userland, apresentados na sessão `Componentes`. Caso esteja interessado, pode verificar o conteúdo completo presente no script acessando o arquivo [init.sh](../init.sh).
+Por fim, o script também copia arquivos essenciais para dentro do nosso ambiente, como o `kernel Linux` previamente compilado, o arquivo de inicialização do sistema e os scripts de build para cada componente da nossa userland, apresentados na seção `Componentes`. Caso esteja interessado, você pode verificar o conteúdo completo do script acessando o arquivo [init.sh](../init.sh).
 
 <div align="center">
 
@@ -174,4 +173,4 @@ Por fim, o script também copia arquivos essenciais para dentro do nosso ambient
 
 >Imagem 4: Conteúdo copiado do sistema principal para dentro do container, contendo todos os scripts de build dos componentes.
 
-Após a execução do script, ele te jogará dentro do container de desenvolvimento do framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O. As próximas etapas passarão por cada componente presente em nosso planejamento de forma aprofundada e dedicada, visando uma "ordem cronológica" do processo de inicialização, onde já abordamos o início com o `BIOS e UEFI` e, na próxima etapa, começaremos pelo [bootloader](2-Bootloader.md), o responsável por carregar os componentes necessários para a inicialização.
+Após a execução do script, ele levará você para dentro do container de desenvolvimento do framework, onde iremos montar a distribuição mínima enquanto nos aprofundamos nos conceitos fundamentais de um S.O. As próximas etapas passarão por cada componente presente em nosso planejamento de forma aprofundada e dedicada, seguindo uma "ordem cronológica" do processo de inicialização, na qual já abordamos o início com o `BIOS` e o `UEFI` e, na próxima etapa, começaremos pelo [bootloader](2-Bootloader.md), o responsável por carregar os componentes necessários para a inicialização.

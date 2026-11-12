@@ -6,7 +6,7 @@ Neste módulo, estudaremos a **Userland (Userspace)** e os **Processos**, observ
 
 ## **A Userland**
 
-A `Userland` (ou `Userspace`) é a região do sistema onde são executados os programas que não fazem parte diretamente do núcleo do sistema operacional. Nela encontramos desde aplicações utilizadas diretamente pelo usuário, como navegadores e editores de texto, até componentes fundamentais para o funcionamento do sistema, como o **GNU Bash**, **GNU Coreutils**, **GNU Nano** e sistemas de inicialização.
+A `Userland` (ou `Userspace`) é a região do sistema onde são executados os programas que não fazem parte diretamente do núcleo do sistema operacional. Nela encontramos desde aplicações utilizadas diretamente pelo usuário, como navegadores e editores de texto, até componentes fundamentais para o funcionamento do sistema, como o **GNU Bash**, o **GNU Coreutils**, o **GNU Nano** e os sistemas de inicialização.
 
 Esses programas não precisam acessar diretamente o hardware para realizar suas tarefas. Em vez disso, utilizam interfaces fornecidas pelo kernel, principalmente por meio das `system calls` (**chamadas de sistema**).
 
@@ -41,7 +41,7 @@ Por exemplo, um programa em **C** pode utilizar `write()` para solicitar ao kern
 
 int main(void)
 {
-    write(1, "Ola, usuario!\n", 12);
+    write(1, "Ola, usuario!\n", 14);
     return 0;
 }
 ```
@@ -52,13 +52,14 @@ Essa ideia será importante para compreender como componentes maiores, como o Ba
 
 ## **Componentes**
 
-Sabendo o objetivo da separação dos espaços do kernel e do usuário, podemos ver alguns trechos de códigos que componentes do nosso sistema operacional utilizam, de forma a verificar como estes comunicam com o kernel para realizarem suas operações.
+Sabendo o objetivo da separação dos espaços do kernel e do usuário, podemos ver alguns trechos de código que componentes do nosso sistema operacional utilizam, de forma a verificar como eles se comunicam com o kernel para realizarem suas operações.
 
 ### **GNU Bash**
 
 O **GNU Bash** é um dos principais componentes da nossa `userland`. Ele é executado como um processo em `userspace` e fornece uma interface para que o usuário possa executar comandos e interagir com o sistema.
 
 O código-fonte do Bash mostra claramente que ele é um programa comum em C, possuindo uma função `main()` como ponto de entrada da aplicação.
+
 Embora o Bash esteja na userland, muitas das operações que ele realiza dependem de recursos controlados pelo kernel. Para isso, ele utiliza interfaces fornecidas pelo sistema, como as funções da biblioteca C e as `system calls`.
 
 Um exemplo pode ser encontrado na inicialização do próprio Bash. O código verifica se suas entradas padrão estão associadas a um terminal utilizando `isatty()`:
@@ -127,17 +128,17 @@ flowchart TD
 
 É importante observar que funções como `open()` e `isatty()` não devem ser entendidas necessariamente como as próprias `system calls`. Elas são interfaces utilizadas pelo programa e podem, internamente, realizar chamadas ao kernel quando precisam de serviços que somente ele pode fornecer.
 
-Dessa forma, o Bash é um bom exemplo para compreender a relação entre `userland` e `kernelspace`: O programa é executado no espaço do usuário, mas utiliza as interfaces do sistema para solicitar ao kernel operações sobre os recursos que ele administra.
+Dessa forma, o Bash é um bom exemplo para compreender a relação entre `userland` e `kernelspace`: o programa é executado no espaço do usuário, mas utiliza as interfaces do sistema para solicitar ao kernel operações sobre os recursos que ele administra.
 
-> **NOTA**: Em caso de curiosidade, o código fonte principal do **GNU Bash** está disponível no diretório `Componentes_Principais`, dentro de `Codigo-Fonte` como `shell.c`.
+> **NOTA**: Em caso de curiosidade, o código-fonte principal do **GNU Bash** está disponível no diretório `Componentes_Principais`, dentro de `Codigo-Fonte`, como `shell.c`.
 
 ## **Configurando a Userland**
 
-No entanto, como podemos já observar durante a execução de nosso sistema, nossa `userland` ainda parece um pouco incompleta. Isso se deve ao fato de ainda termos um sistema "cru", sem um usuário criado, somente com o **Bash** atuando como o processo principal (**PID 1**).
+No entanto, como já podemos observar durante a execução de nosso sistema, nossa `userland` ainda parece um pouco incompleta. Isso se deve ao fato de ainda termos um sistema "cru", sem um usuário criado, somente com o **Bash** atuando como o processo principal (**PID 1**).
 
-Visando isso, estaremos configurando agora os usuários e realizando todas as demais configurações necessárias para dar uma vida a mais para o nosso sistema, visando uma usabilidade e entendimento melhor das suas utilidades.
+Com isso em vista, configuraremos agora os usuários e realizaremos todas as demais configurações necessárias para dar mais vida ao nosso sistema, visando uma melhor usabilidade e um melhor entendimento de suas utilidades.
 
-Antes de prosseguir, dentro de nosso contêiner, devemos montar a imagem novamente para estarmos fazendo os ajustes necessários:
+Antes de prosseguir, dentro de nosso container, devemos montar a imagem novamente para fazermos os ajustes necessários:
 
 ```bash
 # Montamos novamente a imagem em /mnt
@@ -149,9 +150,9 @@ mount /dev/mapper/loop0p1 /mnt
 
 ### **Compilando dependências necessárias**
 
-Para seguirmos com nossa configuração da userland, precisaremos inserir mais alguns componentes que irão permitir seu funcionamento como queremos, sendo eles o `Shadow-Utils`, o `Linux-PAM` e o `Libxcrypt`, todos sendo utilizados na tarefa de criar um usuário em nosso sistema. Logo abaixo estaremos nos aprofundando nesses componentes enquanto os instalamos em nosso sistema, seguindo o mesmo padrão do que já fizemos até aqui.
+Para seguirmos com nossa configuração da userland, precisaremos inserir mais alguns componentes que permitirão seu funcionamento como queremos, sendo eles o `GNU Inetutils`, o `Shadow-Utils`, o `Linux-PAM` e o `Libxcrypt`, utilizados nas tarefas de identificar o nosso sistema e criar um usuário nele. Logo abaixo, nos aprofundaremos nesses componentes enquanto os instalamos em nosso sistema, seguindo o mesmo padrão do que já fizemos até aqui.
 
-Os links para encontrar e baixar os componentes se encontram no próprio texto, a partir deles, estaremos fazendo o `wget` para baixar dentro de nosso contêiner de desenvolvimento e, em seguida, realizar o processo de compilação e instalação através dos scripts de build, mas dessa vez, será com vocês!
+Os links para encontrar e baixar os componentes se encontram no próprio texto. A partir deles, faremos o `wget` para baixar os arquivos dentro de nosso container de desenvolvimento e, em seguida, realizaremos o processo de compilação e instalação através dos scripts de build, mas, dessa vez, a tarefa será de vocês!
 
 #### **GNU Inetutils**
 
@@ -171,7 +172,7 @@ No nosso sistema, ele será utilizado principalmente para criar e configurar o u
 
 O **Linux-PAM (Pluggable Authentication Modules)** fornece uma estrutura para que aplicações possam utilizar mecanismos de autenticação de forma modular. Em vez de cada programa implementar sozinho todo o processo de autenticação, ele pode utilizar o PAM para consultar e aplicar as regras de autenticação configuradas no sistema.
 
-No nosso caso, o PAM participa da infraestrutura utilizada por ferramentas relacionadas à autenticação e gerenciamento de usuários, podendo ser encontrada a versão 1.7.0 [neste link](https://github.com/linux-pam/linux-pam/releases#release-v1.7.0).
+No nosso caso, o PAM participa da infraestrutura utilizada por ferramentas relacionadas à autenticação e ao gerenciamento de usuários, podendo-se encontrar a versão 1.7.0 [neste link](https://github.com/linux-pam/linux-pam/releases#release-v1.7.0).
 
 #### **Libxcrypt**
 
@@ -181,7 +182,7 @@ Assim, quando utilizamos o `passwd`, a senha fornecida pode ser processada pela 
 
 #### **Finalizando a instalação**
 
-Após tudo compilado e instalado em nosso contêiner, basta colocarmos tudo dentro de nossa imagem montada novamente, bastando apagar os diretórios presentes (com exceção de `/boot`) e adicionar a nova estrutura de diretórios dentro:
+Após tudo compilado e instalado em nosso container, basta colocarmos tudo dentro de nossa imagem montada novamente, apagando os diretórios presentes (com exceção de `/boot`) e adicionando a nova estrutura de diretórios dentro dela:
 
 ```bash
 # Deleta a estrutura antiga
@@ -197,13 +198,13 @@ Após isso, podemos sincronizar e desmontar a imagem mais uma vez, gerando nossa
 # Sincronize as alterações
 sync
 
-# Desmonta 'lecos.img' de '/mnt' e remoção do loop device
+# Desmonta 'lecos.img' de '/mnt' e remove o loop device
 umount /mnt
 kpartx -d /dev/loop0
 losetup -d /dev/loop0
 ```
 
-Em seguida, em nosso sistema principal, salve a imagem antiga que copiamos na etapa anterior para termos um backup. Em seguida, copie a nova imagem que geramos dentro do contêiner para o diretório atual em seu sistema e, após isso, execute com o **QEMU**:
+Em seguida, em nosso sistema principal, salve a imagem antiga que copiamos na etapa anterior para termos um backup. Depois, copie a nova imagem que geramos dentro do container para o diretório atual em seu sistema e, após isso, execute-a com o **QEMU**:
 
 ```bash
 # Copia 'lecos.img' para o diretório atual
@@ -239,9 +240,9 @@ echo "root:x:0:" > /etc/group
 
 O campo `x` presente em `/etc/passwd` indica que a senha não está armazenada nesse arquivo. Em sistemas que utilizam o mecanismo tradicional de autenticação por senha, seu hash é armazenado separadamente em `/etc/shadow`.
 
-> O formato do arquivo é composto por `usuário:senha:UID:GID:nome:home:shell`, onde **usuário** é o nome principal, **UID** e **GID** o identificador do usuário (0 é o superusuário), **nome** é o nome real do usuário, **home** é o diretório pessoal do usuário e **shell** sendo o shell padrão do usuário, em nosso caso, somente o GNU Bash.
+> O formato de cada linha do `/etc/passwd` é composto por `usuário:senha:UID:GID:nome:home:shell`, onde **usuário** é o nome principal, **UID** é o identificador do usuário (0 é o superusuário), **GID** é o identificador do grupo primário, **nome** é o nome real do usuário, **home** é o diretório pessoal do usuário e **shell** é o shell padrão do usuário, em nosso caso, somente o GNU Bash.
 
-Com a criação do usuário `root` e do seu respectivo grupo, teremos um resultado com uma estrutura semelhante a seguinte:
+Com a criação do usuário `root` e do seu respectivo grupo, teremos um resultado com uma estrutura semelhante à seguinte:
 
 ```text
 /etc/passwd
@@ -253,7 +254,7 @@ Com a criação do usuário `root` e do seu respectivo grupo, teremos um resulta
 
 Enquanto o `/etc/passwd` identifica os usuários e seus respectivos UIDs, o `/etc/shadow` armazenará os hashes das senhas. Dessa forma, a senha em si não precisa ser armazenada diretamente no sistema de arquivos.
 
-> Não criaremos a senha do usuário root ainda, uma vez que o componente responsável por isso necessita do `Systemd`, o init-system que compilaremos na etapa seguinte, esteja funcionando e assuma o "posto" de **PID 1**.
+> Não criaremos a senha do usuário root ainda, uma vez que o componente responsável por isso necessita que o `Systemd`, o init-system que compilaremos na etapa seguinte, esteja funcionando e assuma o "posto" de **PID 1**.
 
 ### **Rastreando diretórios**
 
@@ -263,7 +264,7 @@ Outro ponto imediatamente perceptível na experiência interativa do shell é o 
 usuario@hostname:~/diretório$
 ```
 
-No entanto, no nosso sistema recém-construído, independente do diretório acessado com o comando `cd`, o prompt permanece estático como:
+No entanto, no nosso sistema recém-construído, independentemente do diretório acessado com o comando `cd`, o prompt permanece estático como:
 
 ```shell
 bash-5.2#
@@ -271,9 +272,9 @@ bash-5.2#
 
 Isso ocorre porque o Bash consulta a variável de ambiente `PS1` (Prompt String 1) a cada iteração do seu loop interativo (REPL - Read-Eval-Print Loop). Se nenhuma variável `PS1` for definida no ambiente, o shell utiliza o seu padrão interno de compilação `\s-\v\$`, que exibe:
 
-* **\s-**: o nome do shell
+* **\s**: o nome do shell, seguido de um hífen (`-`) literal
 * **\v**: a versão do shell
-* **$**: o caractere `#` ou `$`, dependendo do UID
+* **\$**: o caractere `#` ou `$`, dependendo do UID
 
 O Bash oferece uma série de sequências de escape que permitem construir um prompt dinâmico e contextual:
 
@@ -283,16 +284,16 @@ O Bash oferece uma série de sequências de escape que permitem construir um pro
 * `\W`: expande apenas para o nome base do diretório atual.
 * `\$`: avalia dinamicamente se o usuário logado possui privilégios de superusuário (exibindo `#` para **UID 0** e `$` para os demais usuários).
 
-Para que essas variáveis de ambiente e o caminho dos binários do sistema (`PATH`) sejam inicializados automaticamente em cada nova sessão interativa de login (como do usuário `root` que acabamos de criar), precisamos criar e salvar a configuração no arquivo `/etc/profile`. 
+Para que essas variáveis de ambiente e o caminho dos binários do sistema (`PATH`) sejam inicializados automaticamente em cada nova sessão interativa de login (como a do usuário `root` que acabamos de criar), precisamos criar e salvar a configuração no arquivo `/etc/profile`. 
 
-Para isso, primeiro precisamos criar o nome do nosso sistema (o `hostname`). Para isso, basta rodar o seguinte comando:
+Primeiro, precisamos definir o nome do nosso sistema (o `hostname`). Para isso, basta rodar o seguinte comando:
 
 ```bash
 # Dá o nome ao host da máquina
 hostname [nome-do-sistema]
 ```
 
-Em seguida, para finalizar a configuração do **PS1** do nosso usuário `root`, executamos o seguinte comando, o qual o shell pegará todo o texto (`cat`) antes de **EOF** (_End of File_) e jogará em `/etc/profile`:
+Em seguida, para finalizar a configuração do **PS1** do nosso usuário `root`, executamos o seguinte comando, em que o shell pegará todo o texto (`cat`) até **EOF** (_End of File_) e o jogará em `/etc/profile`:
 
 ```bash
 cat << 'EOF' > /etc/profile
@@ -303,7 +304,7 @@ EOF
 
 Dessa forma, o shell em espaço de usuário ganha contexto sobre a navegação no sistema de arquivos, a identidade da máquina e as permissões ativas.
 
-Faça o teste, dentro do sistema rodando no QEMU, insira no terminal:
+Faça o teste: dentro do sistema rodando no QEMU, insira no terminal:
 
 ```bash
 su - root
@@ -323,8 +324,8 @@ root@[nome-do-sistema]:/#
 
 Imagem 2:
 
-No entanto, embora o hostname esteja funcionando agora, da maneira que fizemos ele assume um estado volátil -- ele só se mantém em tempo de execução, pois se encerramos e abrimos nosso sistema, ele perde o valor setado. Essa questão será resolvida com a utilização do init-system `Systemd`, o qual carregará automaticamente o hostname.
+No entanto, embora o hostname esteja funcionando agora, da maneira que fizemos ele assume um estado volátil -- ele só se mantém em tempo de execução, pois, se encerrarmos e abrirmos nosso sistema, ele perde o valor definido. Essa questão será resolvida com a utilização do init-system `Systemd`, o qual carregará automaticamente o hostname.
 
 ## **Próximos Passos**
 
-Após as configurações serem feitas, estaremos passando para o `init-system`, componente essencial que cuidará dos processos existentes em nosso sistema, sendo o escolhido para o framework o `Systemd`, sistema amplamente utilizado em diversas distribuições GNU/Linux do mercado, como o Debian, Fedora, Arch Linux, Ubuntu, dentre outras. Continue o bom trabalho, estamos caminhando para a finalização!
+Após as configurações serem feitas, passaremos para o `init-system`, componente essencial que cuidará dos processos existentes em nosso sistema, sendo o escolhido para o framework o `Systemd`, sistema amplamente utilizado em diversas distribuições GNU/Linux do mercado, como o Debian, o Fedora, o Arch Linux, o Ubuntu, dentre outras. Continue o bom trabalho, estamos caminhando para a finalização!

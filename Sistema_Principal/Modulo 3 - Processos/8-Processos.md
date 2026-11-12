@@ -38,11 +38,11 @@ Para cada processo, o kernel mantém um conjunto de informações, entre elas:
 
 No Linux, todo processo (com exceção do primeiro) é criado por outro processo, formando uma relação de **pai e filho** e, consequentemente, uma árvore. Essa criação é feita por chamadas de sistema que o kernel disponibiliza:
 
-* **`fork()`**: cria um novo processo, que nasce como uma cópia do processo que a invocou;
+* **`fork()`**: cria um novo processo, que nasce como uma cópia do processo que o invocou;
 * **`execve()`**: substitui o programa em execução pelo programa indicado;
 * **`wait()`**: permite ao processo pai aguardar o término de um filho e recolher seu estado de saída.
 
-É a combinação delas que acontece, por exemplo, sempre que digitamos um comando no shell:
+É a combinação delas que ocorre, por exemplo, sempre que digitamos um comando no shell:
 
 ```mermaid
 sequenceDiagram
@@ -98,7 +98,7 @@ O `kernel Linux` controla aspectos como o estado de execução, a utilização d
 
 >Tabela 2: Principais estados de um processo, como exibidos pelo kernel.
 
-Esses estados permitem compreender que nem todos os processos estão executando instruções continuamente. Na verdade, na imensa maioria do tempo, quase todos estão no estado `S`, aguardando algo acontecer.
+Esses estados permitem compreender que nem todos os processos estão executando instruções continuamente. Na verdade, na maior parte do tempo, quase todos estão no estado `S`, aguardando algo acontecer.
 
 ```mermaid
 stateDiagram-v2
@@ -115,7 +115,7 @@ stateDiagram-v2
 
 > Diagrama 3: Ciclo de vida simplificado. No Linux, "Pronto" e "Executando" aparecem juntos como `R`.
 
-O estado **Zombie** merece atenção especial. Um zumbi não consome CPU nem memória: ele é apenas uma entrada na tabela de processos que guarda o estado de saída até que o pai o leia com `wait()`. Se o pai nunca o fizer, ele permanece ali. Quando o **pai termina antes do filho**, o filho se torna um processo **órfão** e é adotado pelo PID 1, que passa a ser seu pai e recolhe seu estado quando ele terminar. Essa é uma das razões pelas quais o PID 1 precisa ser um programa robusto, como vimos na etapa do Init System.
+O estado **Zombie** merece atenção especial. Um zumbi não consome CPU e praticamente não consome memória: ele é apenas uma entrada na tabela de processos que guarda o estado de saída até que o pai o leia com `wait()`. Se o pai nunca o fizer, ele permanece ali. Quando o **pai termina antes do filho**, o filho se torna um processo **órfão** e é adotado pelo PID 1, que passa a ser seu pai e recolhe seu estado quando ele terminar. Essa é uma das razões pelas quais o PID 1 precisa ser um programa robusto, como vimos na etapa do Init System.
 
 ### **Escalonamento**
 
@@ -142,7 +142,7 @@ Para se comunicar com um processo em execução, o kernel e outros processos uti
 
 ## **O diretório /proc**
 
-Todas as informações que o kernel mantém sobre os processos ficam disponíveis para nós através do **`/proc`**, o sistema de arquivos virtual que o próprio kernel gera. Nada ali está gravado no disco: cada arquivo é construído no instante em que o lemos, refletindo o que está acontecendo naquele momento. No LecOS, ele é montado automaticamente pelo Systemd durante o boot, substituindo o comando `mount` que escrevíamos no nosso script `init`.
+As informações que o kernel mantém sobre os processos ficam disponíveis para nós através do **`/proc`**, o sistema de arquivos virtual que o próprio kernel gera. Nada ali está gravado no disco: cada arquivo é construído no instante em que o lemos, refletindo o que está acontecendo naquele momento. No LecOS, ele é montado automaticamente pelo Systemd durante o boot, substituindo o comando `mount` que escrevíamos no nosso script `init`.
 
 Cada processo possui um diretório com o seu PID, e os arquivos mais úteis para nós são:
 
@@ -190,17 +190,17 @@ O `lps` aceita as seguintes opções:
 
 ### **Instalando o lps**
 
-O processo é semelhante ao que fizemos com o kernel. Primeiro, em nosso sistema principal, copiamos o script para o contêiner:
+O processo é semelhante ao que fizemos com o kernel. Primeiro, em nosso sistema principal, copiamos o script para o container:
 
 ```bash
 # Entra no diretório 'Componentes_Principais'
 cd Componentes_Principais
 
-# Copia o script 'lps' para dentro do contêiner
+# Copia o script 'lps' para dentro do container
 docker cp lps LecOS-dev:/LOS
 ```
 
-Dentro do contêiner, no diretório `/LOS`, guardamos o script na nossa `root` (para que ele faça parte do sistema em futuras reconstruções) e o inserimos na imagem:
+Dentro do container, no diretório `/LOS`, guardamos o script na nossa `root` (para que ele faça parte do sistema em futuras reconstruções) e o inserimos na imagem:
 
 ```bash
 # Instala o 'lps' na árvore do sistema
@@ -379,7 +379,7 @@ Observe o campo **State**: após o `SIGSTOP`, ele passa para `T (stopped)` e, ap
 
 ### **Experimento 5: criando um zumbi**
 
-Para criar um zumbi precisamos de um pai que não recolha o estado de seu filho. Faremos isso com um truque: o Bash cria um filho que termina em 1 segundo e, em seguida, se transforma (`exec`) em um `sleep 60`, que nunca chama `wait()`:
+Para criar um zumbi, precisamos de um pai que não recolha o estado de seu filho. Faremos isso com um truque: o Bash cria um filho que termina em 1 segundo e, em seguida, se transforma (`exec`) em um `sleep 60`, que nunca chama `wait()`:
 
 ```bash
 # Cria o "pai descuidado" em segundo plano
@@ -487,7 +487,7 @@ systemd-cgls --no-pager
 
 > Imagem 10: Árvore de grupos e seus respectivos processos.
 
-O resultado mostra uma árvore de grupos, e dentro de cada serviço, os processos que ele iniciou, incluindo o seu próprio shell, que pertence ao serviço de login do console. É o Systemd supervisionando os processos que ele iniciou.
+O resultado mostra uma árvore de grupos e, dentro de cada serviço, os processos que ele iniciou, incluindo o seu próprio shell, que pertence ao serviço de login do console. É o Systemd supervisionando os processos que ele iniciou.
 
 ### **Encerrando os testes**
 
@@ -530,8 +530,8 @@ kill [PID_DO_SLEEP_ORFAO]
 
 ## **Conclusão**
 
-Nesta etapa, conhecemos os fundamentos dos processos e sua importância para o funcionamento de um sistema operacional. Vimos como eles são criados com `fork()` e `execve()`, como passam por diferentes estados durante sua vida, como se comunicam por sinais e como o kernel Linux disponibiliza todas essas informações através do `/proc`. Mais do que isso, construímos o nosso próprio listador de processos e comprovamos que ferramentas como o `ps` apenas leem esses dados.
+Nesta etapa, conhecemos os fundamentos dos processos e sua importância para o funcionamento de um sistema operacional. Vimos como eles são criados com `fork()` e `execve()`, como passam por diferentes estados durante sua vida, como se comunicam por sinais e como o kernel Linux disponibiliza todas essas informações através do `/proc`. Mais do que isso, utilizamos o nosso próprio listador de processos e comprovamos que ferramentas como o `ps` apenas leem esses dados.
 
-Com o conhecimento adquirido, conseguimos compreender melhor o que acontece após a inicialização do LecOS: o sistema passa a executar processos que realizam as tarefas necessárias ao seu funcionamento, todos descendentes do Systemd.
+Com o conhecimento adquirido, conseguimos compreender melhor o que acontece após a inicialização do LecOS: o sistema passa a executar processos que realizam as tarefas necessárias ao seu funcionamento, todos descendentes do Systemd (com exceção das threads do kernel, filhas do `kthreadd`).
 
 Na próxima etapa, aprofundaremos outro aspecto fundamental dos sistemas operacionais: a **entrada e saída de dados**, compreendendo como os programas interagem com os recursos disponíveis (como os arquivos `0`, `1` e `2` que vimos em `/proc/PID/fd`) e como essas operações participam do funcionamento do sistema.

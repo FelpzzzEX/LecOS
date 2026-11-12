@@ -1,6 +1,6 @@
 # **Memória Primária e Secundária**
 
-Avançando nos conceitos, estamos nos aproximando da inicialização real do nosso sistema. No entanto, antes de prosseguirmos no processo, devemos revisar um conceito importante que está diretamente ligado no boot do sistema: a memória `primária` e `secundária`. Estaremos entendendo nessa etapa para, enfim, iniciarmos o nosso sistema.
+Avançando nos conceitos, estamos nos aproximando da inicialização real do nosso sistema. No entanto, antes de prosseguirmos no processo, devemos revisar um conceito importante que está diretamente ligado ao boot do sistema: a memória `primária` e `secundária`. Nesta etapa, entenderemos esse conceito para, enfim, iniciarmos o nosso sistema.
 
 ## **Conceito de memória**
 
@@ -64,7 +64,7 @@ Características principais:
 
 </div>
 
-> Imagem 1: Componentes responsáveis pelas memórias primária (RAM) e secunrária (HDD/SSD).
+> Imagem 1: Componentes responsáveis pelas memórias primária (RAM) e secundária (HDD/SSD).
 
 ## **Papel no boot**
 
@@ -74,21 +74,21 @@ O passo a passo ocorre da seguinte maneira:
 
 1. **O Despertar (ROM)**: Quando o computador é ligado, a memória RAM está completamente vazia e a CPU não sabe o que fazer. O processador então busca as primeiras instruções na memória ROM (especificamente, na `BIOS/UEFI`).
 2. **Checagem de Hardware (POST)**: A **BIOS/UEFI** realiza um teste rápido para garantir que o teclado, o mouse, a própria memória RAM e outros hardwares básicos estão funcionando perfeitamente.
-3. **Buscando o Sistema**: Após os testes, a BIOS procura o sistema operacional que está "dormindo" guardado na Memória Secundária (no SSD ou HDD).
+3. **Buscando o Sistema**: Após os testes, a BIOS/UEFI procura o sistema operacional (por meio do bootloader) que está "dormindo", guardado na Memória Secundária (no SSD ou HDD).
 4. **Carregamento (Passagem de bastão)**: Os arquivos principais do sistema operacional são lidos da Memória Secundária e copiados para a Memória Primária (RAM).
 5. **Pronto para Uso**: Agora que o sistema operacional está carregado na RAM, o processador pode acessá-lo rapidamente. O computador conclui a inicialização e fica pronto para receber seus comandos.
 
 ## **Visualização prática**
 
-Embora o nosso sistema ainda não possua um arquivo de inicialização, podemos estar experimentando a interação entre memória primária e secundária criando arquivos simples que permitirão essa visualização na prática. Para isso, nós iremos estar gerando um `initramfs` básico, que nada mais é que um arquivo que carrega um sistema de arquivos temporário na **memória RAM**, fazendo com que, após desligar o sistema, o progresso interno seja perdido por tudo ser carregado diretamente na RAM.
+Embora o nosso sistema ainda não possua um arquivo de inicialização, podemos experimentar a interação entre memória primária e secundária criando arquivos simples que permitirão essa visualização na prática. Para isso, geraremos um `initramfs` básico, que nada mais é que um arquivo que carrega um sistema de arquivos temporário na **memória RAM**, fazendo com que, após desligarmos o sistema, o progresso interno seja perdido, já que tudo é carregado diretamente na RAM.
 
-O único propósito de um initramfs é o de montar o sistema de arquivos raiz, sendo um conjunto completo de diretórios que você encontraria em um sistema de arquivos raiz normal.
+O principal propósito de um initramfs é montar o sistema de arquivos raiz, consistindo em um conjunto completo de diretórios que você encontraria em um sistema de arquivos raiz normal.
 
 > **Nota**: Esse é o mesmo funcionamento da nossa **Base Inicial** onde, se por acaso sairmos e entrarmos no sistema novamente, tudo que fizemos lá dentro é perdido, uma vez que ele só utiliza um **initramfs** simples para carregar um **shell**.
 
 ### **Criando o PID 1**
 
-Para a inicialização de um sistema, ele precisa de um processo inicial, o `PID 1`. Como vimos na Base Inicial, este processo é o que inicia e mantém o sistema operacional funcionando de forma contínua, sem ele, entramos no já conhecido `kernel panic`, onde simplesmente deixa de funcionar por conta do PID 1 não existir no sistema.
+Para a inicialização de um sistema, é necessário um processo inicial, o `PID 1`. Como vimos na Base Inicial, este processo é o que inicia e mantém o sistema operacional funcionando de forma contínua. Sem ele, entramos no já conhecido `kernel panic`, onde o sistema simplesmente deixa de funcionar por conta de o PID 1 não existir.
 
 Para criar o **initramfs**, precisaremos preparar o ambiente, necessitando somente de três componentes iniciais para nos permitir interagir e testar, sendo eles:
 
@@ -96,9 +96,9 @@ Para criar o **initramfs**, precisaremos preparar o ambiente, necessitando somen
 * **Glibc**, biblioteca C padrão do sistema
 * **Ncurses**, biblioteca para interfaces de texto no terminal
 
-Esses serão os componentes mínimos que precisaremos para interagir com o sistema, de forma a verificar a volatilidade da memória RAM ao realizarmos alterações no sistema em si e, após isso, reiniciarmos o mesmo. Tendo isso em mente, precisaremos baixar e compilar os pacotes necessários uma vez que o **GNU Bash** depende da **Glibc** e do **Ncurses** para funcionar corretamente.
+Esses serão os componentes mínimos de que precisaremos para interagir com o sistema, de forma a verificar a volatilidade da memória RAM ao realizarmos alterações no sistema em si e, após isso, reiniciarmos o mesmo. Tendo isso em mente, precisaremos baixar e compilar os pacotes necessários, uma vez que o **GNU Bash** depende da **Glibc** e do **Ncurses** para funcionar corretamente.
 
-> **NOTA**: Para fins de reprodutibilidade, estaremos usando versões fixas e estáveis dos componentes, tendo como base a distribuição `Debian`.
+> **NOTA**: Para fins de reprodutibilidade, usaremos versões fixas e estáveis dos componentes, tendo como base a distribuição `Debian`.
 
 <div align="center">
 
@@ -110,11 +110,11 @@ Esses serão os componentes mínimos que precisaremos para interagir com o siste
 
 ### **GNU Bash**
 
-O `Bash` é o shell padrão de diversas distribuições GNU/Linux (como `Debian`, `Fedora`, etc...), sendo o componente básico para permitir a interação do usuário com o sistema operacional através de comandos. Com isso em mente, iremos baixar através do comando `wget`.
+O `Bash` é o shell padrão de diversas distribuições GNU/Linux (como `Debian`, `Fedora`, etc...), sendo o componente básico para permitir a interação do usuário com o sistema operacional através de comandos. Com isso em mente, iremos baixá-lo através do comando `wget`.
 
 > **Wget**: Ferramenta de linha de comando que permite o download de arquivos utilizando protocolos **HTTP**, **HTTPS**, **FTP** e **FTPS**, permitindo baixar arquivos em ambientes minimalistas sem a necessidade de utilizar um navegador. Também faz parte do projeto **GNU**.
 
-A sintaxe base do **Wget** consiste no comando seguido do link do conteúdo a ser baixado. No caso do GNU Bash, temos no próprio site do Projeto GNU, onde podemos conseguir simplesmente copiando o link do arquivo na página de downloads e versões.
+A sintaxe base do **Wget** consiste no comando seguido do link do conteúdo a ser baixado. No caso do GNU Bash, o link está no próprio site do Projeto GNU, bastando copiá-lo na página de downloads e versões.
 
 <div align="center">
 
@@ -122,7 +122,7 @@ A sintaxe base do **Wget** consiste no comando seguido do link do conteúdo a se
 
 </div>
 
-> Imagem 3: Pagina da web do **GNU Bash**.
+> Imagem 3: Página da web do **GNU Bash**.
 
 <div align="center">
 
@@ -130,7 +130,7 @@ A sintaxe base do **Wget** consiste no comando seguido do link do conteúdo a se
 
 </div>
 
-> Imagem 4: Sessão para download do componente, sendo escolhida a versão **HTTPS**.
+> Imagem 4: Seção para download do componente, sendo escolhida a versão **HTTPS**.
 
 <div align="center">
 
@@ -151,7 +151,7 @@ cd Componentes
 wget [LINK_GNU-BASH]
 ```
 
-Com isso, ao verificarmos o nosso ambiente com o comando `list` (**ls**), podemos ver o pacote do GNU Bash ver. 5.2.37 baixado em nosso contêiner, nos permitindo, enfim, acessar o seu conteúdo para montar o nosso **initramfs**.
+Com isso, ao verificarmos o nosso ambiente com o comando `ls` (**list**), podemos ver o pacote do GNU Bash ver. 5.2.37 baixado em nosso container, nos permitindo, enfim, acessar o seu conteúdo para montar o nosso **initramfs**.
 
 <div align="center">
 
@@ -161,9 +161,9 @@ Com isso, ao verificarmos o nosso ambiente com o comando `list` (**ls**), podemo
 
 > Imagem 6: Criando o diretório **Componentes** e baixando o **GNU Bash** nele.
 
-Para possibilitar o acesso, basta extrairmos o conteúdo desse `tarball`, gerando um diretório dentro de `Componentes`, onde será usado mais tarde para gerar o **initramfs**.
+Para possibilitar o acesso, basta extrairmos o conteúdo desse `tarball`, gerando um diretório dentro de `Componentes`, que será usado mais tarde para gerar o **initramfs**.
 
-> **NOTA**: Uma tarball é basicamente um arquivo que empacota arquivos e diretórios, geralmente usado para distribuir o código-fonte de programas em sistemas **GNU/Linux**.
+> **NOTA**: Um tarball é basicamente um arquivo que empacota arquivos e diretórios, geralmente usado para distribuir o código-fonte de programas em sistemas **GNU/Linux**.
 
 ```bash
 # Extrai o conteúdo do tarball do Bash
@@ -184,11 +184,11 @@ Juntando tudo, temos o seguinte cenário: Extraia (**x**) um arquivo comprimido 
 
 > Imagem 7: Extraindo o tarball do GNU Bash.
 
-Após isso, um novo diretório é gerado, sendo este o `bash-5.2.37`. Dentro deste se encontram os arquivos extraídos do tarball do GNU Bash, nos permitindo trabalhar com eles na etapa de geração do **initramfs**. Em seguida, estaremos baixando a **Glibc**, a biblioteca C que nosso sistema utilizará.
+Após isso, um novo diretório é gerado, sendo este o `bash-5.2.37`. Dentro deste se encontram os arquivos extraídos do tarball do GNU Bash, nos permitindo trabalhar com eles na etapa de geração do **initramfs**. Em seguida, baixaremos a **Glibc**, a biblioteca C que nosso sistema utilizará.
 
 ### **Glibc**
 
-Com o GNU Bash baixado, chegou a vez da biblioteca C, a GNU C Library (**Glibc**). O processo seguirá o mesmo visto anteriormente com o Bash, onde iremos acessar o site oficial do Projeto GNU através da sessão da Glibc e procurar a aba de downloads, selecionando **HTTPS** e seguindo o mesmo passo-a-passo visto, dessa vez, procurando a `glibc-2.41.tar.gz` que é a versão utilizada neste framework.
+Com o GNU Bash baixado, chegou a vez da biblioteca C, a GNU C Library (**Glibc**). O processo seguirá o mesmo visto anteriormente com o Bash, onde iremos acessar o site oficial do Projeto GNU através da seção da Glibc e procurar a aba de downloads, selecionando **HTTPS** e seguindo o mesmo passo a passo visto, dessa vez procurando a `glibc-2.41.tar.gz`, que é a versão utilizada neste framework.
 
 Ainda no mesmo diretório `Componentes`, basta executarmos o **wget** novamente para realizar o download do tarball da **Glibc**.
 
@@ -205,7 +205,7 @@ wget [LINK_GLIBC]
 
 > Imagem 8: Baixando a **Glibc** no diretório **Componentes**.
 
-Após, basta realizar o mesmo procedimento feito com o **GNU Bash**, extraindo o conteúdo do tarball para podermos trabalhar com ele.
+Após isso, basta realizar o mesmo procedimento feito com o **GNU Bash**, extraindo o conteúdo do tarball para podermos trabalhar com ele.
 
 ```bash
 # Extrai o conteúdo do tarball da Glibc
@@ -220,11 +220,11 @@ tar -xzf glibc-2.41.tar.gz
 
 > Imagem 9: Extraindo o tarball da Glibc.
 
-Tendo a **GLibc** baixada, seguiremos para o último componente necessário para o pleno funcionamento, sendo ele o **Ncurses**, sendo um pacote que serve para transformar telas pretas com linhas de comando simples em interfaces visuais interativas, utilizando apenas caracteres de texto, algo fundamental para o **GNU Bash**.
+Tendo a **Glibc** baixada, seguiremos para o último componente necessário para o pleno funcionamento, o **Ncurses**, um pacote que serve para transformar telas pretas com linhas de comando simples em interfaces visuais interativas, utilizando apenas caracteres de texto, algo fundamental para o **GNU Bash**.
 
 ### **Ncurses**
 
-Com o **GNU Bash** e a **Glibc** baixadas no ambiente, chegou o momento do **Ncurses**. Assim como os outros dois componentes anteriores, o processo seguirá exatamente o mesmo, iniciando pelo download via wget do pacote `ncurses-6.6.tar.gz`, também encontrado no site do projeto GNU.
+Com o **GNU Bash** e a **Glibc** baixados no ambiente, chegou o momento do **Ncurses**. Assim como nos outros dois componentes anteriores, o processo seguirá exatamente o mesmo, iniciando pelo download via wget do pacote `ncurses-6.6.tar.gz`, também encontrado no site do projeto GNU.
 
 ```bash
 # Baixa o tarball do ncurses
@@ -242,14 +242,14 @@ tar -xzf ncurses-6.6.tar.gz
 
 > Imagem 10: Baixando e extraindo tarball do **Ncurses**.
 
-Com isso, temos os componentes necessários para estarmos criando nosso **initramfs** e testarmos a capacidade da memória primária em ação. Nos próximos passos, estaremos montando o arquivo e inserindo em nossa imagem bootável temporariamente -- o **initramfs** será utilizado somente nesta etapa, sendo removido na próxima.
+Com isso, temos os componentes necessários para criarmos nosso **initramfs** e testarmos a capacidade da memória primária em ação. Nos próximos passos, montaremos o arquivo e o inseriremos em nossa imagem bootável temporariamente -- o **initramfs** será utilizado somente nesta etapa, sendo removido na próxima.
 
 ### **Gerando initramfs**
 
-Com todos os componentes necessários em nosso ambiente de desenvolvimento, chegou a hora de montar o nosso **initramfs** para realizar um novo boot com o sistema de arquivos temporário. Antes de iniciar, estaremos removendo os tarballs do nosso diretório `Componentes`, uma vez que já extraímos os arquivos que precisamos. Para isso, estaremos utilizando o comando `rm` (**remove**), seguido dos tarballs baixados.
+Com todos os componentes necessários em nosso ambiente de desenvolvimento, chegou a hora de montar o nosso **initramfs** para realizar um novo boot com o sistema de arquivos temporário. Antes de iniciar, removeremos os tarballs do nosso diretório `Componentes`, uma vez que já extraímos os arquivos de que precisamos. Para isso, utilizaremos o comando `rm` (**remove**), seguido dos tarballs baixados.
 
 ```bash
-# Exclui os tarballs do GNU Bash e da Glibc
+# Exclui os tarballs do GNU Bash, da Glibc e do Ncurses
 rm bash-5.2.37.tar.gz glibc-2.41.tar.gz ncurses-6.6.tar.gz
 ```
 
@@ -261,9 +261,9 @@ Após a execução deste comando, teremos somente os diretórios gerados após a
 
 </div>
 
-> Imagem 11: Removendo os tarballs do GNU Bash e da Glibc
+> Imagem 11: Removendo os tarballs do GNU Bash, da Glibc e do Ncurses
 
-Com tudo organizado, agora estaremos criando os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível somente apagar o conteúdo gerado e tentar novamente. Como estaremos compilando o **GNU Bash**, a **Glibc** e o **Ncurses**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
+Com tudo organizado, criaremos agora os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código-fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível apenas apagar o conteúdo gerado e tentar novamente. Como compilaremos o **GNU Bash**, a **Glibc** e o **Ncurses**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
 
 ```bash
 # Cria o diretório de build da Glibc
@@ -281,7 +281,7 @@ mkdir bash-build
 
 > Imagem 12: Criando os diretórios de build do **GNU Bash** e da **Glibc**.
 
-Com os diretórios de build criados, seguiremos para a criação do diretório responsável pelo **initramfs**, onde iremos armazenar os componentes necessários para a utilização do ambiente. Para isso, faremos a seguinte sequência de comandos, retornando ao diretório raiz **LOS** e criando nele o diretório **initramfs** e seus sub-diretórios **bin**, **lib** e **lib64**, sendo a estrutura mínima necessária para essa demonstração.
+Com os diretórios de build criados, seguiremos para a criação do diretório responsável pelo **initramfs**, onde armazenaremos os componentes necessários para a utilização do ambiente. Para isso, faremos a seguinte sequência de comandos, retornando ao diretório raiz **LOS** e criando nele o diretório **initramfs** e seus subdiretórios **bin**, **lib** e **lib64**, sendo a estrutura mínima necessária para essa demonstração.
 
 ```bash
 # Voltamos ao diretório raiz do projeto (/LOS)
@@ -291,7 +291,7 @@ cd ..
 mkdir -p initramfs/bin initramfs/lib initramfs/lib64
 ```
 
-Com isso, já teremos a estrutura de diretórios mínima para criar nosso **initramfs**, estando pronta para receber os arquivos que compilaremos, sendo eles a **Glibc**, o **GNU Bash** e o **Ncurses**.
+Com isso, já teremos a estrutura de diretórios mínima para criar nosso **initramfs**, pronta para receber os arquivos que compilaremos, sendo eles a **Glibc**, o **GNU Bash** e o **Ncurses**.
 
 <div align="center">
 
@@ -303,16 +303,16 @@ Com isso, já teremos a estrutura de diretórios mínima para criar nosso **init
 
 ### **Compilando os componentes**
 
-Para iniciar, estaremos iniciando a compilação da biblioteca C, responsável pelos componentes necessários em nosso sistema. Para isso, usaremos um script padrão que se encontra pronto para executar, estando presente no diretório `scripts` do nosso repositório, sendo ele o `glibc-build.sh`. 
+Para iniciar, daremos início à compilação da biblioteca C, necessária para os componentes do nosso sistema. Para isso, usaremos um script padrão que se encontra pronto para executar, presente no diretório `scripts` do nosso repositório, sendo ele o `glibc-build.sh`. 
 
-Para podemos utilizar desses scripts de compilação, basta copiarmos o diretório para dentro do nosso contêiner utilizando o `docker cp`:
+Para podermos utilizar esses scripts de compilação, basta copiarmos o diretório para dentro do nosso container utilizando o `docker cp`, a partir de um terminal no sistema principal (fora do container):
 
 ```bash
-# Descobre o ID do contêiner 
+# Descobre o ID do container 
 docker ps
 
 # Copia o diretório scripts para dentro de Componentes
-docker cp scripts [ID-DO-CONTÊINER]:/LOS/Componentes
+docker cp scripts [ID-DO-CONTAINER]:/LOS/Componentes
 ```
 
 <div align="center">
@@ -321,7 +321,7 @@ docker cp scripts [ID-DO-CONTÊINER]:/LOS/Componentes
 
 </div>
 
-> Imagem 14: Copiando o diretório de `scripts` para dentro do contêiner
+> Imagem 14: Copiando o diretório de `scripts` para dentro do container
 
 <div align="center">
 
@@ -331,7 +331,7 @@ docker cp scripts [ID-DO-CONTÊINER]:/LOS/Componentes
 
 > Imagem 15: Diretório presente no ambiente de desenvolvimento.
 
-Com isso, iremos dar as devidas permissões de execução para os scripts através do comando `chmod`. Dentro do contêiner, no diretório `Componentes/scripts`:
+Com isso, daremos as devidas permissões de execução aos scripts através do comando `chmod`. Dentro do container, no diretório `Componentes/scripts`:
 
 ```bash
 # Fornece a permissão de execução aos scripts
@@ -340,42 +340,42 @@ chmod +x bash-build.sh
 chmod +x ncurses-build.sh
 ```
 
-Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente. Os componentes serão compilados em nosso diretório real (`/LOS/root`) para aproveitar o trabalho, mas após todo o processo, basta copiar o binários compilados para dentro do initramfs que funcionarão corretamente. 
+Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente. Os componentes serão compilados em nosso diretório real (`/LOS/root`) para aproveitar o trabalho, mas, após todo o processo, basta copiar os binários compilados para dentro do initramfs, que funcionarão corretamente. 
 
-Após a compilação de todos os componentes do sistema, estaremos voltando ao diretório raiz (**LOS**) para executar o seguinte comando, com a finalidade de copiar o bash compilado para o diretório de nosso **initramfs**:
+Após a compilação de todos os componentes do sistema, voltaremos ao diretório raiz (**LOS**) para executar o seguinte comando, com a finalidade de copiar o bash compilado para o diretório de nosso **initramfs**:
 
 ```bash
 # Copia o binário do Bash para o initramfs
 cp root/bin/bash initramfs/bin/bash
 ```
 
-Com o binário já copiado para o diretório do **initramfs**, criaremos o último diretório necessário para o sistema e, após isso, copiaremos as dependências do **GNU Bash** para dentro dele, podendo ser verificadas através do comando `ldd /bin/bash`.
+Com o binário já copiado para o diretório do **initramfs**, copiaremos agora as dependências do **GNU Bash** para dentro dele, as quais podem ser verificadas através do comando `ldd /bin/bash`.
 
 ```bash
 # Verifica as dependências do componente 
 ldd /bin/bash
 ```
 
-> O comando `ldd` (**List Dynamic Dependencies**) mostra as bibliotecas compartilhadas que um componente necessita para funcionar, sendo parte da **Glibc**.
+> O comando `ldd` (**List Dynamic Dependencies**) mostra as bibliotecas compartilhadas que um componente necessita para funcionar, sendo ele próprio parte da **Glibc**.
 
 Com isso, ele listará as seguintes bibliotecas:
 
-* `linux-vdso.so.1 (0x00007f2172016000)` - aplicada pelo próprio kernel
+* `linux-vdso.so.1 (0x00007f2172016000)` - fornecida pelo próprio kernel
 * `libtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0x00007f2171e86000)` - parte do **Ncurses**
 * `libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f2171c92000)` - parte da **Glibc**
 * `/lib64/ld-linux-x86-64.so.2 (0x00007f2172018000)` - parte da **Glibc**
 
-Isso nos mostra quais os outros pacotes são necessários para a utilização do **GNU Bash**, sendo necessárias estas bibliotecas compartilhadas pelos componentes. Com isso em mente e com a **Glibc** e o **Ncurses** compilados e instalados em nosso sistema, basta copiar essas bibliotecas para os devidos diretórios -- sendo do nosso diretório `root` para o `initramfs`.
+Isso nos mostra quais outros pacotes são necessários para a utilização do **GNU Bash**, sendo necessárias estas bibliotecas compartilhadas pelos componentes. Com isso em mente e com a **Glibc** e o **Ncurses** compilados e instalados em nosso sistema, basta copiar essas bibliotecas para os devidos diretórios -- do nosso diretório `root` para o `initramfs`.
 
 ```bash
-# Copiar as bibliotecas necessárias do Bash (a flag -L serve 
-# para copiar os arquivos reais (resolvendo os links simbólicos).
+# Copiar as bibliotecas necessárias do Bash (a flag -L serve
+# para copiar os arquivos reais, resolvendo os links simbólicos)
 cp -L root/lib/libtinfo.so.6 initramfs/lib/
 cp -L root/lib64/libc.so.6 initramfs/lib/
 cp -L root/lib64/ld-linux-x86-64.so.2 initramfs/lib64/
 ```
 
-Seguindo, agora estando dentro de **initramfs**, criaremos nosso arquivo de inicialização, sendo algo simples que somente inicializa o **Bash** no sistema, nos permitindo interagir com ele:
+Em seguida, agora dentro de **initramfs**, criaremos nosso arquivo de inicialização, algo simples que somente inicializa o **Bash** no sistema, nos permitindo interagir com ele:
 
 ```bash
 # Acessa o diretório 'initramfs'
@@ -400,21 +400,21 @@ echo "na memoria primaria (RAM)"
 exec /bin/bash
 ```
 
-Ele servirá apenas para iniciar o bash como **PID 1** do sistema, permitindo nossa utilização sem que o sistema morra (até digitarmos **'exit'** e matarmos o processo do **Bash**). Com tudo feito, basta salvar o arquivo (`Ctrl` + `O` seguido de `Ctrl` + `X`), tornando o init executável para o sistema em sequência utilizando novamente do `chmod`:
+Ele servirá apenas para iniciar o bash como **PID 1** do sistema, permitindo nossa utilização sem que o sistema pare de funcionar (até digitarmos **'exit'** e encerrarmos o processo do **Bash**). Com tudo feito, basta salvar o arquivo (`Ctrl` + `O`, `Enter` para confirmar e, em seguida, `Ctrl` + `X`), tornando o init executável para o sistema na sequência, utilizando novamente o `chmod`:
 
 ```bash
 # Torna o init executável após salvar o arquivo
 chmod +x initramfs/init
 ```
 
-Com o init finalizado, podemos enfim montar o nosso **initramfs** para utilizarmos em nosso framework. Para realizar este passo, estaremos instalando em nosso ambiente o utilitário `cpio`, uma vez que é necesário para empacotar nosso diretório no formato comumente utilizado pelo kernel (como fizemos na Base Inicial), bastando realizar os seguintes comandos:
+Com o init finalizado, podemos enfim montar o nosso **initramfs** para utilizarmos em nosso framework. Para realizar este passo, estaremos instalando em nosso ambiente o utilitário `cpio`, uma vez que é necessário para empacotar nosso diretório no formato comumente utilizado pelo kernel (como fizemos na Base Inicial), bastando realizar o seguinte comando:
 
 ```bash
 # Ainda dentro de 'initramfs', rodamos o seguinte comando
 find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs.cpio.gz
 ```
 
-Após essa etapa, nosso initramfs está pronto para ser utilizado, restando agora somente iserí-lo em nossa imagem bootável. Para isso, precisamos voltar ao diretório raiz onde `lecos.img` se encontra para **montar** o diretório novamente em **/mnt**, nos permitindo manipular seus arquivos:
+Após essa etapa, nosso initramfs está pronto para ser utilizado, restando agora somente inseri-lo em nossa imagem bootável. Para isso, precisamos voltar ao diretório raiz onde `lecos.img` se encontra para **montar** a imagem novamente em **/mnt**, nos permitindo manipular seus arquivos:
 
 ```bash
 # Voltamos ao diretório raiz (/LOS)
@@ -427,21 +427,21 @@ kpartx -av /dev/loop0
 mount /dev/mapper/loop0p1 /mnt
 ```
 
-Dando sequência, agora com acesso aos arquivos de `lecos.img`, iremos copiare o nosso initramfs para a nossa imagem, dentro do diretório **boot**, onde também se encontram o **kernel Linux** e o **GNU GRUB**, reunindo os componentes que permitirão o boot do sistema:
+Dando sequência, agora com acesso aos arquivos de `lecos.img`, copiaremos o nosso initramfs para a nossa imagem, dentro do diretório **boot**, onde também se encontram o **kernel Linux** e o **GNU GRUB**, reunindo os componentes que permitirão o boot do sistema:
 
 ```bash
 # Copia o initramfs compactado para a imagem
 cp initramfs.cpio.gz /mnt/boot 
 ```
 
-Depois, estaremos atualizando o arquivo `grub.cfg` para reconhecer nosso **initramfs** recém inserido, uma vez que o nosso **bootloader** precisa saber onde se encontra o arquivo de inicialização para utilizar ao carregar o kernel. Com isso, primeiro acessamos o arquivo através do editor de texto `nano`:
+Depois, atualizaremos o arquivo `grub.cfg` para reconhecer nosso **initramfs** recém-inserido, uma vez que o nosso **bootloader** precisa saber onde se encontra o arquivo de inicialização a ser utilizado ao carregar o kernel. Com isso, primeiro acessamos o arquivo através do editor de texto `nano`:
 
 ```bash
 # Abre o 'grub.cfg' para editar
 nano /mnt/boot/grub/grub.cfg
 ```
 
-E após acessá-lo, inserimos apenas uma linha nova nele referente ao **initramfs**, indicando o nome do arquivo e seu diretório de localização, garantindo que ele será devidamente carregado pelo **GRUB**. A seguir, é como nosso arquivo deve ficar após a atualização:
+E, após acessá-lo, inserimos apenas uma linha nova nele referente ao **initramfs**, indicando o nome do arquivo e seu diretório de localização, garantindo que ele será devidamente carregado pelo **GRUB**. A seguir, vemos como nosso arquivo deve ficar após a atualização:
 
 ```nano
 menuentry 'LecOS' {
@@ -459,7 +459,7 @@ Após isso, salvaremos as edições (novamente, utilizando `Ctrl` + `O`) e saire
 # Sincronize as alterações
 sync
 
-# Desmonta 'lecos.img' de '/mnt' e remoção do loop device
+# Desmonta 'lecos.img' de '/mnt' e remove o loop device
 umount /mnt
 kpartx -d /dev/loop0
 losetup -d /dev/loop0
@@ -471,9 +471,9 @@ E, enfim, nosso sistema está pronto para inicializar, possuindo em sua composi�
 * **Kernel Linux** reconhecido pelo bootloader
 * **Init** funcional, embora temporário e volátil
 
-O initramfs atual, como já mencionado, é algo temporário utilizado somente para esta etapa a fim de se verificar na prática a questão da volatilidade da memória primária, sendo algo provisório mas que já nos permite utilizar o sistema. 
+O initramfs atual, como já mencionado, é algo temporário utilizado somente nesta etapa a fim de se verificar na prática a questão da volatilidade da memória primária, sendo algo provisório, mas que já nos permite utilizar o sistema. 
 
-Por fim, para testarmos nossa nova imagem bootável, iremos retornar ao nosso sistema padrão, onde copiaremos a nova imagem para fora do contêiner e testar, utilizando o seguinte comando para isso novamente:
+Por fim, para testarmos nossa nova imagem bootável, retornaremos ao nosso sistema padrão, onde copiaremos a nova imagem para fora do container e a testaremos, utilizando novamente os seguintes comandos:
 
 ```bash
 # Copia 'lecos.img' para o sistema host novamente
@@ -491,9 +491,9 @@ qemu-system-x86_64 lecos.img
 
 > Imagem 16: Boot realizado na memória RAM (initramfs).
 
-Ao realizar o boot, cairemos na interface do bash, nos permitindo interagir com o sistema dessa vez, o teclado funciona seguindo os padrões abnt, garantindo uma experiência mais fluida. Para realizar os testes de volatilidade, faremos os seguintes scripts abaixo.
+Ao realizar o boot, cairemos na interface do bash, o que nos permitirá interagir com o sistema. Dessa vez, o teclado funciona seguindo os padrões ABNT, garantindo uma experiência mais fluida. Para realizar os testes de volatilidade, executaremos os scripts abaixo.
 
-> **NOTA**: Por estar rodando no QEMU, a função de colar não funciona como esperado, por isso, digite manualmente no terminal a sequência abaixo, com exceção das hashtags.
+> **NOTA**: Por estar rodando no QEMU, a função de colar não funciona como esperado, por isso, digite manualmente no terminal a sequência abaixo, com exceção dos comentários (iniciados por `#`).
 
 ```bash
 # Cria um arquivo aleatório - INSIRA A MATRÍCULA DE UM MEMBRO DO GRUPO
@@ -505,7 +505,7 @@ if [ -f /teste.txt ]; then # Nessa parte, aperte 'Enter', pois o comando continu
 fi # 'Enter'
 ```
 
-O retorno será positivo, indicando que o arquivo foi criado e está presente no ambiente. No entanto, estamos rodando tudo isso na memória RAM, se reiniciarmos o ambiente e executarmos o seguinte comando:
+O retorno será positivo, indicando que o arquivo foi criado e está presente no ambiente. No entanto, como estamos rodando tudo isso na memória RAM, se reiniciarmos o ambiente e executarmos o seguinte comando:
 
 ```bash
 if [ -f /teste.txt ]; then # 'Enter'
@@ -515,7 +515,7 @@ else # 'Enter'
 fi # 'Enter'
 ```
 
-Ele não achará o arquivo mais, uma vez que, durante o reinicio, todos os dados foram perdidos, indicando a volatilidade da memória RAM e a falta de persistência dos dados.
+Ele não encontrará mais o arquivo, uma vez que, durante o reinício, todos os dados foram perdidos, indicando a volatilidade da memória RAM e a falta de persistência dos dados.
 
 <div align="center">
 
@@ -531,8 +531,8 @@ Ele não achará o arquivo mais, uma vez que, durante o reinicio, todos os dados
 
 </div>
 
-> Imagem 18: Conteúdo perdido após o reinicio do sistema, provando a volatilidade.
+> Imagem 18: Conteúdo perdido após o reinício do sistema, provando a volatilidade.
 
 ## **Próximos passos**
 
-Com a questão da memória primária e secundária feitas, podemos enfim prosseguir para o init real do sistema na próxima etapa, onde iniciaremos nosso sistema principal com a persistência de memória, nos permitindo utilizar a vontade sem perder o nosso progresso. Um excelente trabalho até aqui, nos vemos na próxima etapa!
+Com a questão da memória primária e secundária concluída, podemos enfim prosseguir para o init real do sistema na próxima etapa, onde iniciaremos nosso sistema principal com a persistência de memória, nos permitindo utilizá-lo à vontade sem perder o nosso progresso. Um excelente trabalho até aqui, nos vemos na próxima etapa!

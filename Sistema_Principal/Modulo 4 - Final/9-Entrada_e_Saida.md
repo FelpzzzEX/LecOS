@@ -1,6 +1,6 @@
 # **Entrada e Saída**
 
-Ao longo das etapas anteriores, construímos um sistema capaz de iniciar, executar processos e mantê-los sob a supervisão do Systemd. No entanto, um sistema que apenas executa programas, mas não consegue receber ou entregar dados, teria pouca utilidade: ele não leria o que digitamos, não exibiria nada na tela e nem gravaria informações no disco.
+Ao longo das etapas anteriores, construímos um sistema capaz de iniciar, executar processos e mantê-los sob a supervisão do Systemd. No entanto, um sistema que apenas executa programas, mas não consegue receber ou entregar dados, teria pouca utilidade: ele não leria o que digitamos, não exibiria nada na tela nem gravaria informações no disco.
 
 A **entrada e saída** (*Input/Output*, ou simplesmente **E/S**) é justamente a parte do sistema operacional responsável por essa comunicação com o mundo externo. Nesta etapa, veremos como o kernel Linux intermedia o acesso aos dispositivos, por que no Linux "quase tudo é um arquivo", como os programas recebem e enviam dados e, no final, observaremos tudo isso funcionando dentro do LecOS.
 
@@ -59,7 +59,7 @@ Os arquivos de dispositivo se dividem em dois tipos principais, identificados pe
 
 Cada arquivo de dispositivo possui ainda dois números: o **major**, que identifica o *driver* responsável, e o **minor**, que identifica qual dispositivo desse driver. Por exemplo, os discos SCSI/SATA utilizam o major `8`: o primeiro disco (`sda`) é o `8,0`, e sua primeira partição (`sda1`) é o `8,1`.
 
-Os nomes também seguem um padrão. Em `sda1`, o `sd` indica um disco SCSI/SATA, a letra `a` indica o primeiro disco encontrado e o número `1` indica a primeira partição. É por isso que o nosso `grub.cfg` utiliza `root=/dev/sda1`, e é o mesmo motivo pelo qual, dentro do contêiner, nossa imagem montada aparecia como `loop0p1`.
+Os nomes também seguem um padrão. Em `sda1`, o `sd` indica um disco SCSI/SATA, a letra `a` indica o primeiro disco encontrado e o número `1` indica a primeira partição. É por isso que o nosso `grub.cfg` utiliza `root=/dev/sda1`, e é o mesmo motivo pelo qual, dentro do container, nossa imagem montada aparecia como `loop0p1`.
 
 ## **Como o kernel conversa com o hardware**
 
@@ -224,7 +224,7 @@ ls /etc /nao-existe > saida.txt 2> erro.txt
 
 </div>
 
-> Imagens 2: Erro na saída do comando.
+> Imagem 2: Erro na saída do comando.
 
 No segundo comando, nada aparece na tela. A lista de arquivos foi para `saida.txt` e a mensagem de erro foi para `erro.txt`:
 
@@ -316,7 +316,7 @@ rm canal
 
 > Imagem 6: Criando e utilizando o `pipe` nomeado.
 
-No `ls -l`, a primeira letra é `p`, de *pipe*. Assim que o `echo` escreve, o `cat` (que estava bloqueado em `read()`) recebe a mensagem e a exibe. O arquivo `canal` nunca guardou o texto no disco: ele apenas indica o ponto de encontro dos dois processos, e os dados passaram pelo buffer do kernel.
+No `ls -l`, a primeira letra é `p`, de *pipe*. Assim que o `echo` escreve, o `cat` (que estava bloqueado, aguardando o outro lado) recebe a mensagem e a exibe. O arquivo `canal` nunca guardou o texto no disco: ele apenas indica o ponto de encontro dos dois processos, e os dados passaram pelo buffer do kernel.
 
 ### **Experimento 5: dispositivos especiais**
 
@@ -419,7 +419,7 @@ O kernel registra quantas operações cada disco já realizou. Vamos guardar ess
 read -r a b c d e f g _ < /sys/block/sda/stat
 echo "Escritas: $e | Setores gravados: $g"
 
-# Grava 50 arquivos de 1 MB (50 MB) e força a gravação no disco
+# Grava 50 blocos de 1 MB (um arquivo de 50 MB) e força a gravação no disco
 dd if=/dev/zero of=teste.bin bs=1M count=50
 sync
 
@@ -465,4 +465,4 @@ Compare os dois resultados: o número de **setores gravados** aumentou em cerca 
 
 Nesta etapa, vimos como o sistema operacional se comunica com o mundo externo: os programas pedem ao kernel, os drivers conversam com o hardware e o resultado volta por meio de arquivos, descritores e fluxos. Também vimos como o shell utiliza redirecionamentos e pipes para combinar programas simples em tarefas mais complexas, e verificamos que até o MBR do nosso disco pode ser lido como uma simples sequência de bytes.
 
-Esse último ponto nos leva à etapa final do framework. O `/dev/sda1` é apenas uma sequência de blocos, mas não é assim que enxergamos nossos dados: lidamos com **arquivos e diretórios**, com nomes, donos e permissões. Quem transforma esses blocos em uma estrutura organizada é o **sistema de arquivos**, tema da próxima etapa.
+Esse último ponto nos leva à próxima etapa do framework. O `/dev/sda1` é apenas uma sequência de blocos, mas não é assim que enxergamos nossos dados: lidamos com **arquivos e diretórios**, com nomes, donos e permissões. Quem transforma esses blocos em uma estrutura organizada é o **sistema de arquivos**, tema da próxima etapa.
