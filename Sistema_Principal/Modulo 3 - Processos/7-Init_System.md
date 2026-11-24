@@ -2,7 +2,7 @@
 
 Após termos construído nossa `userland`, chegou o momento de substituir o **Bash**, que até então estava atuando como **PID 1**, por um sistema de inicialização próprio. Para isso, utilizaremos o **Systemd**.
 
-O Systemd será responsável por assumir o papel de processo principal do LecOS, coordenando a inicialização do sistema e o gerenciamento dos serviços e processos necessários durante seu funcionamento.
+O Systemd será responsável por assumir o papel de processo principal do sistema, coordenando a inicialização do sistema e o gerenciamento dos serviços e processos necessários durante seu funcionamento.
 
 Diferentemente do estágio anterior, no qual o Bash era iniciado diretamente pelo kernel e permanecia como o processo principal, agora teremos uma estrutura de inicialização mais próxima daquela encontrada em distribuições GNU/Linux convencionais.
 
@@ -12,7 +12,7 @@ O `init-system` é o componente responsável por iniciar e organizar o ambiente 
 
 Durante o boot, o bootloader carrega o kernel Linux, que inicializa os recursos fundamentais do sistema e prepara o ambiente necessário para executar o primeiro processo em espaço de usuário. Esse processo recebe o identificador **PID 1** e assume um papel central na inicialização do restante do sistema.
 
-No LecOS, utilizaremos o Systemd para ocupar essa posição.
+No nosso sistema, utilizaremos o Systemd para ocupar essa posição.
 
 ```mermaid
 sequenceDiagram
@@ -35,17 +35,21 @@ sequenceDiagram
     deactivate S
 ```
 
-> Diagrama 1: Sequência simplificada do processo de inicialização do LecOS utilizando o Systemd.
+> Diagrama 1: Sequência simplificada do processo de inicialização do sistema utilizando o Systemd.
 
-Já no estágio anterior do LecOS, essa posição era ocupada pelo nosso script `init`, interpretado pelo **Bash**: ele montava os sistemas de arquivos virtuais e mantinha um shell em execução, reiniciando-o sempre que o usuário saía:
+Já no estágio anterior, essa posição era ocupada pelo nosso script `init`, interpretado pelo **Bash**: ele montava os sistemas de arquivos virtuais e mantinha um shell em execução, reiniciando-o sempre que o usuário saía:
 
 ```mermaid
 sequenceDiagram
+    participant F as Firmware
+    participant BL as Bootloader
     participant K as Kernel Linux
     participant I as Script init (PID 1)
     participant B as Shell (filho do init)
     participant U as Usuário
 
+    F->>BL: Localiza e inicia o bootloader
+    BL->>K: Carrega o kernel Linux
     K->>I: Executa /sbin/init
     activate I
     I->>I: Monta /proc, /sys e /dev
@@ -116,7 +120,7 @@ Além do processo principal, o projeto fornece ferramentas e componentes auxilia
 - `journalctl`: utilizado para consultar os registros produzidos pelo sistema e por seus serviços, quando o mecanismo de logging correspondente está disponível.
 - `systemd-logind`: componente responsável pelo gerenciamento de sessões de usuários, entre outras funções relacionadas.
 
-Para o LecOS, nosso objetivo inicial não é explorar todos esses recursos, mas estabelecer uma base funcional de inicialização que permita executar o Systemd como PID 1 e iniciar os componentes necessários ao funcionamento do sistema.
+Para o nosso sistema, o objetivo inicial não é explorar todos esses recursos, mas estabelecer uma base funcional de inicialização que permita executar o Systemd como PID 1 e iniciar os componentes necessários ao funcionamento do sistema.
 
 ### **Como o Systemd organiza o sistema**
 
@@ -161,36 +165,83 @@ flowchart LR
 
 O Systemd oferece diversos recursos e pode ser compilado com diferentes opções e dependências. Por isso, não precisamos habilitar ou instalar indiscriminadamente todos os seus componentes para alcançar nosso objetivo.
 
-Neste framework, priorizaremos uma configuração minimalista, habilitando os recursos necessários à inicialização do LecOS e evitando dependências e funcionalidades que não façam parte do escopo atual do projeto.
+Neste framework, priorizaremos uma configuração minimalista, habilitando os recursos necessários à inicialização do sistema e evitando dependências e funcionalidades que não façam parte do escopo atual do projeto.
 
 É importante destacar que **uma compilação bem-sucedida não garante, por si só, que o Systemd conseguirá inicializar o sistema**. Também precisamos garantir que o executável, suas bibliotecas, os diretórios necessários e os recursos disponibilizados pelo kernel estejam corretamente preparados na raiz do sistema (`rootfs`).
 
-Na etapa prática, trabalharemos justamente nessa integração, substituindo o Bash como PID 1 e preparando o ambiente para que o Systemd possa assumir a inicialização do LecOS.
+Na etapa prática, trabalharemos justamente nessa integração, substituindo o Bash como PID 1 e preparando o ambiente para que o Systemd possa assumir a inicialização do sistema.
 
 Neste framework, utilizaremos a versão **257.13** do Systemd, mantendo uma versão fixa, assim como nos demais componentes, para facilitar a reprodução do processo de construção e reduzir possíveis incompatibilidades entre versões.
 
 ## **Instalando e configurando**
 
-A compilação do Systemd depende de ferramentas de desenvolvimento e de bibliotecas que precisam estar disponíveis no ambiente de construção. Para evitar que o aluno tenha de executar manualmente uma longa sequência de comandos, todo esse processo será automatizado pelo script de build preparado para o LecOS.
+A compilação do Systemd depende de ferramentas de desenvolvimento e de bibliotecas que precisam estar disponíveis no ambiente de construção. Para evitar que o aluno tenha de executar manualmente uma longa sequência de comandos, todo esse processo será automatizado pelo script de build preparado para este framework.
 
 O Systemd utiliza o **Meson** como sistema de configuração e o **Ninja** como ferramenta de compilação, diferenciando-se dos demais componentes que vimos no decorrer do trabalho, que utilizam o `make` para essa finalidade. Também utiliza ferramentas como `gperf`, Python e Jinja2 durante o processo de construção. A documentação do próprio projeto lista essas ferramentas entre os requisitos de compilação. 
 
-> Não precisaremos nos preocupar em instalá-las, uma vez que nosso ambiente de desenvolvimento já fornece parte dessas ferramentas, com exceção das que precisam ser baixadas através do `wget`.
+> Não precisaremos nos preocupar em instalá-las, uma vez que nosso ambiente de desenvolvimento já fornece parte dessas ferramentas, com exceção das que precisam ser baixadas através do `wget` e das que precisam ser instaladas com o `apt-get` (`python3-jinja2` e `gperf`), como veremos a seguir.
 
-O script compila e instala as dependências selecionadas — `libcap 2.75`, `kmod 34.2` e `zstd 1.5.7` — e depois configura, compila e instala o Systemd 257.13. Para isso, como em componentes anteriores, baixaremos os **tarballs** deles através do `wget`, garantindo o código-fonte em nosso ambiente de construção e permitindo que o script execute como esperado. 
+O script compila e instala as dependências selecionadas — `libcap 2.75`, `kmod 34.2` e `zstd 1.5.7` — e depois configura, compila e instala o Systemd 257.13. Para isso, como em componentes anteriores, baixaremos os **tarballs** deles através do `wget`, garantindo o código-fonte em nosso ambiente de construção e permitindo que o script execute como esperado.
 
-Além disso, precisaremos também instalar os `headers do kernel`, uma dependência essencial para o Systemd. Com isso em mente, ao fazer o download do tarball do Kernel Linux `6.12.108` e extrair o conteúdo com o comando **tar**, basta rodar os seguintes comandos, na pasta do kernel:
+É necessário baixar as **quatro** fontes (libcap, kmod, zstd e Systemd) **dentro do container**, no diretório `/LOS/Componentes`, o mesmo onde estão os demais componentes. Se algum deles for baixado em outro lugar, ou em outra versão, o script falhará, pois ele procura os diretórios `libcap-2.75`, `kmod-34.2`, `zstd-1.5.7` e `systemd-257.13` nesse local:
+
+<div align="center">
+
+| **Componente** | **Versão** | **Arquivo a baixar** | **Comando para extrair** | **Diretório gerado** |
+| :--: | :--: | :--: | :--: | :--: |
+| **libcap** | 2.75 | `libcap-2.75.tar.xz` | `tar -xJf libcap-2.75.tar.xz` | `libcap-2.75` |
+| **kmod** | 34.2 | `kmod-34.2.tar.xz` | `tar -xJf kmod-34.2.tar.xz` | `kmod-34.2` |
+| **zstd** | 1.5.7 | `zstd-1.5.7.tar.gz` | `tar -xzf zstd-1.5.7.tar.gz` | `zstd-1.5.7` |
+| **Systemd** | 257.13 | `systemd-257.13.tar.gz` | `tar -xzf systemd-257.13.tar.gz` | `systemd-257.13` |
+| **Kernel Linux** | 6.12.108 | `linux-6.12.108.tar.xz` | `tar -xJf linux-6.12.108.tar.xz` | `linux-6.12.108` |
+
+</div>
+
+>Tabela 2: Versões e arquivos que devem estar em `/LOS/Componentes` antes de executar o script.
+
+> **ATENÇÃO**: o código-fonte do Systemd é baixado da página de releases do projeto, na versão `v257.13`. Caso o arquivo baixado tenha outro nome (como `v257.13.tar.gz`), renomeie-o para `systemd-257.13.tar.gz` ou utilize a opção `-O` do `wget`. O importante é que, após a extração, o diretório gerado se chame `systemd-257.13`.
 
 ```bash
+# Acessamos o diretório dos componentes
+cd /LOS/Componentes
+
+# Baixamos as quatro fontes (substitua cada [LINK_...] pelo link do componente)
+wget [LINK_LIBCAP]
+wget [LINK_KMOD]
+wget [LINK_ZSTD]
+wget [LINK_SYSTEMD]
+
+# Extraímos os tarballs
+tar -xJf libcap-2.75.tar.xz
+tar -xJf kmod-34.2.tar.xz
+tar -xzf zstd-1.5.7.tar.gz
+tar -xzf systemd-257.13.tar.gz
+```
+
+Além disso, precisaremos também instalar os `headers do kernel`, uma dependência essencial para o Systemd. O download do Kernel Linux `6.12.108` deve ser feito da mesma forma, **no diretório `/LOS/Componentes`**, pois o diretório `linux-6.12.108` precisa existir ali. Após baixar o tarball com o `wget` e extrair o conteúdo com o comando **tar**, basta rodar os seguintes comandos, na pasta do kernel:
+
+```bash
+cd /LOS/Componentes
+
+# Baixamos o kernel (substitua [LINK_KERNEL] pelo link do componente)
+wget [LINK_KERNEL]
+tar -xJf linux-6.12.108.tar.xz
+
 cd /LOS/Componentes/linux-6.12.108
 
 make ARCH=x86_64 headers_install \
     INSTALL_HDR_PATH="$LOS/usr"
 ```
 
-> Os headers do kernel Linux são arquivos que contêm definições e declarações das interfaces disponibilizadas pelo kernel, permitindo que programas e bibliotecas do sistema utilizem essas interfaces durante a compilação. No LecOS, eles são necessários para atender às dependências de componentes como o Systemd.
+> Os headers do kernel Linux são arquivos que contêm definições e declarações das interfaces disponibilizadas pelo kernel, permitindo que programas e bibliotecas do sistema utilizem essas interfaces durante a compilação. Em nosso sistema, eles são necessários para atender às dependências de componentes como o Systemd.
 
-Com os componentes baixados e os headers instalados, podemos enfim prosseguir para a compilação e instalação deles, além do próprio **Systemd**. Certifique-se de que os códigos-fonte dos componentes esperados pelo script estejam disponíveis em `/LOS/Componentes` em suas respectivas versões. Após garantir que todos os componentes estão presentes, execute o script de build do Systemd:
+Por fim, o script de build do Systemd depende de duas ferramentas que ainda não estão instaladas no container: o `gperf` e o módulo `jinja2` do Python. Sem elas, a execução do `systemd-build.sh` resultará em erro. Instale-as com:
+
+```bash
+apt-get update && apt-get install -y python3-jinja2 gperf
+```
+
+Com os componentes baixados e os headers instalados, podemos enfim prosseguir para a compilação e instalação deles, além do próprio **Systemd**. Certifique-se de que os códigos-fonte dos componentes esperados pelo script (libcap, kmod, zstd e Systemd) estejam disponíveis em `/LOS/Componentes`, nas versões indicadas na Tabela 2. Após garantir que todos os componentes estão presentes, execute o script de build do Systemd:
 
 ```bash
 # Acesse o diretório de scripts 
@@ -206,7 +257,7 @@ chmod +x systemd-build.sh
 1. **Compila e instala a libcap 2.75.** A biblioteca fornece interfaces para trabalhar com as capacidades do kernel Linux.
 2. **Compila e instala o kmod 34.2.** Esse componente disponibiliza ferramentas e a biblioteca `libkmod`, utilizada pelo Systemd quando o suporte a módulos do kernel está habilitado.
 3. **Compila e instala o zstd 1.5.7.** Essa biblioteca oferece o algoritmo de compressão Zstandard, habilitado nesta construção do Systemd.
-4. **Prepara o ambiente de compilação.** As variáveis `SYSROOT`, `CPPFLAGS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS` e `PKG_CONFIG_PATH` orientam as ferramentas para encontrar os cabeçalhos e as bibliotecas instalados na rootfs do LecOS, em vez de depender inadvertidamente dos arquivos do sistema hospedeiro.
+4. **Prepara o ambiente de compilação.** As variáveis `SYSROOT`, `CPPFLAGS`, `CFLAGS`, `CXXFLAGS`, `LDFLAGS` e `PKG_CONFIG_PATH` orientam as ferramentas para encontrar os cabeçalhos e as bibliotecas instalados na rootfs do nosso sistema, em vez de depender inadvertidamente dos arquivos do sistema hospedeiro.
 5. **Verifica as dependências.** Antes de compilar o Systemd, o script confirma a presença dos arquivos de desenvolvimento de `libcap`, `libkmod`, `libblkid`, `libmount` e `Linux-PAM`. Também verifica se o `pkg-config` reconhece a `libkmod`.
 6. **Configura o Systemd com Meson.** As opções selecionadas habilitam funcionalidades necessárias ou úteis ao projeto e desabilitam outras que estão fora do escopo atual.
 7. **Compila e instala o Systemd.** O Meson configura o projeto, compila os componentes e instala os arquivos dentro de `$LOS`, sem direcionar a instalação à raiz do sistema hospedeiro.
@@ -215,9 +266,9 @@ Se uma verificação falhar, o script é interrompido para evitar que a compila�
 
 ### **Por que usamos um SYSROOT?**
 
-Durante a compilação de uma distribuição, o sistema hospedeiro e o sistema que está sendo construído são ambientes diferentes. O hospedeiro fornece o compilador e as ferramentas de build; a rootfs do LecOS contém os cabeçalhos e as bibliotecas destinados ao sistema final.
+Durante a compilação de uma distribuição, o sistema hospedeiro e o sistema que está sendo construído são ambientes diferentes. O hospedeiro fornece o compilador e as ferramentas de build; a rootfs do nosso sistema contém os cabeçalhos e as bibliotecas destinados ao sistema final.
 
-O `SYSROOT` e as variáveis de compilação ajudam a separar esses ambientes. Já `DESTDIR="$LOS"` direciona a instalação dos arquivos para a árvore do LecOS.
+O `SYSROOT` e as variáveis de compilação ajudam a separar esses ambientes. Já `DESTDIR="$LOS"` direciona a instalação dos arquivos para a árvore do nosso sistema.
 
 Essa distinção é importante: compilar um programa usando bibliotecas do hospedeiro por engano pode produzir um executável que não funcione corretamente dentro da imagem final.
 
@@ -276,6 +327,9 @@ ln -sf ../bin/systemctl "$LOS/sbin/poweroff"
 ln -sf ../bin/systemctl "$LOS/sbin/halt"
 ln -sf ../bin/systemctl "$LOS/sbin/shutdown"
 ln -sf ../bin/systemctl "$LOS/sbin/telinit"
+
+# Sincroniza as alterações
+sync
 ```
 
 Esses comandos são configurações posteriores à execução do script de build. Eles não recompilam o Systemd; apenas definem os caminhos tradicionais para inicialização e controle do sistema.
@@ -286,30 +340,32 @@ O resultado esperado para o link principal é semelhante a:
 /sbin/init -> /usr/lib/systemd/systemd
 ```
 
-Quando o kernel iniciar o LecOS, esse caminho permitirá que o Systemd seja executado como **PID 1**.
+Quando o kernel iniciar o sistema, esse caminho permitirá que o Systemd seja executado como **PID 1**.
 
 ## **Após a instalação**
 
 O Systemd utiliza algumas informações básicas para identificar a instalação. Podemos definir um hostname persistente. Dentro do nosso ambiente de desenvolvimento, inserimos o nome do sistema no arquivo `hostname`:
 
 ```bash
-echo "lecos" > "$LOS/etc/hostname"
+echo "[NOME-DO-SISTEMA]" > "$LOS/etc/hostname"
 ```
 
-> **ATENÇÃO**: Utilize o nome do seu sistema.
+> **ATENÇÃO**: Substitua `[NOME-DO-SISTEMA]` pelo nome do seu sistema, o mesmo definido nas etapas anteriores.
 
 Tendo o hostname definido, podemos seguir para a criação de um arquivo simples de identificação da distribuição, muito comum em diversos sistemas GNU/Linux. Para isso, inseriremos o seguinte comando:
 
 ```bash
 cat > "$LOS/etc/os-release" <<'EOF'
-NAME="LecOS"
+NAME="[NOME-DO-SISTEMA]"
 VERSION="1.0"
-ID=lecos
-PRETTY_NAME="Lecomp Operating System"
+ID=[ID-DO-SISTEMA]
+PRETTY_NAME="[NOME COMPLETO DO SISTEMA]"
 EOF
 ```
 
 O `/etc/hostname` define o nome persistente da máquina, enquanto `/etc/os-release` permite que ferramentas identifiquem a distribuição.
+
+> **ATENÇÃO**: Substitua `[NOME-DO-SISTEMA]` pelo nome do seu sistema, `[ID-DO-SISTEMA]` por um identificador curto, em letras minúsculas e sem espaços (por exemplo, o nome do sistema em minúsculas), e `[NOME COMPLETO DO SISTEMA]` pelo nome completo da sua distribuição.
 
 Também precisamos criar o identificador único da instalação através da criação de `/etc/machine-id`, que faz parte da preparação de uma instalação Systemd. Essa etapa deve ser feita no ambiente alvo, quando a ferramenta correspondente estiver disponível e puder ser executada corretamente. Para isso, utilizaremos o `chroot`:
 
@@ -319,11 +375,33 @@ chroot "$LOS" /usr/bin/systemd-machine-id-setup
 
 Esse comando cria `/etc/machine-id`, que é utilizado pelo Systemd para identificar de forma única a instalação do sistema. O Linux From Scratch (LFS) também realiza essa etapa após a instalação do Systemd.
 
-> **Change root** (`chroot`): comando que altera temporariamente o diretório raiz (`/`) de um processo, fazendo com que ele enxergue um diretório específico como a raiz do sistema. Isso permite executar ferramentas dentro do ambiente alvo do LecOS, utilizando os arquivos e as configurações desse sistema, em vez dos arquivos do sistema hospedeiro.
-
-Feito tudo isso, podemos enfim adicionar os novos componentes ao nosso sistema. Para isso, como de costume, montaremos `lecos.img` no diretório `/mnt`, removeremos os diretórios presentes nele e inseriremos a nova versão contendo o Systemd. Para isso, executaremos os comandos:
+Porém, para que o Systemd trate o primeiro boot como uma instalação nova e peça a criação da senha do root, precisamos de dois ajustes adicionais. Sem eles, o sistema irá direto para a tela de login pedindo uma senha que nunca foi criada, deixando-o impossível de utilizar. Primeiro, gravamos o valor `uninitialized` em `/etc/machine-id`:
 
 ```bash
+echo "uninitialized" > "$LOS/etc/machine-id"
+```
+
+O valor `uninitialized` faz o Systemd tratar o boot como o **primeiro boot**: ele gera o identificador definitivo e executa os serviços de configuração inicial, como o `systemd-firstboot`.
+
+Em seguida, removemos o arquivo `/etc/shadow`, para que o sistema solicite o cadastro da senha no primeiro acesso:
+
+```bash
+rm -f "$LOS/etc/shadow"
+
+# Sincroniza as alterações
+sync
+```
+
+> Essa remoção **precisa vir depois da execução do `systemd-setup.sh`**. Isso porque o `shadow-build.sh` (etapa anterior) cria o arquivo vazio e o `systemd-sysusers`, executado pelo setup, grava nele as entradas dos usuários de sistema. Esses usuários ficam sem linha no `shadow`, o que não causa problema, pois essas contas não devem fazer login.
+
+> **Change root** (`chroot`): comando que altera temporariamente o diretório raiz (`/`) de um processo, fazendo com que ele enxergue um diretório específico como a raiz do sistema. Isso permite executar ferramentas dentro do ambiente alvo do nosso sistema, utilizando os arquivos e as configurações desse sistema, em vez dos arquivos do sistema hospedeiro.
+
+Feito tudo isso, podemos enfim adicionar os novos componentes ao nosso sistema. Para isso, como de costume, montaremos `lecos.img` no diretório `/mnt`, removeremos os diretórios presentes nele e inseriremos a nova versão contendo o Systemd. Para isso, executaremos os comandos a seguir, que devem ser executados no diretório `/LOS`, caso contrário ocorrerá um erro:
+
+```bash
+# Acessamos o diretório /LOS
+cd /LOS
+
 # Montamos novamente a imagem em /mnt
 mknod /dev/loop0 b 7 0
 losetup -fP --show lecos.img
@@ -350,7 +428,17 @@ losetup -d /dev/loop0
 
 ## **Validando a inicialização**
 
-Depois de iniciar novamente o nosso sistema no QEMU, nos depararemos com a nova tela de inicialização. Por ser a primeira vez que iniciamos o sistema com o Systemd instalado, ele solicitará a criação de uma senha para o usuário root (o administrador) para prosseguir com o setup do sistema:
+Para testar o sistema, é necessário copiar novamente a imagem `lecos.img` do container para o sistema host e, em seguida, executá-la com o **QEMU**. No sistema principal (host), execute:
+
+```bash
+# Copia 'lecos.img' para o diretório atual
+docker cp [ID_CONTAINER]:/LOS/lecos.img .
+
+# Executa o sistema
+qemu-system-x86_64 lecos.img
+```
+
+Depois de iniciar novamente o nosso sistema no QEMU, nos depararemos com a nova tela de inicialização. Por ser a primeira vez que iniciamos o sistema com o Systemd instalado, ele solicitará inicialmente a configuração do fuso horário (*timezone*), que pode ser ignorada apenas pressionando `Enter`, e, em seguida, a criação de uma senha para o usuário root (o administrador) para prosseguir com o setup do sistema:
 
 <div align="center">
 
@@ -360,7 +448,7 @@ Depois de iniciar novamente o nosso sistema no QEMU, nos depararemos com a nova 
 
 > Imagem 2: Criação da senha do usuário root durante o primeiro boot com o Systemd.
 
-Com o setup feito, seguiremos para a nossa tela de login oficial, onde devemos fazer o login como o usuário `root` junto da senha que criamos anteriormente, entrando oficialmente em nosso sistema.
+Com o setup feito, seguiremos para a nossa tela de login oficial, onde devemos fazer o login como o usuário `root` (o login padrão do sistema) junto da senha que criamos anteriormente, entrando oficialmente em nosso sistema.
 
 <div align="center">
 
@@ -368,7 +456,7 @@ Com o setup feito, seguiremos para a nossa tela de login oficial, onde devemos f
 
 </div>
 
-> Imagem 3: Tela de login do LecOS após a inicialização com o Systemd.
+> Imagem 3: Tela de login do sistema após a inicialização com o Systemd.
 
 Estando dentro do sistema, podemos consultar o estado geral agora que o Systemd está funcionando corretamente. Para isso, utilizaremos os comandos a seguir:
 
@@ -413,6 +501,9 @@ export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
 export PS1='\u@\h:\w\$ '
 EOF
 
+# Sincroniza as alterações com o disco
+sync
+
 # Atualizamos o terminal
 source /etc/profile 
 ```
@@ -424,6 +515,16 @@ source /etc/profile
 </div>
 
 > Imagem 6: Prompt personalizado com o usuário e o nome do sistema, definido em `/etc/profile`.
+
+### **Oitavo Exercício — Primeiro Acesso com o Systemd**
+
+Após concluir a instalação do Systemd, realizar o primeiro boot, cadastrar a senha do usuário `root` e definir o arquivo `/etc/profile`, registre uma captura de tela do terminal com o sistema em execução no QEMU. A imagem deverá apresentar, de forma semelhante à Imagem 6, o prompt com o nome do sistema e o usuário `root` logado, no formato `root@[nome-do-sistema]:[diretório]#`.
+
+Certifique-se de que a captura apresente claramente o nome do sistema definido por você e o usuário logado, permitindo confirmar que o Systemd assumiu a inicialização e que o acesso ao sistema foi realizado corretamente.
+
+Inclua a captura de tela no relatório, servindo como evidência da conclusão desta etapa.
+
+O objetivo desta atividade é demonstrar que o Systemd está atuando como `PID 1`, que a identificação do sistema (`/etc/hostname`) foi carregada na inicialização e que o sistema agora possui um usuário administrador com senha cadastrada.
 
 ### **Explorando o Systemd**
 
@@ -492,10 +593,10 @@ flowchart TD
   C -->|Inicia| F["Console de login e shell"]
 ```
 
-Essa é uma mudança importante na arquitetura do LecOS. O trabalho que o nosso script fazia manualmente (montar os sistemas de arquivos virtuais e manter um shell disponível) agora é responsabilidade do Systemd, que ainda acrescenta dependências, supervisão e desligamento ordenado. O Bash continua fazendo parte da `userland`, mas deixa de ser responsável pela inicialização do sistema. Ele passa a ser apenas um **shell**, executado quando uma sessão ou outro processo precisar dele.
+Essa é uma mudança importante na arquitetura do sistema. O trabalho que o nosso script fazia manualmente (montar os sistemas de arquivos virtuais e manter um shell disponível) agora é responsabilidade do Systemd, que ainda acrescenta dependências, supervisão e desligamento ordenado. O Bash continua fazendo parte da `userland`, mas deixa de ser responsável pela inicialização do sistema. Ele passa a ser apenas um **shell**, executado quando uma sessão ou outro processo precisar dele.
 
 ## **Próximos passos**
 
-Com o Systemd assumindo o PID 1 e o console ABNT2 configurado, o LecOS passa a ter uma base de inicialização mais próxima daquela encontrada em distribuições GNU/Linux convencionais.
+Com o Systemd assumindo o PID 1 e o console ABNT2 configurado, o sistema passa a ter uma base de inicialização mais próxima daquela encontrada em distribuições GNU/Linux convencionais.
 
 Na próxima etapa, nos aprofundaremos um pouco mais nos processos, que são uma parte fundamental no aprendizado de sistemas operacionais. Estamos quase finalizando o módulo 3, um excelente trabalho até aqui, e nos vemos na próxima etapa!

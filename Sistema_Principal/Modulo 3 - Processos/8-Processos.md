@@ -1,6 +1,6 @@
 # **Processos**
 
-Após configurarmos nosso sistema de inicialização com o **Systemd**, já somos capazes de iniciar o LecOS de maneira mais próxima ao funcionamento de uma distribuição **GNU/Linux** convencional. Entretanto, para compreendermos melhor o que acontece durante a execução do sistema, precisamos conhecer um dos conceitos fundamentais dos sistemas operacionais: os **processos**.
+Após configurarmos nosso sistema de inicialização com o **Systemd**, já somos capazes de iniciar o nosso sistema de maneira mais próxima ao funcionamento de uma distribuição **GNU/Linux** convencional. Entretanto, para compreendermos melhor o que acontece durante a execução do sistema, precisamos conhecer um dos conceitos fundamentais dos sistemas operacionais: os **processos**.
 
 Nesta etapa, conheceremos como os processos funcionam, como são criados e identificados pelo `kernel Linux` e como podemos observar sua execução utilizando os componentes que já instalamos em nosso sistema. Ao final, você terá visto na prática um processo ser criado, mudar de estado, virar zumbi, ser adotado pelo Systemd e ser encerrado.
 
@@ -62,7 +62,7 @@ sequenceDiagram
 
 > Diagrama 1: O que acontece quando executamos um comando como `ls` no shell.
 
-Sendo assim, o shell que utilizamos no LecOS é, ele próprio, um processo, filho de outro processo, que por sua vez é filho de outro, até chegarmos ao **PID 1**, o Systemd. Existe ainda o **PID 2**, o `kthreadd`, responsável por criar as **threads do kernel**, que são tarefas internas do próprio kernel (e não programas de espaço de usuário).
+Sendo assim, o shell que utilizamos em nosso sistema é, ele próprio, um processo, filho de outro processo, que por sua vez é filho de outro, até chegarmos ao **PID 1**, o Systemd. Existe ainda o **PID 2**, o `kthreadd`, responsável por criar as **threads do kernel**, que são tarefas internas do próprio kernel (e não programas de espaço de usuário).
 
 ```mermaid
 flowchart TD
@@ -75,7 +75,7 @@ flowchart TD
   B --> C["Comandos que você executa"]
 ```
 
-> Diagrama 2: Árvore de processos simplificada do LecOS. Os nomes exatos variam conforme os serviços ativos.
+> Diagrama 2: Árvore de processos simplificada do nosso sistema. Os nomes exatos variam conforme os serviços ativos.
 
 É importante compreender que o Systemd não é responsável por executar sozinho todas as operações relacionadas aos processos. O kernel é responsável por criar e gerenciar sua execução, enquanto os programas do espaço de usuário solicitam a criação de novos processos e acompanham seu funcionamento. O Systemd, por ocupar o PID 1, soma a isso o papel de iniciar os serviços, acompanhá-los e adotar os processos que ficarem sem pai.
 
@@ -142,7 +142,7 @@ Para se comunicar com um processo em execução, o kernel e outros processos uti
 
 ## **O diretório /proc**
 
-As informações que o kernel mantém sobre os processos ficam disponíveis para nós através do **`/proc`**, o sistema de arquivos virtual que o próprio kernel gera. Nada ali está gravado no disco: cada arquivo é construído no instante em que o lemos, refletindo o que está acontecendo naquele momento. No LecOS, ele é montado automaticamente pelo Systemd durante o boot, substituindo o comando `mount` que escrevíamos no nosso script `init`.
+As informações que o kernel mantém sobre os processos ficam disponíveis para nós através do **`/proc`**, o sistema de arquivos virtual que o próprio kernel gera. Nada ali está gravado no disco: cada arquivo é construído no instante em que o lemos, refletindo o que está acontecendo naquele momento. Em nosso sistema, ele é montado automaticamente pelo Systemd durante o boot, substituindo o comando `mount` que escrevíamos no nosso script `init`.
 
 Cada processo possui um diretório com o seu PID, e os arquivos mais úteis para nós são:
 
@@ -165,7 +165,7 @@ Ferramentas como o `ps` e o `top`, do pacote `procps-ng`, não possuem nenhuma m
 
 ## **Colocando em prática**
 
-Em vez de instalarmos o `procps-ng`, utilizaremos o `lps`, um pequeno script em Bash que lê o `/proc` e exibe os processos. Ele está pronto no diretório `Componentes_Principais` do repositório e utiliza somente o que já temos no LecOS (Bash e Coreutils). Para entendermos como ele funciona, o coração do script é este laço, que lê o arquivo `status` de cada processo — não copie o código a seguir, será apenas para visualizarmos:
+Em vez de instalarmos o `procps-ng`, utilizaremos o `lps`, um pequeno script em Bash que lê o `/proc` e exibe os processos. Ele está pronto no diretório `Componentes_Principais` do repositório e utiliza somente o que já temos em nosso sistema (Bash e Coreutils). Para entendermos como ele funciona, o coração do script é este laço, que lê o arquivo `status` de cada processo — não copie o código a seguir, será apenas para visualizarmos:
 
 ```bash
 for dir in /proc/[0-9]*; do        # cada diretório numérico é um processo
@@ -200,7 +200,7 @@ cd Componentes_Principais
 docker cp lps LecOS-dev:/LOS
 ```
 
-Dentro do container, no diretório `/LOS`, guardamos o script na nossa `root` (para que ele faça parte do sistema em futuras reconstruções) e o inserimos na imagem:
+Dentro do container Docker, no diretório `/LOS`, guardamos o script na nossa `root` (para que ele faça parte do sistema em futuras reconstruções) e o inserimos na imagem:
 
 ```bash
 # Instala o 'lps' na árvore do sistema
@@ -227,7 +227,7 @@ losetup -d /dev/loop0
 
 > **ATENÇÃO**: desta vez, **não** copie todo o conteúdo de `root` para a imagem como fizemos na etapa do Init System. Copiamos apenas o `lps`.
 
-Por fim, copiamos a imagem para o sistema principal e iniciamos o LecOS no QEMU:
+Por fim, copiamos a imagem para o sistema principal e iniciamos o nosso sistema no QEMU:
 
 ```bash
 # Copia 'lecos.img' para o diretório atual
@@ -285,6 +285,13 @@ Lembra do `fork()`? Cada vez que executamos um comando, o shell cria um filho. P
 echo "Shell: $$"
 bash -c 'echo "Filho: $$ | Pai: $PPID"'
 ```
+
+Vamos entender o que cada comando faz:
+
+* **`echo "Shell: $$"`**: exibe o PID do shell em que estamos. O `$$` é uma variável do Bash que guarda o PID do próprio shell;
+* **`bash -c '...'`**: inicia um **novo Bash**, que será um processo filho do nosso shell, e pede a ele que execute o comando indicado entre aspas (a opção `-c` significa *command*). Assim que o comando termina, esse novo Bash também termina;
+* **`echo "Filho: $$ | Pai: $PPID"`**: é o comando executado pelo filho. Nele, `$$` guarda o PID do **próprio filho**, e `$PPID` guarda o PID do **processo pai** dele, ou seja, o PID do nosso shell;
+* **As aspas simples (`'...'`)**: impedem que o nosso shell substitua o `$$` e o `$PPID` antes da hora. Dessa forma, a expansão ocorre somente dentro do filho, que exibe os próprios valores.
 
 <div align="center">
 
@@ -532,6 +539,6 @@ kill [PID_DO_SLEEP_ORFAO]
 
 Nesta etapa, conhecemos os fundamentos dos processos e sua importância para o funcionamento de um sistema operacional. Vimos como eles são criados com `fork()` e `execve()`, como passam por diferentes estados durante sua vida, como se comunicam por sinais e como o kernel Linux disponibiliza todas essas informações através do `/proc`. Mais do que isso, utilizamos o nosso próprio listador de processos e comprovamos que ferramentas como o `ps` apenas leem esses dados.
 
-Com o conhecimento adquirido, conseguimos compreender melhor o que acontece após a inicialização do LecOS: o sistema passa a executar processos que realizam as tarefas necessárias ao seu funcionamento, todos descendentes do Systemd (com exceção das threads do kernel, filhas do `kthreadd`).
+Com o conhecimento adquirido, conseguimos compreender melhor o que acontece após a inicialização do sistema: ele passa a executar processos que realizam as tarefas necessárias ao seu funcionamento, todos descendentes do Systemd (com exceção das threads do kernel, filhas do `kthreadd`).
 
 Na próxima etapa, aprofundaremos outro aspecto fundamental dos sistemas operacionais: a **entrada e saída de dados**, compreendendo como os programas interagem com os recursos disponíveis (como os arquivos `0`, `1` e `2` que vimos em `/proc/PID/fd`) e como essas operações participam do funcionamento do sistema.

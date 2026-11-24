@@ -45,7 +45,7 @@ flowchart TD
 
 ## **Como o ext4 organiza os dados**
 
-O sistema de arquivos que utilizamos no LecOS é o **ext4** (*fourth extended filesystem*), o padrão de grande parte das distribuições GNU/Linux. Em sua estrutura, existem alguns elementos fundamentais:
+O sistema de arquivos que utilizamos em nosso sistema é o **ext4** (*fourth extended filesystem*), o padrão de grande parte das distribuições GNU/Linux. Em sua estrutura, existem alguns elementos fundamentais:
 
 <div align="center">
 
@@ -88,7 +88,7 @@ O Linux é capaz de trabalhar com diversos sistemas de arquivos, que se dividem 
 
 | **Tipo** | **Grupo** | **Característica** |
 | :--: | :--: | :--: |
-| `ext4` | Disco | Padrão em diversas distribuições, com journaling. Utilizado no LecOS |
+| `ext4` | Disco | Padrão em diversas distribuições, com journaling. Utilizado em nosso sistema |
 | `XFS` | Disco | Bom desempenho com grandes volumes e arquivos |
 | `Btrfs` | Disco | Recursos avançados, como *snapshots* e verificação de integridade |
 | `FAT32` (`vfat`) | Disco | Simples e compatível com praticamente qualquer sistema. É o formato utilizado pela **ESP** (*EFI System Partition*) do UEFI |
@@ -125,7 +125,7 @@ flowchart TD
 
 Diferentemente de outros sistemas, que atribuem uma letra a cada unidade (como `C:` e `D:`), o Linux possui **uma única árvore de diretórios**, que começa na raiz (`/`). Para tornar o conteúdo de outro dispositivo ou sistema de arquivos acessível, nós o **montamos** em um diretório existente, chamado de **ponto de montagem**. Foi exatamente isso que fizemos várias vezes durante o framework com o `mount /dev/mapper/loop0p1 /mnt`.
 
-Quando o LecOS inicia, a montagem acontece em etapas:
+Quando o sistema inicia, a montagem acontece em etapas:
 
 <div align="center">
 
@@ -139,7 +139,7 @@ Quando o LecOS inicia, a montagem acontece em etapas:
 
 </div>
 
->Tabela 4: Montagens realizadas durante a inicialização do LecOS.
+>Tabela 4: Montagens realizadas durante a inicialização do sistema.
 
 É importante saber que **a montagem esconde o conteúdo anterior** do diretório: enquanto algo estiver montado ali, só enxergamos o conteúdo do sistema de arquivos montado. Ao desmontar, o conteúdo original reaparece. Veremos isso na prática.
 
@@ -157,7 +157,7 @@ Em sistemas GNU/Linux, a organização dos diretórios segue uma convenção cha
 
 <div align="center">
 
-| **Diretório** | **Conteúdo** | **No LecOS** |
+| **Diretório** | **Conteúdo** | **No nosso sistema** |
 | :--: | :--: | :--: |
 | `/` | Raiz da árvore | Partição `sda1` |
 | `/boot` | Arquivos de inicialização | Kernel (`bzImage`) e GRUB |
@@ -178,7 +178,7 @@ Em sistemas GNU/Linux, a organização dos diretórios segue uma convenção cha
 
 </div>
 
->Tabela 5: Principais diretórios do FHS e seus usos no LecOS.
+>Tabela 5: Principais diretórios do FHS e seus usos em nosso sistema.
 
 > Em algumas distribuições, `/bin`, `/sbin` e `/lib` são links para os respectivos diretórios dentro de `/usr`. No nosso caso, veremos como está a estrutura na prática, com o comando `ls -l /`.
 
@@ -243,7 +243,7 @@ Um exemplo que já conhecemos é o `/sbin/init`: na etapa do Init System, criamo
 
 ## **Colocando em prática**
 
-Vamos observar os conceitos em funcionamento. Assim como na etapa anterior, os experimentos acontecem **dentro do LecOS** e utilizam apenas o que já temos instalado (Bash, Coreutils e Util-Linux, que fornece o `mount`).
+Vamos observar os conceitos em funcionamento. Assim como na etapa anterior, os experimentos acontecem **dentro do nosso sistema** e utilizam apenas o que já temos instalado (Bash, Coreutils e Util-Linux, que fornece o `mount`).
 
 ### **Experimento 1: o que está montado?**
 
@@ -477,6 +477,7 @@ Para finalizar, vamos juntar tudo o que vimos. Primeiro, cadastramos o `tmpfs` n
 
 ```bash
 echo "tmpfs /mnt/ram tmpfs size=16m,nofail 0 0" >> /etc/fstab
+sync
 
 # Faz o Systemd reler o arquivo e gerar a mount unit
 systemctl daemon-reload
@@ -485,12 +486,18 @@ mount -a
 df -hT /mnt/ram
 ```
 
-O `mount -a` monta tudo o que está listado no `fstab`. Agora, vamos criar um arquivo em cada um dos mundos (RAM e disco) e reiniciar o sistema:
+O `mount -a` monta tudo o que está listado no `fstab`. Agora, vamos criar um arquivo em cada um dos mundos (RAM e disco):
 
 ```bash
 echo "Vou sumir" > /mnt/ram/volatil.txt
 echo "Vou ficar" > /root/persistente.txt
-reboot
+sync
+```
+
+Em seguida, feche o sistema (fechando a janela do QEMU) e ligue-o novamente, executando no sistema principal:
+
+```bash
+qemu-system-x86_64 lecos.img
 ```
 
 Após o login, verifique o que aconteceu:
@@ -530,7 +537,13 @@ systemctl daemon-reload
 # Remove os arquivos e diretórios de teste (inclusive os da etapa anterior)
 cd ~
 rm -rf ~/lab ~/persistente.txt ~/saida.txt ~/erro.txt
+
+# Remove o arquivo criado no Experimento 7 (senão o diretório não pode ser removido)
+rm -rf /mnt/disco/arquivo.txt
 rmdir /mnt/ram /mnt/disco
+
+# Sincroniza as alterações
+sync
 ```
 
 > O `rm /etc/fstab` é seguro aqui porque o arquivo não existia antes de criarmos o nosso. Se você já possuía um `fstab` com outras linhas, edite-o com o `nano` e remova apenas a linha do `tmpfs`.

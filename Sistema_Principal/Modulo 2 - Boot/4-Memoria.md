@@ -255,15 +255,7 @@ rm bash-5.2.37.tar.gz glibc-2.41.tar.gz ncurses-6.6.tar.gz
 
 Após a execução deste comando, teremos somente os diretórios gerados após a extração dos arquivos, nos permitindo trabalhar de forma tranquila e mais organizada.
 
-<div align="center">
-
-![remove](https://github.com/FelpzzzEX/Imagens/blob/d430644247ee634a78b012cc768282220e468df9/Etapa4-framework/Captura%20de%20tela_2026-09-01_22-28-16.png)
-
-</div>
-
-> Imagem 11: Removendo os tarballs do GNU Bash, da Glibc e do Ncurses
-
-Com tudo organizado, criaremos agora os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código-fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível apenas apagar o conteúdo gerado e tentar novamente. Como compilaremos o **GNU Bash**, a **Glibc** e o **Ncurses**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
+Em seguida, criaremos agora os diretórios temporários onde o processo de compilação será realizado. Isso ajuda a separar o código-fonte (extraído dos tarballs) do conteúdo compilado após a execução do processo, permitindo que, em caso de erros, seja possível apenas apagar o conteúdo gerado e tentar novamente. Como compilaremos o **GNU Bash**, a **Glibc** e o **Ncurses**, criaremos os seguintes diretórios, ainda dentro de `Componentes`:
 
 ```bash
 # Cria o diretório de build da Glibc
@@ -271,15 +263,14 @@ mkdir glibc-build
 
 # Cria o diretório de build do Bash
 mkdir bash-build
+
+# Cria o diretório de build do ncurses 
+mkdir ncurses-build
 ```
 
-<div align="center">
+![ncurs](https://github.com/FelpzzzEX/Imagens/blob/969e0aa1972c236c3184e8193f940ca64c8a9172/cncurses.png)
 
-![buildmkdir](https://github.com/FelpzzzEX/Imagens/blob/ae7cdd8aab7b1061493534363fb05ca68cb52504/Etapa4-framework/Captura%20de%20tela_2026-09-02_17-05-27.png)
-
-</div>
-
-> Imagem 12: Criando os diretórios de build do **GNU Bash** e da **Glibc**.
+> Imagem 11: Criando os diretórios de build do **GNU Bash**, **Ncurses** e da **Glibc**.
 
 Com os diretórios de build criados, seguiremos para a criação do diretório responsável pelo **initramfs**, onde armazenaremos os componentes necessários para a utilização do ambiente. Para isso, faremos a seguinte sequência de comandos, retornando ao diretório raiz **LOS** e criando nele o diretório **initramfs** e seus subdiretórios **bin**, **lib** e **lib64**, sendo a estrutura mínima necessária para essa demonstração.
 
@@ -299,13 +290,13 @@ Com isso, já teremos a estrutura de diretórios mínima para criar nosso **init
 
 </div>
 
-> Imagem 13: Criando os diretórios necessários do **initramfs**.
+> Imagem 12: Criando os diretórios necessários do **initramfs**.
 
 ### **Compilando os componentes**
 
 Para iniciar, daremos início à compilação da biblioteca C, necessária para os componentes do nosso sistema. Para isso, usaremos um script padrão que se encontra pronto para executar, presente no diretório `scripts` do nosso repositório, sendo ele o `glibc-build.sh`. 
 
-Para podermos utilizar esses scripts de compilação, basta copiarmos o diretório para dentro do nosso container utilizando o `docker cp`, a partir de um terminal no sistema principal (fora do container):
+Para podermos utilizar esses scripts de compilação, basta copiarmos o diretório para dentro do nosso container utilizando o `docker cp` **a partir de um terminal no sistema principal (fora do container docker)**, dentro do diretório `/LecOS/Sistema_Principal`:
 
 ```bash
 # Descobre o ID do container 
@@ -321,7 +312,7 @@ docker cp scripts [ID-DO-CONTAINER]:/LOS/Componentes
 
 </div>
 
-> Imagem 14: Copiando o diretório de `scripts` para dentro do container
+> Imagem 13: Copiando o diretório de `scripts` para dentro do container
 
 <div align="center">
 
@@ -329,7 +320,7 @@ docker cp scripts [ID-DO-CONTAINER]:/LOS/Componentes
 
 </div>
 
-> Imagem 15: Diretório presente no ambiente de desenvolvimento.
+> Imagem 14: Diretório presente no ambiente de desenvolvimento.
 
 Com isso, daremos as devidas permissões de execução aos scripts através do comando `chmod`. Dentro do container, no diretório `Componentes/scripts`:
 
@@ -340,7 +331,20 @@ chmod +x bash-build.sh
 chmod +x ncurses-build.sh
 ```
 
-Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente. Os componentes serão compilados em nosso diretório real (`/LOS/root`) para aproveitar o trabalho, mas, após todo o processo, basta copiar os binários compilados para dentro do initramfs, que funcionarão corretamente. 
+Com isso, podemos simplesmente executar e compilar os programas em nosso ambiente, executando casa script individualmente e aguardar o processo. Execute a seguir **UM COMANDO** por vez:
+
+```bash
+# Executa o script da Glibc
+./glibc-build.sh
+
+# Executa o script do GNU Bash 
+./bash-build.sh
+
+# Executa o script do Ncurses 
+./ncurses-build.sh
+```
+
+Os componentes serão compilados em nosso diretório real (`/LOS/root`) para aproveitar o trabalho, mas, após todo o processo, basta copiar os binários compilados para dentro do initramfs, que funcionarão corretamente. 
 
 Após a compilação de todos os componentes do sistema, voltaremos ao diretório raiz (**LOS**) para executar o seguinte comando, com a finalidade de copiar o bash compilado para o diretório de nosso **initramfs**:
 
@@ -385,13 +389,13 @@ cd initramfs
 nano init
 ```
 
-Na interface que surgir, basta copiar o seguinte código e colar dentro do editor (utilizando `Ctrl` + `Shift` + `V`):
+Na interface que surgir, basta copiar o seguinte código e colar dentro do editor (utilizando `Ctrl` + `Shift` + `V`). Em `[NOME-DO-SISTEMA]`, coloque o nome do seu sistema (sem os colchetes), o mesmo que você definiu no Exercício 1:
 
 ```nano
 #!/bin/bash
 
 echo "================================="
-echo "       LecOS - Memoria RAM"
+echo "       [NOME-DO-SISTEMA] - Memoria RAM"
 echo "================================="
 echo
 echo "Sistema executado diretamente"
@@ -404,7 +408,7 @@ Ele servirá apenas para iniciar o bash como **PID 1** do sistema, permitindo no
 
 ```bash
 # Torna o init executável após salvar o arquivo
-chmod +x initramfs/init
+chmod +x init
 ```
 
 Com o init finalizado, podemos enfim montar o nosso **initramfs** para utilizarmos em nosso framework. Para realizar este passo, estaremos instalando em nosso ambiente o utilitário `cpio`, uma vez que é necessário para empacotar nosso diretório no formato comumente utilizado pelo kernel (como fizemos na Base Inicial), bastando realizar o seguinte comando:
@@ -441,10 +445,10 @@ Depois, atualizaremos o arquivo `grub.cfg` para reconhecer nosso **initramfs** r
 nano /mnt/boot/grub/grub.cfg
 ```
 
-E, após acessá-lo, inserimos apenas uma linha nova nele referente ao **initramfs**, indicando o nome do arquivo e seu diretório de localização, garantindo que ele será devidamente carregado pelo **GRUB**. A seguir, vemos como nosso arquivo deve ficar após a atualização:
+E, após acessá-lo, inserimos apenas uma linha nova nele referente ao **initramfs**, indicando o nome do arquivo e seu diretório de localização, garantindo que ele será devidamente carregado pelo **GRUB**. A seguir, vemos como nosso arquivo deve ficar após a atualização, mantendo em `[NOME-DO-SISTEMA]` o nome que você definiu anteriormente (sem os colchetes):
 
 ```nano
-menuentry 'LecOS' {
+menuentry '[NOME-DO-SISTEMA]' {
         set root='(hd0,1)'
 
         linux /boot/bzImage root=/dev/sda1 rw
@@ -489,7 +493,7 @@ qemu-system-x86_64 lecos.img
 
 </div>
 
-> Imagem 16: Boot realizado na memória RAM (initramfs).
+> Imagem 15: Boot realizado na memória RAM (initramfs).
 
 Ao realizar o boot, cairemos na interface do bash, o que nos permitirá interagir com o sistema. Dessa vez, o teclado funciona seguindo os padrões ABNT, garantindo uma experiência mais fluida. Para realizar os testes de volatilidade, executaremos os scripts abaixo.
 
@@ -523,7 +527,7 @@ Ele não encontrará mais o arquivo, uma vez que, durante o reinício, todos os 
 
 </div>
 
-> Imagem 17: Criando um arquivo e interagindo com o sistema via Bash.
+> Imagem 16: Criando um arquivo e interagindo com o sistema via Bash.
 
 <div align="center">
 
@@ -531,7 +535,29 @@ Ele não encontrará mais o arquivo, uma vez que, durante o reinício, todos os 
 
 </div>
 
-> Imagem 18: Conteúdo perdido após o reinício do sistema, provando a volatilidade.
+> Imagem 17: Conteúdo perdido após o reinício do sistema, provando a volatilidade.
+
+### **Exercício Quatro — Inicialização do Sistema**
+
+Após concluir a configuração do `initramfs` e realizar a inicialização da imagem no QEMU, registre uma captura de tela do terminal após o carregamento do sistema operacional. A imagem deverá apresentar a mensagem de identificação exibida durante a execução do arquivo `init`, indicando que o sistema está sendo executado diretamente na memória primária (RAM).
+
+Certifique-se de que a captura apresente claramente as mensagens de inicialização, permitindo identificar o nome do sistema e confirmar que o ambiente foi carregado corretamente.
+
+Essa imagem deverá ser incluída no relatório do trabalho, servindo como evidência da inicialização bem-sucedida do sistema e da conclusão desta etapa de configuração.
+
+### **Exercício Cinco — Teste de Volatilidade da Memória RAM**
+
+Nesta atividade, iremos documentar experimentalmente uma das principais características da memória RAM: sua volatilidade. Para isso, utilizaremos o arquivo de teste criado durante os procedimentos anteriores, verificando seu comportamento antes e depois de uma nova inicialização do sistema.
+
+Primeiramente, com o sistema já inicializado no QEMU, execute os comandos apresentados anteriormente para criar o arquivo `/teste.txt` e verificar sua existência. Após a execução, registre uma captura de tela do terminal, demonstrando que o arquivo foi criado e que o sistema confirmou sua presença.
+
+Em seguida, encerre completamente o sistema, finalizando a execução do ambiente no QEMU. Após isso, inicialize novamente a imagem `lecos.img`, repetindo o processo de boot até retornar ao terminal do sistema operacional.
+
+Com o sistema novamente em execução, execute o segundo comando de verificação apresentado anteriormente, responsável por verificar se o arquivo `/teste.txt` ainda existe. Registre uma segunda captura de tela, demonstrando que o arquivo não foi encontrado após a reinicialização.
+
+Ao finalizar, inclua **as duas capturas de tela no relatório**, organizando-as de maneira que seja possível comparar os resultados obtidos antes e depois da reinicialização. Além das imagens, apresente uma breve explicação sobre o comportamento observado, justificando por que o arquivo existia durante a primeira execução, mas deixou de existir após o sistema ser reiniciado.
+
+O objetivo desta atividade é demonstrar, na prática, que os dados armazenados exclusivamente na memória RAM são voláteis e não permanecem disponíveis após o desligamento ou reinicialização do ambiente.
 
 ## **Próximos passos**
 

@@ -102,17 +102,27 @@ rm /mnt/boot/initramfs.cpio.gz
 rm initramfs.cpio.gz
 ```
 
-E, finalizando as correções, removeremos a linha do nosso arquivo `grub.cfg` que cita diretamente o initramfs, agora removido:
+Após removermos o `initramfs`, precisamos atualizar novamente o arquivo de configuração do GNU GRUB, removendo a referência ao componente que não será mais utilizado e personalizando o nome apresentado durante a inicialização do sistema.
+
+Para isso, utilizaremos o editor de texto GNU Nano, acessando o arquivo `grub.cfg` localizado no diretório de inicialização da imagem:
+
+```bash
+# Abre o arquivo de configuração do GRUB
+nano /mnt/boot/grub/grub.cfg
+```
+
+Dentro do arquivo, localize a entrada correspondente ao nosso sistema e realize as seguintes alterações:
 
 ```nano
-menuentry 'LecOS' {
+menuentry '[NOME-DO-SISTEMA]' {
       set root='(hd0,1)'
       linux /boot/bzImage root=/dev/sda1 rw
-      initrd /boot/initramfs.cpio.gz <-- Linha a ser removida
 }
 ```
 
-Feitas as alterações, basta salvar o arquivo e fechar o editor (`Ctrl` + `O`, `Enter` para confirmar e `Ctrl` + `X`, respectivamente), deixando assim nossa imagem pronta para receber os componentes restantes que irão compor o nosso sistema.
+Substitua `[NOME-DO-SISTEMA]` pelo nome escolhido para o seu sistema operacional. Observe também que a linha `initrd /boot/initramfs.cpio.gz` foi removida, uma vez que não utilizaremos mais o initramfs nesta versão.
+
+Após realizar as alterações, salve o arquivo e feche o editor utilizando `Ctrl + O`, `Enter` e `Ctrl + X`, respectivamente. Dessa forma, o GRUB estará configurado para inicializar diretamente o sistema instalado na imagem.
 
 <div align="center">
 
@@ -124,9 +134,21 @@ Feitas as alterações, basta salvar o arquivo e fechar o editor (`Ctrl` + `O`, 
 
 ## **Compilando os componentes finais**
 
-Com o terreno preparado, inseriremos os últimos componentes necessários em nosso sistema, permitindo sua utilização de forma mais prática e eficiente e tornando a experiência mais completa para o usuário. O processo será similar ao que vimos anteriormente, restando três componentes para finalizarmos a construção base do nosso sistema operacional, sendo eles o `GNU Coreutils`, o `GNU Nano` e o `Util-Linux`. 
+Com o terreno preparado, inseriremos os últimos componentes necessários em nosso sistema, permitindo sua utilização de forma mais prática e eficiente e tornando a experiência mais completa para o usuário. O processo será similar ao que vimos anteriormente, restando três componentes para finalizarmos a construção base do nosso sistema operacional, sendo eles o `GNU Coreutils 9.7`, o `GNU Nano 8.4` e o `Util-Linux 2.41.5`. 
 
-Abaixo, realizaremos o passo a passo para a instalação enquanto conhecemos mais sobre esses componentes e suas utilidades em ambientes GNU/Linux.
+Os tarballs dos componentes serão baixados através do `wget` novamente e **precisam estar no diretório `/LOS/Componentes`**, pois os scripts de build procuram o código-fonte nesse local. Além disso, é necessário baixar exatamente as versões indicadas, caso contrário o script falhará. Abaixo, realizaremos o passo a passo para a instalação de cada um deles, enquanto conhecemos mais sobre esses componentes e suas utilidades em ambientes GNU/Linux.
+
+<div align="center">
+
+| **Componente** | **Versão** | **Arquivo a baixar** | **Diretório gerado** | **Script de build** |
+| :--: | :--: | :--: | :--: | :--: |
+| **GNU Coreutils** | 9.7 | `coreutils-9.7.tar.gz` | `coreutils-9.7` | `coreutils-build.sh` |
+| **GNU Nano** | 8.4 | `nano-8.4.tar.gz` | `nano-8.4` | `nano-build.sh` |
+| **Util-Linux** | 2.41.5 | `util-linux-2.41.5.tar.gz` | `util-linux-2.41.5` | `uLinux-build.sh` |
+
+</div>
+
+> Tabela 1: Versões, arquivos e scripts de build dos componentes finais.
 
 ### **GNU Coreutils**
 
@@ -137,9 +159,25 @@ O GNU Coreutils é um componente bastante consolidado nos sistemas operacionais 
 * **mkdir (make directory)**: Cria um diretório novo
 * **rm (remove)**: Remove um arquivo
 
-Para instalarmos o componente em nosso sistema, utilizaremos o script presente no diretório `Componentes/scripts/`, sendo ele o `coreutils-build.sh`. Com isso em mente, primeiro precisamos fornecer a permissão de execução ao script, utilizando novamente o comando `chmod +x`, seguido da execução do script.
+Para instalarmos o componente em nosso sistema, primeiro precisamos baixar a versão `9.7` do GNU Coreutils no diretório `/LOS/Componentes` e extrair o seu conteúdo, da mesma forma que fizemos com os componentes da etapa anterior (substitua `[LINK-COREUTILS-9.7]` pelo link do componente):
 
 ```bash
+# Entra no diretório de componentes
+cd /LOS/Componentes
+
+# Baixa o tarball do GNU Coreutils 9.7
+wget [LINK-COREUTILS-9.7]
+
+# Extrai o conteúdo do tarball
+tar -xzf coreutils-9.7.tar.gz
+```
+
+Com o código-fonte extraído, utilizaremos o script presente no diretório `Componentes/scripts/`, sendo ele o `coreutils-build.sh`. Primeiro precisamos fornecer a permissão de execução ao script, utilizando novamente o comando `chmod +x`, seguido da execução do script.
+
+```bash
+# Acessa o diretório de scrips 
+cd /LOS/Componentes/scripts
+
 # Dentro de 'scripts', fornece a permissão de execução para o script 
 chmod +x coreutils-build.sh
 
@@ -161,9 +199,25 @@ Com isso, conseguimos instalar com sucesso o GNU Coreutils em nosso sistema, enc
 
 O GNU Nano é um editor de texto bastante utilizado em distribuições GNU/Linux, sendo um dos mais conhecidos e populares entre os usuários pela sua praticidade de uso. Ele é, inclusive, o editor que utilizamos durante o nosso framework, possuindo uma curva de aprendizado bem menor se comparado a outras alternativas mais robustas, como `Vim`, `Neovim`, `GNU Emacs`, etc.
 
-Para instalar o Nano em nosso sistema, realizaremos o mesmo processo anterior, fornecendo a permissão de execução para o script de build e, logo em seguida, executando-o:
+Para instalar o Nano em nosso sistema, realizaremos o mesmo processo anterior, começando pelo download da versão `8.4` no diretório `/LOS/Componentes` e pela extração do tarball (substitua `[LINK-NANO-8.4]` pelo link do componente):
 
 ```bash
+# Entra no diretório de componentes
+cd /LOS/Componentes
+
+# Baixa o tarball do GNU Nano 8.4
+wget [LINK-NANO-8.4]
+
+# Extrai o conteúdo do tarball
+tar -xzf nano-8.4.tar.gz
+```
+
+Em seguida, fornecemos a permissão de execução para o script de build e, logo depois, o executamos:
+
+```bash
+# Acessa o diretório de scrips 
+cd /LOS/Componentes/scripts
+
 # Fornece a permissão de execução 
 chmod +x nano-build.sh
 
@@ -185,9 +239,25 @@ Tendo o GNU Nano instalado, podemos partir para o último componente, o **Util-L
 
 O Util-Linux é um conjunto de utilitários dedicado a funções específicas do kernel Linux, sendo um dos poucos componentes utilizados que não fazem parte do Projeto GNU. Com este componente instalado, somos capazes de realizar funções e executar comandos relacionados ao gerenciamento de discos do sistema, como o comando `fdisk`, que particiona um arquivo de disco/imagem.
 
-Assim como os componentes anteriores, realizaremos a instalação através do script de build, sendo necessário fornecer, novamente, a permissão de execução:
+Assim como os componentes anteriores, começaremos baixando a versão `2.41.5` no diretório `/LOS/Componentes` e extraindo o tarball (substitua `[LINK-UTIL-LINUX-2.41.5]` pelo link do componente):
 
 ```bash
+# Entra no diretório de componentes
+cd /LOS/Componentes
+
+# Baixa o tarball do Util-Linux 2.41.5
+wget [LINK-UTIL-LINUX-2.41.5]
+
+# Extrai o conteúdo do tarball
+tar -xzf util-linux-2.41.5.tar.gz
+```
+
+Em seguida, realizaremos a instalação através do script de build, sendo necessário fornecer, novamente, a permissão de execução:
+
+```bash
+# Acessa o diretório de scrips 
+cd /LOS/Componentes/scripts
+
 # Fornece a permissão de execução ao script 
 chmod +x uLinux-build.sh
 
@@ -242,7 +312,13 @@ Após a cópia ser concluída, basta realizarmos o boot através do `QEMU` mais 
 qemu-system-x86_64 lecos.img 
 ```
 
-E, depois de uma bela jornada, temos enfim o nosso sistema operacional rodando completamente! Dessa vez, sem o initramfs na memória RAM, tudo é feito através do disco virtual criado na imagem, garantindo que quaisquer modificações e alterações feitas dentro do sistema sejam gravadas e mantidas, independentemente de reiniciarmos o ambiente (vá, faça o teste!). Com isso, temos a base completa do nosso trabalho, com todos os componentes funcionando e interagindo com o sistema de forma esperada. É uma base sólida para o que trabalharemos a seguir!
+E, depois de uma bela jornada, temos enfim nosso sistema operacional rodando completamente! Dessa vez, sem a utilização do initramfs, todo o ambiente é executado diretamente a partir do disco virtual criado na imagem, permitindo que arquivos e modificações sejam preservados após o desligamento e a reinicialização do sistema.
+
+Entretanto, é importante compreender que o kernel Linux não grava necessariamente todas as alterações no disco no exato momento em que elas são realizadas. Para otimizar o desempenho, o sistema utiliza um mecanismo chamado *page cache*, que mantém temporariamente em memória os dados modificados antes de enviá-los ao dispositivo de armazenamento.
+
+Por esse motivo, ao criar, modificar ou excluir arquivos, pode existir um intervalo até que as alterações sejam efetivamente gravadas na imagem. Para garantir que os dados pendentes sejam enviados ao disco antes de desligar o sistema, utilizaremos o comando `sync`, que solicita a sincronização dos dados armazenados em memória com o dispositivo de armazenamento.
+
+Com isso, temos a base completa do nosso trabalho, com todos os componentes funcionando e interagindo de forma esperada. Essa estrutura representa uma base sólida para os próximos conteúdos do framework!
 
 <div align="center">
 
@@ -260,8 +336,49 @@ E, depois de uma bela jornada, temos enfim o nosso sistema operacional rodando c
 
 > Imagem 8: Persistência dos dados e alterações após o reboot do sistema.
 
+### **Sexto Exercício — Teste de Persistência em Disco**
+
+Nesta atividade, iremos verificar experimentalmente a persistência dos dados em nosso sistema operacional, agora executado diretamente a partir do disco virtual, sem a utilização do initramfs.
+
+Primeiramente, com o sistema inicializado no QEMU, crie um arquivo chamado `teste.txt`, escrevendo nele o seu número de matrícula. Para isso, execute os seguintes comandos no terminal:
+
+```bash
+# Cria o arquivo e escreve o número de matrícula
+echo "[NÚMERO DE MATRÍCULA]" > /teste.txt
+
+# Exibe o conteúdo do arquivo
+cat /teste.txt
+
+# Sincroniza as alterações com o disco
+sync
+```
+
+Após executar os comandos, registre uma captura de tela do terminal, demonstrando que o arquivo foi criado e que seu conteúdo corresponde ao número de matrícula informado.
+
+Em seguida, desligue completamente o sistema e encerre sua execução no QEMU. Após isso, inicialize novamente a imagem `lecos.img`, repetindo o procedimento de boot até retornar ao terminal do sistema operacional.
+
+Com o sistema novamente em execução, execute o comando abaixo para verificar se o arquivo continua presente:
+
+```bash
+# Verifica a existência e exibe o conteúdo do arquivo
+if [ -f /teste.txt ]; then
+    echo "Arquivo encontrado!"
+    cat /teste.txt
+else
+    echo "Arquivo não encontrado!"
+fi
+```
+
+Registre uma segunda captura de tela, demonstrando que o arquivo continua existindo e que seu conteúdo foi preservado após a reinicialização.
+
+Ao finalizar, inclua **as duas capturas de tela no relatório**, organizando-as de maneira que seja possível comparar os resultados antes e depois do desligamento. Apresente também uma breve explicação sobre o comportamento observado, destacando a diferença entre o armazenamento temporário em memória RAM e a persistência dos dados no disco.
+
+O objetivo desta atividade é demonstrar que, diferentemente do que observamos na etapa anterior, os arquivos armazenados no sistema de arquivos da imagem podem permanecer disponíveis após o desligamento e a reinicialização do sistema, desde que as alterações tenham sido efetivamente gravadas no disco.
+
 ## **Próximos passos**
 
-Parabéns por ter chegado até aqui, já estamos na metade do conteúdo apresentado pelo framework. Todo o caminho percorrido resultou em um sistema minimalista e funcional, utilizando componentes fundamentais de uma distribuição GNU/Linux. No entanto, embora o nosso sistema pareça "completo", ele ainda é somente a base, existindo mais conteúdos e componentes a serem abordados, desde a questão de processos e de entrada e saída de dados até mesmo a interface gráfica, onde repassaremos suas filosofias e funcionamento, além de visualizarmos na prática seus casos de uso.
+Parabéns por ter chegado até aqui, já estamos na metade do conteúdo apresentado pelo framework. Todo o caminho percorrido resultou em um sistema minimalista e funcional, utilizando componentes fundamentais de uma distribuição GNU/Linux.
+
+No entanto, embora o nosso sistema pareça "completo", ele ainda é somente a base, existindo mais conteúdos e componentes a serem abordados, desde a questão de processos e de entrada e saída de dados até mesmo a interface gráfica, onde repassaremos suas filosofias e funcionamento, além de visualizarmos na prática seus casos de uso.
 
 Como sempre, um excelente trabalho até aqui. Continue neste ritmo, pois estamos chegando lá! Nos vemos no próximo módulo, onde enfim entraremos na parte relacionada aos processos de um sistema operacional e a como eles funcionam e são gerenciados. Até breve!

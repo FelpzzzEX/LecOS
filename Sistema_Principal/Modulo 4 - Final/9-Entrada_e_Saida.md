@@ -2,7 +2,7 @@
 
 Ao longo das etapas anteriores, construímos um sistema capaz de iniciar, executar processos e mantê-los sob a supervisão do Systemd. No entanto, um sistema que apenas executa programas, mas não consegue receber ou entregar dados, teria pouca utilidade: ele não leria o que digitamos, não exibiria nada na tela nem gravaria informações no disco.
 
-A **entrada e saída** (*Input/Output*, ou simplesmente **E/S**) é justamente a parte do sistema operacional responsável por essa comunicação com o mundo externo. Nesta etapa, veremos como o kernel Linux intermedia o acesso aos dispositivos, por que no Linux "quase tudo é um arquivo", como os programas recebem e enviam dados e, no final, observaremos tudo isso funcionando dentro do LecOS.
+A **entrada e saída** (*Input/Output*, ou simplesmente **E/S**) é justamente a parte do sistema operacional responsável por essa comunicação com o mundo externo. Nesta etapa, veremos como o kernel Linux intermedia o acesso aos dispositivos, por que no Linux "quase tudo é um arquivo", como os programas recebem e enviam dados e, no final, observaremos tudo isso funcionando dentro do nosso sistema.
 
 ## **O que é entrada e saída?**
 
@@ -42,7 +42,7 @@ Uma das ideias centrais da filosofia Unix é representar os recursos do sistema 
 
 ### **O diretório /dev**
 
-Os dispositivos ficam acessíveis em arquivos especiais dentro do diretório `/dev`. Lembra da linha `mount -t devtmpfs devtmpfs /dev` do nosso antigo script `init`? O `devtmpfs` é um sistema de arquivos virtual no qual **o próprio kernel cria os arquivos de dispositivo** conforme os detecta. No LecOS, essa montagem passou a ser feita pelo Systemd.
+Os dispositivos ficam acessíveis em arquivos especiais dentro do diretório `/dev`. Lembra da linha `mount -t devtmpfs devtmpfs /dev` do nosso antigo script `init`? O `devtmpfs` é um sistema de arquivos virtual no qual **o próprio kernel cria os arquivos de dispositivo** conforme os detecta. Em nosso sistema, essa montagem passou a ser feita pelo Systemd.
 
 Os arquivos de dispositivo se dividem em dois tipos principais, identificados pela primeira letra na saída do `ls -l`:
 
@@ -170,7 +170,7 @@ Alguns arquivos de dispositivo não correspondem a nenhum hardware físico, mas 
 
 ## **Colocando em prática**
 
-Chegou a hora de observar tudo isso no LecOS. Utilizaremos apenas o que já temos instalado: o Bash, o GNU Coreutils e o `lps` que criamos na etapa anterior. Todos os experimentos acontecem **dentro do LecOS**, então inicie o sistema no QEMU e faça o login normalmente.
+Chegou a hora de observar tudo isso em nosso sistema. Utilizaremos apenas o que já temos instalado: o Bash, o GNU Coreutils e o `lps` que criamos na etapa anterior. Todos os experimentos acontecem **dentro do nosso sistema**, então inicie o sistema no QEMU e faça o login normalmente.
 
 ### **Experimento 1: conhecendo os arquivos de dispositivo**
 
@@ -316,7 +316,7 @@ rm canal
 
 > Imagem 6: Criando e utilizando o `pipe` nomeado.
 
-No `ls -l`, a primeira letra é `p`, de *pipe*. Assim que o `echo` escreve, o `cat` (que estava bloqueado, aguardando o outro lado) recebe a mensagem e a exibe. O arquivo `canal` nunca guardou o texto no disco: ele apenas indica o ponto de encontro dos dois processos, e os dados passaram pelo buffer do kernel.
+Na saída do comando `ls -l canal`, a primeira letra é `p`, de *pipe*. Assim que o `echo` escreve, o `cat` (que estava bloqueado, aguardando o outro lado) recebe a mensagem e a exibe. O arquivo `canal` nunca guardou o texto no disco: ele apenas indica o ponto de encontro dos dois processos, e os dados passaram pelo buffer do kernel.
 
 ### **Experimento 5: dispositivos especiais**
 

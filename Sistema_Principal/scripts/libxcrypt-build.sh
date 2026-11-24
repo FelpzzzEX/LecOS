@@ -8,7 +8,7 @@ cd libxcrypt-build
     --prefix=/usr \
     --libdir=/usr/lib \
     --enable-hashes=strong,glibc \
-    --enable-obsolete-api=no \
+    --enable-obsolete-api=glibc \
     --disable-static \
     --disable-failure-tokens
 

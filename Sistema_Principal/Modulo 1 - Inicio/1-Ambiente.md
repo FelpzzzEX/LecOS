@@ -1,4 +1,4 @@
-# **Ambiente - LecOS**
+# **Ambiente de Desenvolvimento**
 
 Após a inicialização correta do hardware, a responsabilidade da inicialização passa a ser do software daqui para frente, uma vez que ele agora tem a liberdade de executar, já que os componentes da máquina estão funcionando corretamente. O responsável pela próxima etapa é o `bootloader`. No entanto, antes de iniciarmos de fato o tutorial, precisamos subir primeiro o nosso ambiente de desenvolvimento, dessa vez utilizando uma nova distribuição, mais completa e de propósito geral, como base para repassarmos os conceitos fundamentais da disciplina enquanto os realizamos na prática.
 
@@ -39,7 +39,7 @@ O conteúdo abordado, por ser um pouco mais extenso, será dividido em etapas qu
 * **Módulo 4 - Final**;
   * Entrada/Saída;
   * Sistema de Arquivos;
-  * Interface gráfica.
+  * Encerramento.
 
 ---
 
@@ -119,9 +119,11 @@ flowchart TD
 
 ## **Inicialização do ambiente**
 
+> **ATENÇÃO (usuários de Windows)**: todo este tutorial deve ser realizado **dentro do terminal do WSL** (Ubuntu), e **não** diretamente no PowerShell ou no Prompt de Comando. Comandos como `chmod +x`, a execução do script `./init.sh` e o `qemu-system-x86_64` não funcionam no Windows puro e causarão erros ao longo do processo. Se você ainda não configurou o WSL e o Docker Desktop, siga a seção [Preparando o ambiente no Windows (WSL 2)](../../Primeiros_Passos/base-inicial.md) da Base Inicial e, em seguida, abra o terminal do **Ubuntu (WSL)** para executar todos os comandos a seguir, inclusive os de `git`, `docker` e `QEMU`.
+
 Para iniciarmos o nosso trabalho, precisamos criar o nosso ambiente de desenvolvimento. Para isso, utilizaremos o script mencionado, o `init.sh`. Esse script contém os comandos necessários para a inicialização do container onde seguiremos o framework, automatizando o processo de criação e já fornecendo todas as ferramentas de que precisaremos para realizar essa tarefa.
 
-No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente. Por isso, certifique-se de que seu dispositivo possui o `Git` — o sistema de versionamento de código mais utilizado nos projetos modernos — e execute o seguinte comando:
+  No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente, e estaremos realizando este processo através do `WSL` assim como na Base Inicial criada nos Primeiros Passos. Por isso, certifique-se de que seu WSL possui o `Git` — o sistema de versionamento de código mais utilizado nos projetos modernos — instalado, executando o seguinte comando:
 
 ```bash
 # Comando clona o repositório do GitHub para sua máquina local
@@ -161,9 +163,12 @@ docker volume create lecos_data
 # Cria o container de trabalho "LecOS-dev"
 # Utiliza a imagem "lecos" criada para este propósito
 docker run -d --name LecOS-dev --privileged -v lecos_data:/LOS felpzzex/lecos:latest tail -f /dev/null
+
+# Entra no container de trabalho
+docker exec -it LecOS-dev bash
 ```
 
-Por fim, o script também copia arquivos essenciais para dentro do nosso ambiente, como o `kernel Linux` previamente compilado, o arquivo de inicialização do sistema e os scripts de build para cada componente da nossa userland, apresentados na seção `Componentes`. Caso esteja interessado, você pode verificar o conteúdo completo do script acessando o arquivo [init.sh](../init.sh).
+Caso esteja interessado, você pode verificar o conteúdo completo do script de inicialização acessando o arquivo [init.sh](../init.sh) no diretório, onde todo o conteúdo do script Bash está escrito.
 
 <div align="center">
 

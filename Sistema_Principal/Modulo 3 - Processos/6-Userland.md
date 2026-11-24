@@ -138,9 +138,12 @@ No entanto, como já podemos observar durante a execução de nosso sistema, nos
 
 Com isso em vista, configuraremos agora os usuários e realizaremos todas as demais configurações necessárias para dar mais vida ao nosso sistema, visando uma melhor usabilidade e um melhor entendimento de suas utilidades.
 
-Antes de prosseguir, dentro de nosso container, devemos montar a imagem novamente para fazermos os ajustes necessários:
+Antes de prosseguir, dentro de nosso container, devemos montar a imagem novamente para fazermos os ajustes necessários. Todos os comandos executados no container devem ser realizados no diretório `/LOS`:
 
 ```bash
+# Acessamos o diretório /LOS
+cd /LOS
+
 # Montamos novamente a imagem em /mnt
 mknod /dev/loop0 b 7 0
 losetup -fP --show lecos.img
@@ -154,19 +157,70 @@ Para seguirmos com nossa configuração da userland, precisaremos inserir mais a
 
 Os links para encontrar e baixar os componentes se encontram no próprio texto. A partir deles, faremos o `wget` para baixar os arquivos dentro de nosso container de desenvolvimento e, em seguida, realizaremos o processo de compilação e instalação através dos scripts de build, mas, dessa vez, a tarefa será de vocês!
 
+É fundamental baixar **exatamente** as versões indicadas abaixo e no diretório `/LOS/Componentes`, o mesmo onde já estão os demais componentes, pois os scripts de build procuram os códigos-fonte nesse local e com esses nomes. Caso contrário, o script falhará.
+
+<div align="center">
+
+| **Componente** | **Versão** | **Arquivo a baixar** | **Comando para extrair** | **Diretório gerado** | **Script de build** |
+| :--: | :--: | :--: | :--: | :--: | :--: |
+| **GNU Inetutils** | 2.5 | `inetutils-2.5.tar.gz` | `tar -xzf inetutils-2.5.tar.gz` | `inetutils-2.5` | `inetutils-build.sh` |
+| **Shadow-Utils** | 4.17.4 | `shadow-4.17.4.tar.gz` | `tar -xzf shadow-4.17.4.tar.gz` | `shadow-4.17.4` | `shadow-build.sh` |
+| **Linux-PAM** | 1.7.0 | `Linux-PAM-1.7.0.tar.xz` | `tar -xJf Linux-PAM-1.7.0.tar.xz` | `Linux-PAM-1.7.0` | `pam-build.sh` |
+| **Libxcrypt** | 4.5.2 | `libxcrypt-4.5.2.tar.xz` | `tar -xJf libxcrypt-4.5.2.tar.xz` | `libxcrypt-4.5.2` | `libxcrypt-build.sh` |
+
+</div>
+
+>Tabela 1: Versões, arquivos, comandos de extração e scripts de build de cada componente.
+
+> **ATENÇÃO**: o **Linux-PAM** e a **Libxcrypt** são distribuídos em `.tar.xz`, e não em `.tar.gz`. Por isso, o comando de extração é diferente: em vez de `-xzf` (gzip), utilizamos `-xJf` (xz). Repare também que o script do Linux-PAM se chama `pam-build.sh`, e não `linux-pam-build.sh`.
+
+Com isso, o processo de download e extração, feito dentro do container, será semelhante a este (substitua cada `[LINK_...]` pelo link do respectivo componente):
+
+```bash
+# Acessamos o diretório dos componentes
+cd /LOS/Componentes
+
+# Baixamos os quatro componentes
+wget [LINK_INETUTILS]
+wget [LINK_SHADOW]
+wget [LINK_PAM]
+wget [LINK_LIBXCRYPT]
+
+# Extraímos os tarballs
+tar -xzf inetutils-2.5.tar.gz
+tar -xzf shadow-4.17.4.tar.gz
+tar -xJf Linux-PAM-1.7.0.tar.xz
+tar -xJf libxcrypt-4.5.2.tar.xz
+```
+
+Com os componentes extraídos, basta executar os scripts de build, que estão no diretório `/LOS/Componentes/scripts`:
+
+```bash
+# Acessamos o diretório de scripts
+cd /LOS/Componentes/scripts
+
+# Fornecemos a permissão de execução e executamos cada script
+chmod +x inetutils-build.sh shadow-build.sh pam-build.sh libxcrypt-build.sh
+
+./inetutils-build.sh
+./shadow-build.sh
+./pam-build.sh
+./libxcrypt-build.sh
+```
+
 #### **GNU Inetutils**
 
 O GNU Inetutils é uma coleção de programas relacionados à comunicação e às funções básicas de rede em sistemas GNU/Linux. Entre suas ferramentas está o `hostname`, utilizado para consultar ou definir o nome atribuído ao sistema.
 
-No nosso caso, não precisamos utilizar todos os programas fornecidos pelo pacote. O objetivo desta etapa é principalmente disponibilizar o comando `hostname`, permitindo que o LecOS tenha uma identificação própria durante sua execução.
+No nosso caso, não precisamos utilizar todos os programas fornecidos pelo pacote. O objetivo desta etapa é principalmente disponibilizar o comando `hostname`, permitindo que o sistema tenha uma identificação própria durante sua execução.
 
-O GNU Inetutils pode ser encontrado [neste link](https://ftp.gnu.org/gnu/inetutils/).
+A versão 2.5 do GNU Inetutils pode ser encontrada [neste link](https://ftp.gnu.org/gnu/inetutils/).
 
 #### **Shadow-Utils**
 
 O Shadow-Utils fornece ferramentas responsáveis pelo gerenciamento de usuários e grupos do sistema, como `useradd`, `groupadd` e `passwd`. Esses programas permitem criar identidades no sistema e manter informações relacionadas a elas, utilizando arquivos como `/etc/passwd`, `/etc/group` e `/etc/shadow`.
 
-No nosso sistema, ele será utilizado principalmente para criar e configurar o usuário `root`, podendo ser encontrado [neste link](https://github.com/shadow-maint/shadow/releases?page=2#release-4.17.4).
+No nosso sistema, ele será utilizado principalmente para criar e configurar o usuário `root`, podendo-se encontrar a versão 4.17.4 [neste link](https://github.com/shadow-maint/shadow/releases?page=2#release-4.17.4).
 
 #### **Linux-PAM**
 
@@ -182,9 +236,12 @@ Assim, quando utilizamos o `passwd`, a senha fornecida pode ser processada pela 
 
 #### **Finalizando a instalação**
 
-Após tudo compilado e instalado em nosso container, basta colocarmos tudo dentro de nossa imagem montada novamente, apagando os diretórios presentes (com exceção de `/boot`) e adicionando a nova estrutura de diretórios dentro dela:
+Após tudo compilado e instalado em nosso container, basta colocarmos tudo dentro de nossa imagem montada novamente, apagando os diretórios presentes (com exceção de `/boot`) e adicionando a nova estrutura de diretórios dentro dela. Para isso, o terminal deve estar no diretório raiz `/LOS`:
 
 ```bash
+# Voltamos ao diretório raiz /LOS
+cd /LOS
+
 # Deleta a estrutura antiga
 rm -rf /mnt/{bin,dev,etc,lib,lib64,proc,sbin,sys,usr,var}
 
@@ -228,7 +285,7 @@ A tradução desse identificador numérico para um nome legível em texto é uma
 
 Caso esse mapeamento não exista, ferramentas de espaço de usuário não conseguirão resolver o UID 0, exibindo frequentemente mensagens informativas como `I have no name!`.
 
-Para estabelecer a identidade básica de superusuário (root), criamos as entradas mínimas nos arquivos de configuração:
+Para estabelecer a identidade básica de superusuário (root), criamos as entradas mínimas nos arquivos de configuração. Estes comandos devem ser executados **dentro do sistema criado**, ou seja, no terminal do sistema em execução no QEMU, e não no container:
 
 ```bash
 # Registra o superusuário (UID 0, GID 0) com shell /bin/bash e home /root
@@ -236,6 +293,9 @@ echo "root:x:0:0:root:/root:/bin/bash" > /etc/passwd
 
 # Registra o grupo primário root (GID 0)
 echo "root:x:0:" > /etc/group
+
+# Sincroniza as alterações com o disco
+sync
 ```
 
 O campo `x` presente em `/etc/passwd` indica que a senha não está armazenada nesse arquivo. Em sistemas que utilizam o mecanismo tradicional de autenticação por senha, seu hash é armazenado separadamente em `/etc/shadow`.
@@ -286,7 +346,7 @@ O Bash oferece uma série de sequências de escape que permitem construir um pro
 
 Para que essas variáveis de ambiente e o caminho dos binários do sistema (`PATH`) sejam inicializados automaticamente em cada nova sessão interativa de login (como a do usuário `root` que acabamos de criar), precisamos criar e salvar a configuração no arquivo `/etc/profile`. 
 
-Primeiro, precisamos definir o nome do nosso sistema (o `hostname`). Para isso, basta rodar o seguinte comando:
+Primeiro, precisamos definir o nome do nosso sistema (o `hostname`). Para isso, basta rodar o seguinte comando, também dentro do sistema em execução no QEMU:
 
 ```bash
 # Dá o nome ao host da máquina
@@ -300,6 +360,9 @@ cat << 'EOF' > /etc/profile
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
 export PS1='\u@\h:\w\$ '
 EOF
+
+# Sincroniza as alterações com o disco
+sync
 ```
 
 Dessa forma, o shell em espaço de usuário ganha contexto sobre a navegação no sistema de arquivos, a identidade da máquina e as permissões ativas.
@@ -322,7 +385,17 @@ root@[nome-do-sistema]:/#
 
 </div>
 
-Imagem 2:
+> Imagem 2: Ajustando o PS1 do nosso sistema.
+
+### **Sétimo Exercício — Identificação do Sistema e do Usuário root**
+
+Nesta atividade, iremos comprovar que a configuração da userland foi realizada com sucesso até este ponto. Para isso, com o sistema inicializado no QEMU e após a execução dos comandos de criação do usuário `root`, da definição do `hostname` e do arquivo `/etc/profile`, execute o comando `su - root` no terminal do sistema.
+
+Em seguida, registre uma captura de tela do terminal, demonstrando que o acesso foi realizado como superusuário. A imagem deverá apresentar claramente o prompt no formato `root@[nome-do-sistema]:/#`, onde o nome do sistema deve ser **igual** ao definido no comando `hostname` e ao nome atribuído ao sistema nas primeiras etapas deste tutorial.
+
+Inclua a captura de tela no relatório, servindo como evidência de que as etapas anteriores foram concluídas corretamente.
+
+O objetivo desta atividade é documentar a identificação do sistema e do usuário administrador, demonstrando que o `/etc/passwd`, o `/etc/group`, o `hostname` e o `PS1` definido em `/etc/profile` estão funcionando em conjunto.
 
 No entanto, embora o hostname esteja funcionando agora, da maneira que fizemos ele assume um estado volátil -- ele só se mantém em tempo de execução, pois, se encerrarmos e abrirmos nosso sistema, ele perde o valor definido. Essa questão será resolvida com a utilização do init-system `Systemd`, o qual carregará automaticamente o hostname.
 

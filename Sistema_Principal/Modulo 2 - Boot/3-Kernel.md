@@ -187,14 +187,6 @@ Basicamente, o comando `docker cp [ITEM] [NOME-CONTAINER]:/CAMINHO` copia determ
 
 > Imagem 7: Comando sendo executado para copiar o binário do kernel Linux para dentro do container.
 
-<div align="center">
-
-![container](https://github.com/FelpzzzEX/Imagens/blob/553729a41ba4ec1e5583f052a580f528c735ba23/Captura%20de%20tela_2026-08-18_23-07-09.png)
-
-</div>
-
-> Imagem 8: Binário presente no ambiente de desenvolvimento após a execução do comando.
-
 Com isso, já temos o que é necessário para inserir o kernel em nossa imagem e, em seguida, gerá-la novamente. Para isso, repetiremos o processo que vimos na etapa anterior, onde criamos a imagem bootável e instalamos o **GNU GRUB** nela. Aqui, apenas inseriremos o kernel Linux, permitindo que montemos a imagem novamente.
 
 Como destruímos os dispositivos virtuais na etapa anterior por segurança, precisamos refazer o mapeamento do arquivo `lecos.img` antes de montá-lo em `/mnt`:
@@ -212,17 +204,20 @@ mount /dev/mapper/loop0p1 /mnt
 
 # Insere o kernel recém-copiado no diretório de boot da imagem
 cp bzImage /mnt/boot
+
+# Confere o conteúdo do diretório de boot da imagem
+ls /mnt/boot/
 ```
 
 Com isso, temos enfim nosso kernel inserido no sistema, permitindo que o bootloader (GRUB) o localize e o carregue, tornando possível a primeira etapa da inicialização.
 
 <div align="center">
 
-![grub](https://github.com/FelpzzzEX/Imagens/blob/553729a41ba4ec1e5583f052a580f528c735ba23/bzimage.png)
+![grub](https://github.com/FelpzzzEX/Imagens/blob/969e0aa1972c236c3184e8193f940ca64c8a9172/mntboot.png)
 
 </div>
 
-> Imagem 9: Binário do kernel Linux presente na imagem bootável, montada no diretório `/mnt`.
+> Imagem 8: Binário do kernel Linux presente na imagem bootável, montada no diretório `/mnt`.
 
 ## **Segundo boot**
 
@@ -262,9 +257,17 @@ Executando a nossa imagem, nos depararemos com a mesma tela de seleção que vim
 
 </div>
 
-> Imagem 10: Kernel panic causado pela falta de um arquivo de inicialização.
+> Imagem 9: Kernel panic causado pela falta de um arquivo de inicialização.
 
 Contudo, isso nos fornece a estrutura ideal para, de fato, montarmos o nosso sistema: nosso **bootloader** e o **kernel Linux** funcionando corretamente no ambiente, restando apenas o arquivo de inicialização, que nada mais é que o primeiro processo executado pelo kernel no espaço de usuário (userspace). Sua função é dar continuidade ao processo de inicialização, preparando o ambiente e iniciando os demais processos e serviços necessários para o funcionamento do sistema operacional.
+
+### **Terceiro Exercício — Erro de Init**
+
+Durante a inicialização do sistema, registre uma captura de tela do terminal que apresente a mensagem de erro exibida após a tentativa de inicialização do sistema operacional.
+
+A imagem deverá mostrar claramente o erro ocorrido, servindo como evidência do comportamento apresentado pelo sistema durante essa etapa.
+
+Inclua a captura de tela no relatório e, junto a ela, apresente uma explicação sobre a causa do erro, descrevendo por que ele ocorreu e qual sua relação com o processo de inicialização do sistema. Dessa forma, será possível documentar o problema identificado e demonstrar a compreensão do papel do `init` durante o processo de boot.
 
 ## **Próximos passos**
 

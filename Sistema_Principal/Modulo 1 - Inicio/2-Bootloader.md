@@ -61,12 +61,12 @@ Command (m for help):
 
 Essa é a parte de configuração da partição no fdisk, onde inseriremos os seguintes comandos para montarmos nosso arquivo, sendo eles:
 
-* **n** - Ao inserirmos `n`, indicamos a criação de uma nova partição no arquivo, preparando-o para as próximas etapas;
-* **p** - A diretriz `p` indica que a partição criada será primária;
-* **1** - Indica que será a partição número 1;
+* **n** - Ao inserirmos `n`, indicamos a criação de uma nova partição no arquivo, preparando-o para as próximas etapas. Logo após, apertamos enter para prosseguir;
+* **p** - A diretriz `p` indica que a partição criada será primária. Apertamos enter novamente para prosseguir;
+* **1** - Indica que será a partição número 1. Mais uma vez, pressionamos enter para a próxima opção;
 * **[Enter]** - Define o primeiro setor da partição. Para isso, utilizaremos o padrão fornecido, então basta pressionarmos `Enter` para prosseguir;
 * **[Enter]** - Define o último setor. Assim como na etapa anterior, pressionaremos `Enter` novamente, levando o sistema a utilizar o restante do espaço presente no arquivo;
-* **w** - Por fim, inserimos a diretriz `w`, que salvará nossas escolhas e as gravará em nosso arquivo.
+* **w** - Por fim, inserimos a diretriz `w`, que salvará nossas escolhas e as gravará em nosso arquivo. Pressionamos `Enter` para confirmar.
 
 <div align="center">
 
@@ -82,6 +82,8 @@ Com todo o processo finalizado, podemos enfim prosseguir com a geração do noss
 # Comando para criar o loop device
 mknod /dev/loop0 b 7 0
 ```
+
+> Pode haver um retorno "mknod: /dev/loop0: File exists". Não ocorreu nenhum erro, o loop device apenas existia.
 
 Dispositivo de loop criado, seguiremos para o processo de montagem, onde pegaremos nosso arquivo de imagem `lecos.img` e, utilizando o loop device criado anteriormente, permitiremos a utilização do mesmo. Para isso, utilizaremos o seguinte comando:
 
@@ -155,6 +157,8 @@ Onde, detalhando as diretrizes:
   * **multiboot**: Suporte para carregar kernels compatíveis com a especificação Multiboot;
 * **/dev/loop0**: O alvo final. O estágio 1 do GRUB é gravado nos primeiros 512 bytes do HD inteiro (o MBR), por isso apontamos para o dispositivo raiz.
 
+### **Exercício 1 - Definindo o Nome**
+
 Com o GRUB instalado em nossa imagem bootável, podemos iniciar a configuração dele, que é feita através de um arquivo de configuração, de modo bastante intuitivo. Iniciamos através do seguinte comando:
 
 ```bash
@@ -162,7 +166,7 @@ Com o GRUB instalado em nossa imagem bootável, podemos iniciar a configuração
 nano /mnt/boot/grub/grub.cfg
 ```
 
-E inserimos o seguinte texto:
+Com isso, nosso editor de texto irá abrir para inserirmos a configuração do nosso GRUB. Aqui, estaremos realizando o primeiro exercício prático: definindo o nome de nosso sistema. A seguir, o texto indica a configuração que ele irá utilizar para iniciar, sendo incluída no editor de texto que acabamos de abrir. Em "[NOME-DO-SISTEMA]", coloque o nome que você deseja para o seu sistema operacional (sem os colchetes):
 
 ```nano
 menuentry '[NOME-DO-SISTEMA]' {
@@ -171,7 +175,7 @@ menuentry '[NOME-DO-SISTEMA]' {
 }
 ```
 
-Este arquivo, basicamente, define o "título" da opção que irá aparecer no GRUB (em nosso caso, `LecOS`) enquanto define as variáveis necessárias:
+Este arquivo, basicamente, define o "título" da opção que irá aparecer no GRUB enquanto define as variáveis necessárias:
 
 * **set root**: Define, para o GRUB, a partição raiz de onde os arquivos serão carregados, no caso, a partição de nossa imagem `lecos.img`;
   * **hd0,1**: Indica o primeiro disco encontrado (`hd0`) e, dentro dele, a primeira partição;
@@ -197,7 +201,7 @@ kpartx -d /dev/loop0
 losetup -d /dev/loop0
 ```
 
-Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente configurada. Agora, para podermos realizar o boot em uma máquina virtual, copiaremos o arquivo `lecos.img` para o nosso sistema principal (fora do container) através do comando `docker cp` que vimos anteriormente:
+Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente configurada. Agora, para podermos realizar o boot em uma máquina virtual, copiaremos o arquivo `lecos.img` para o nosso sistema principal **fora do container** (em outro terminal) através do comando `docker cp` que vimos anteriormente:
 
 ```bash
 # Copia 'lecos.img' para o diretório atual do usuário
@@ -211,6 +215,16 @@ Após realizarmos a cópia, executaremos a imagem com o sistema `QEMU`, permitin
 qemu-system-x86_64 lecos.img
 ```
 
-Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente o nome de nosso sistema (no caso deste tutorial, será `LecOS`). Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, o que impede qualquer inicialização de acontecer.
+Após executarmos, veremos a tela inicial do GRUB (Imagem 1), onde aparecerão as opções de boot para iniciarmos -- em nosso caso, somente o nome de nosso sistema. Ao selecionarmos, seremos recebidos por uma mensagem de erro, uma vez que, embora o boot tenha sido realizado, a imagem ainda está "crua", não possuindo utilitários, programas ou mesmo o kernel Linux, o que impede qualquer inicialização de acontecer.
+
+### **Segundo Exercício — GNU GRUB**
+
+Após concluir a configuração do bootloader e realizar a primeira inicialização da imagem no QEMU, registre uma captura de tela contendo o menu inicial do GNU GRUB e a identificação do sistema operacional definida no exercício anterior.
+
+A captura deverá apresentar claramente a entrada de inicialização personalizada, permitindo visualizar o nome atribuído ao sistema durante sua configuração. Essa imagem deverá ser incluída no relatório do trabalho, conforme as orientações estabelecidas para a documentação das etapas de desenvolvimento.
+
+Esse registro servirá como evidência da instalação e configuração inicial do GNU GRUB, documentando o primeiro resultado visual obtido durante a construção do sistema operacional.
+
+## **Próximos passos**
 
 Na próxima etapa, iremos nos aprofundar mais no processo de boot, iniciando pelo kernel e sua responsabilidade no sistema operacional, além de inserir o componente em nossa imagem bootável para continuarmos nosso trajeto até o sistema principal. Após isso, entraremos no conteúdo relacionado à memória primária e secundária do sistema até chegarmos, enfim, à inicialização de fato, onde teremos percorrido metade do processo. Nos vemos lá!
