@@ -106,7 +106,7 @@ Como exemplos que seguem esta arquitetura, temos o kernel dos sistemas **BSD** e
 
 </div>
 
-> Imagem 2: Logotipos do **Linux** e do **FreeBSD** (nesta ordem), exemplos de sistemas com arquitetura monolítica.
+> Imagem 2: Logotipos do **Linux** e do **FreeBSD**, exemplos de sistemas com arquitetura monolítica.
 
 ### **Microkernel**
 

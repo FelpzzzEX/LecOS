@@ -268,10 +268,6 @@ mkdir bash-build
 mkdir ncurses-build
 ```
 
-![ncurs](https://github.com/FelpzzzEX/Imagens/blob/969e0aa1972c236c3184e8193f940ca64c8a9172/cncurses.png)
-
-> Imagem 11: Criando os diretórios de build do **GNU Bash**, **Ncurses** e da **Glibc**.
-
 Com os diretórios de build criados, seguiremos para a criação do diretório responsável pelo **initramfs**, onde armazenaremos os componentes necessários para a utilização do ambiente. Para isso, faremos a seguinte sequência de comandos, retornando ao diretório raiz **LOS** e criando nele o diretório **initramfs** e seus subdiretórios **bin**, **lib** e **lib64**, sendo a estrutura mínima necessária para essa demonstração.
 
 ```bash
@@ -290,7 +286,7 @@ Com isso, já teremos a estrutura de diretórios mínima para criar nosso **init
 
 </div>
 
-> Imagem 12: Criando os diretórios necessários do **initramfs**.
+> Imagem 11: Criando os diretórios necessários do **initramfs**.
 
 ### **Compilando os componentes**
 
@@ -312,15 +308,15 @@ docker cp scripts [ID-DO-CONTAINER]:/LOS/Componentes
 
 </div>
 
-> Imagem 13: Copiando o diretório de `scripts` para dentro do container
+> Imagem 12: Copiando o diretório de `scripts` para dentro do container
 
 <div align="center">
 
-![dockercp2](https://github.com/FelpzzzEX/Imagens/blob/e61b64b697b25c2f471a1989950662b7d32b4a9d/Etapa4-framework/dockercp2.png)
+![ncurs](https://github.com/FelpzzzEX/Imagens/blob/969e0aa1972c236c3184e8193f940ca64c8a9172/cncurses.png)
 
 </div>
 
-> Imagem 14: Diretório presente no ambiente de desenvolvimento.
+> Imagem 13: Diretório presente no ambiente de desenvolvimento.
 
 Com isso, daremos as devidas permissões de execução aos scripts através do comando `chmod`. Dentro do container, no diretório `Componentes/scripts`:
 
@@ -493,7 +489,7 @@ qemu-system-x86_64 lecos.img
 
 </div>
 
-> Imagem 15: Boot realizado na memória RAM (initramfs).
+> Imagem 14: Boot realizado na memória RAM (initramfs).
 
 Ao realizar o boot, cairemos na interface do bash, o que nos permitirá interagir com o sistema. Dessa vez, o teclado funciona seguindo os padrões ABNT, garantindo uma experiência mais fluida. Para realizar os testes de volatilidade, executaremos os scripts abaixo.
 
@@ -527,7 +523,7 @@ Ele não encontrará mais o arquivo, uma vez que, durante o reinício, todos os 
 
 </div>
 
-> Imagem 16: Criando um arquivo e interagindo com o sistema via Bash.
+> Imagem 15: Criando um arquivo e interagindo com o sistema via Bash.
 
 <div align="center">
 
@@ -535,7 +531,7 @@ Ele não encontrará mais o arquivo, uma vez que, durante o reinício, todos os 
 
 </div>
 
-> Imagem 17: Conteúdo perdido após o reinício do sistema, provando a volatilidade.
+> Imagem 16: Conteúdo perdido após o reinício do sistema, provando a volatilidade.
 
 ### **Exercício Quatro — Inicialização do Sistema**
 
