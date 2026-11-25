@@ -16,6 +16,13 @@ Historicamente, existem duas tecnologias principais utilizadas para essa finalid
 
 Embora ambos tenham o mesmo objetivo geral, suas arquiteturas e implementações são bastante diferentes, principalmente devido às limitações tecnológicas existentes na época em que o BIOS foi desenvolvido. O UEFI oferece recursos mais modernos, maior flexibilidade e suporte a funcionalidades que não fazem parte da arquitetura original do BIOS, tornando-se o padrão predominante nos computadores atuais.
 
+Na prática, as principais vantagens do UEFI em relação ao BIOS podem ser resumidas em três pontos:
+* **Discos maiores**: em conjunto com o `GPT` (*GUID Partition Table*), um esquema de particionamento moderno e distinto do próprio UEFI, é possível inicializar sistemas a partir de discos maiores que 2 TiB, limite imposto pelo `MBR` utilizado no BIOS tradicional ([Microsoft: partições UEFI/GPT](https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11));
+* **Flexibilidade**: o UEFI permite escolher e executar diretamente diferentes carregadores de inicialização, registrados no próprio *firmware* ([UEFI Forum](https://uefi.org/specifications));
+* **Segurança**: o UEFI disponibiliza recursos adicionais, como o `Secure Boot`, que verifica a autenticidade dos componentes executados durante a inicialização ([UEFI Forum](https://uefi.org/specifications)).
+
+Esses pontos serão detalhados nas seções seguintes. Para um aprofundamento teórico sobre o processo de boot, consulte também Tanenbaum e Bos (2022) e Silberschatz, Galvin e Gagne (2018), listados nas [Referências](#referências) ao final desta etapa.
+
 Esses firmwares são responsáveis pelas primeiras etapas de inicialização do computador, incluindo o `POST` (*Power-On Self-Test*), um conjunto de verificações e procedimentos executados logo após o equipamento ser ligado. Sua finalidade é identificar possíveis problemas nos componentes essenciais e preparar o hardware para que o processo de inicialização possa continuar.
 
 Durante essa etapa, o *firmware* verifica e inicializa componentes como:
@@ -41,6 +48,7 @@ sequenceDiagram
     participant K as Kernel
 
     U->>H: Pressiona o botão de ligar
+    activate H
 
     H->>F: Executa o firmware
     activate F
@@ -48,13 +56,16 @@ sequenceDiagram
     F->>F: Realiza POST
     F->>F: Inicializa dispositivos
     F->>BL: Localiza e carrega bootloader
-
     deactivate F
+    activate BL
 
     BL->>K: Carrega o kernel
+    deactivate BL
     activate K
+
     K-->>H: Assume o gerenciamento dos recursos
     deactivate K
+    deactivate H
 ```
 >Diagrama 1: Sequência simplificada de eventos durante a inicialização um computador.
 
@@ -76,7 +87,9 @@ O BIOS possui uma interface de configuração simples, geralmente baseada em tex
 
 O UEFI, por sua vez, apresenta uma arquitetura mais moderna para o processo de inicialização. Diferentemente do BIOS tradicional, ele não depende da execução de um pequeno código localizado no primeiro setor do disco para carregar o bootloader. Em vez disso, o UEFI consegue identificar e executar diretamente aplicações compatíveis com sua arquitetura, normalmente armazenadas em uma partição específica denominada `ESP` (*EFI System Partition*). Essa partição utiliza o sistema de arquivos FAT e armazena os arquivos executáveis responsáveis pela inicialização, geralmente com a extensão `.efi`.
 
-A ESP é normalmente utilizada em discos particionados com `GPT` (*GUID Partition Table*), um padrão moderno que substitui as limitações do MBR e permite trabalhar com discos de capacidade muito superior ao limite tradicional do BIOS (2 TiB). Além disso, o UEFI permite registrar diferentes opções de inicialização, possibilitando a existência de múltiplos bootloaders ou sistemas operacionais no mesmo equipamento.
+A ESP é normalmente utilizada em discos particionados com `GPT` (*GUID Partition Table*), um padrão moderno que substitui as limitações do MBR e permite trabalhar com discos de capacidade muito superior ao limite de 2 TiB do MBR, esquema de particionamento utilizado pelo BIOS tradicional ([Microsoft: partições UEFI/GPT](https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11); [Microsoft: FAQ sobre Windows e GPT](https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/windows-and-gpt-faq?view=windows-11)). Além disso, o UEFI permite registrar diferentes opções de inicialização, possibilitando a existência de múltiplos bootloaders ou sistemas operacionais no mesmo equipamento.
+
+> **Atenção**: **UEFI e GPT não são a mesma tecnologia**. O UEFI é uma especificação de *firmware*, enquanto o GPT é um esquema de particionamento de discos. Embora sejam frequentemente utilizados em conjunto, não devem ser tratados como sinônimos.
 
 Em relação à interface, o UEFI permite implementações mais sofisticadas, podendo oferecer interfaces gráficas, suporte ao mouse e opções adicionais de configuração. Entretanto, esses recursos dependem de cada fabricante e não são obrigatórios na especificação.
 
@@ -88,7 +101,7 @@ Em relação à interface, o UEFI permite implementações mais sofisticadas, po
 
 >Imagem 2: Exemplo de interface de configuração do UEFI.
 
-Outra funcionalidade importante é o `Secure Boot`, um mecanismo de segurança que verifica as assinaturas digitais dos componentes executados durante a inicialização, utilizando certificados e chaves previamente reconhecidos pelo firmware. Dessa forma, é possível impedir a execução de bootloaders e outros componentes que não atendam aos critérios de confiança configurados.
+Outra funcionalidade importante, definida nas [especificações do UEFI](https://uefi.org/specifications), é o `Secure Boot`, um mecanismo de segurança que verifica as assinaturas digitais dos componentes executados durante a inicialização, utilizando certificados e chaves previamente reconhecidos pelo firmware. Dessa forma, é possível impedir a execução de bootloaders e outros componentes que não atendam aos critérios de confiança configurados.
 
 > **Secure Boot:** mecanismo de segurança que protege o processo de inicialização contra a execução de componentes não autorizados. Sua validação utiliza uma cadeia de confiança baseada em chaves e certificados digitais, dificultando a execução de bootloaders maliciosos ou modificados sem autorização.
 
@@ -100,15 +113,17 @@ A seguir, podemos consolidar as principais diferenças entre as duas tecnologias
 
 | **Recurso** | **BIOS** | **UEFI** |
 | :--: | :--: | :--: |
-| Suporte a Discos | Limitado a 2 TB (MBR) | Até 9.4 ZB (GPT) |
+| Suporte a Discos | Utiliza o MBR, que limita o disco a 2 TiB (limitação do MBR, e não do BIOS em si) | Com o GPT, suporta discos muito maiores (até 9,4 ZB, limite teórico do GPT) |
 | Segurança | Sem suporte nativo para Secure Boot | Suporte nativo a Secure Boot |
-| Interface | Texto simples | Interface gráfica moderna |
-| Velocidade de Inicialização | Lenta | Rápida |
+| Interface | Texto simples | Pode oferecer interface gráfica, mas isso não é obrigatório |
+| Velocidade de Inicialização | Varia conforme o firmware, os dispositivos e a configuração | Pode ser mais rápida, mas varia conforme o firmware, os dispositivos e a configuração |
 | Compatibilidade | Sistemas legados | Sistemas modernos e legados |
 
 </div>
 
 >Tabela 1: Comparativos entre as especificações dos firmwares `BIOS` e `UEFI`.
+
+> **Observação**: o limite de 2 TiB pertence ao esquema de particionamento MBR, e a capacidade de endereçar discos maiores pertence ao GPT, que costuma ser utilizado em conjunto com o UEFI, mas é uma tecnologia distinta. Recursos como interface gráfica e tempo de inicialização dependem da implementação de cada fabricante e não são garantidos pela especificação.
 
 ## **Sequência de Boot - Início**
 
@@ -149,6 +164,14 @@ flowchart TD
 
 ## Próxima etapa
 
-Após a conclusão das verificações iniciais e a identificação do dispositivo de inicialização, o BIOS/UEFI transfere o controle para o bootloader, dando continuidade ao processo de inicialização do sistema operacional. Em nosso framework, não será diferente: utilizaremos o `GNU GRUB` (*GRand Unified Bootloader*) como responsável por essa etapa. Entretanto, antes de iniciarmos sua configuração e integração ao sistema, precisamos preparar novamente nosso ambiente de desenvolvimento.
+Após a conclusão das verificações iniciais e a identificação do dispositivo de inicialização, o BIOS/UEFI transfere o controle para o bootloader, dando continuidade ao processo de inicialização do sistema operacional. Em nosso framework, não será diferente: utilizaremos o `GNU GRUB 2` (*GRand Unified Bootloader*, versão 2, sucessor do GRUB Legacy) como responsável por essa etapa. Entretanto, antes de iniciarmos sua configuração e integração ao sistema, precisamos preparar novamente nosso ambiente de desenvolvimento.
 
-Assim como na construção da base inicial, utilizaremos um ambiente isolado para evitar que os procedimentos de compilação, configuração e instalação dos componentes interfiram diretamente no sistema principal (`host`). Na próxima etapa, seguiremos o processo de preparação desse ambiente, estabelecendo a estrutura necessária para construir nossa distribuição Linux e aprofundar o estudo dos componentes que constituem um sistema operacional completo.
+Assim como na construção da base inicial, utilizaremos um ambiente isolado para evitar que os procedimentos de compilação, configuração e instalação dos componentes interfiram diretamente no sistema principal (`host`). Na próxima etapa, seguiremos o processo de preparação desse ambiente, estabelecendo a estrutura necessária para construir nossa distribuição GNU/Linux e aprofundar o estudo dos componentes que constituem um sistema operacional completo.
+
+## **Referências**
+
+* TANENBAUM, Andrew S.; BOS, Herbert. *Modern Operating Systems*. 5. ed. Pearson, 2022.
+* SILBERSCHATZ, Abraham; GALVIN, Peter B.; GAGNE, Greg. *Operating System Concepts*. 10. ed. Wiley, 2018.
+* UEFI FORUM. *UEFI Specifications*. Disponível em: <https://uefi.org/specifications>.
+* MICROSOFT. *Partições de disco baseadas em UEFI/GPT*. Disponível em: <https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions?view=windows-11>.
+* MICROSOFT. *Perguntas frequentes sobre Windows e GPT*. Disponível em: <https://learn.microsoft.com/pt-br/windows-hardware/manufacture/desktop/windows-and-gpt-faq?view=windows-11>.

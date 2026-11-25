@@ -117,6 +117,26 @@ flowchart TD
 
 ---
 
+## **Onde executar cada comando**
+
+Ao longo do tutorial, utilizaremos três ambientes diferentes e, por isso, executar um comando no lugar errado é um dos erros mais comuns. Para evitar esse problema, todo bloco de comandos será precedido por uma etiqueta indicando **onde** ele deve ser executado:
+
+<div align="center">
+
+| **Etiqueta** | **Onde executar** |
+| :--: | :--: |
+| **[HOST]** | No terminal do sistema operacional principal, fora do container (no Windows, o terminal do WSL) |
+| **[CONTAINER]** | Dentro do container Docker de desenvolvimento (prompt parecido com `root@a75d5a072e7a:/LOS#`) |
+| **[VM]** | Dentro da máquina virtual, ou seja, no sistema que você criou, em execução no QEMU, após ele ser inicializado |
+
+</div>
+
+>Tabela 1: Etiquetas que indicam onde cada comando deve ser executado.
+
+Os blocos sem etiqueta, como os conteúdos de arquivos editados no `nano` ou os exemplos de saída de comandos, não devem ser digitados diretamente em um terminal.
+
+---
+
 ## **Inicialização do ambiente**
 
 > **ATENÇÃO (usuários de Windows)**: todo este tutorial deve ser realizado **dentro do terminal do WSL** (Ubuntu), e **não** diretamente no PowerShell ou no Prompt de Comando. Comandos como `chmod +x`, a execução do script `./init.sh` e o `qemu-system-x86_64` não funcionam no Windows puro e causarão erros ao longo do processo. Se você ainda não configurou o WSL e o Docker Desktop, siga a seção [Preparando o ambiente no Windows (WSL 2)](../../Primeiros_Passos/base-inicial.md) da Base Inicial e, em seguida, abra o terminal do **Ubuntu (WSL)** para executar todos os comandos a seguir, inclusive os de `git`, `docker` e `QEMU`.
@@ -125,6 +145,7 @@ Para iniciarmos o nosso trabalho, precisamos criar o nosso ambiente de desenvolv
 
   No entanto, antes de tudo, precisaremos clonar o repositório do projeto, uma vez que ele contém todos os arquivos necessários para a inicialização do ambiente, e estaremos realizando este processo através do `WSL` assim como na Base Inicial criada nos Primeiros Passos. Por isso, certifique-se de que seu WSL possui o `Git` — o sistema de versionamento de código mais utilizado nos projetos modernos — instalado, executando o seguinte comando:
 
+**[HOST]**
 ```bash
 # Comando clona o repositório do GitHub para sua máquina local
 git clone --depth 1 https://github.com/FelpzzzEX/LecOS.git
@@ -135,6 +156,7 @@ git clone --depth 1 https://github.com/FelpzzzEX/LecOS.git
 
 Para executarmos o script, precisamos primeiro conceder a ele a permissão de execução, pois, mesmo depois de criado, ele não possui por padrão a capacidade de rodar os comandos sem essa permissão. Portanto, acessando o diretório [Sistema Principal](Sistema_Principal), inserimos os seguintes comandos:
 
+**[HOST]**
 ```bash
 # Acessa o diretório 'Sistema_Principal'
 cd LecOS/Sistema_Principal
@@ -147,6 +169,7 @@ Esse comando, basicamente, torna o script `init.sh` executável para o nosso sis
 
 Após fornecer a permissão ao script, podemos, enfim, iniciar nosso trabalho. Ainda dentro do diretório `Sistema_Principal`, executaremos:
 
+**[HOST]**
 ```bash
 ./init.sh
 ```
@@ -155,6 +178,7 @@ Esse script nada mais é que uma sequência de comandos de terminal que são exe
 
 >**ATENÇÃO**: Não é necessário executar os comandos abaixo, pois o script já realizará a tarefa automaticamente; eles estão presentes somente por curiosidade.
 
+**[HOST]**
 ```bash
 # Cria um volume para persistência de dados
 # (Pode pausar quando necessário sem perder o progresso)

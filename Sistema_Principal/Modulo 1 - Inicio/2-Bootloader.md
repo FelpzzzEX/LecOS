@@ -6,7 +6,7 @@ Tendo o ambiente inicializado, podemos enfim começar o nosso projeto. Nesta eta
 
 ## **Componente utilizado**
 
-Neste sistema, utilizaremos o `GNU GRUB` como bootloader, um componente do ecossistema GNU e o principal bootloader das distribuições Linux modernas, sendo uma solução robusta e prática para a inicialização.
+Neste sistema, utilizaremos o `GNU GRUB` (mais especificamente, o **GRUB 2**) como bootloader, um componente do ecossistema GNU e o principal bootloader das distribuições Linux modernas, sendo uma solução robusta e prática para a inicialização.
 
 <div align="center">
 
@@ -33,18 +33,26 @@ Nesta etapa, faremos algo parecido novamente, pois será a nossa imagem _"bootá
 
 Para iniciarmos, executaremos o seguinte comando estando **dentro** do container:
 
+**[CONTAINER]**
 ```bash
 # Devido ao tamanho, pode levar alguns segundos para executar
 dd if=/dev/zero of=lecos.img bs=1M count=10240
 ```
 
-Com este comando, criaremos um arquivo de 10GB denominado `lecos.img`, que será utilizado para dar início ao nosso sistema.
+Com este comando, criaremos um arquivo de 10GB denominado `lecos.img`, que será utilizado para dar início ao nosso sistema. Detalhando cada parte do comando:
+
+* **dd**: Utilitário que copia e converte dados bloco a bloco (*data duplicator*), muito utilizado para criar e manipular imagens de disco;
+* **if=/dev/zero** (*input file*): Define a origem dos dados. O `/dev/zero` é um arquivo especial do sistema que fornece uma sequência infinita de bytes zerados;
+* **of=lecos.img** (*output file*): Define o destino dos dados, ou seja, o arquivo `lecos.img` que será criado;
+* **bs=1M** (*block size*): Define o tamanho de cada bloco copiado, no caso, 1 MiB por vez;
+* **count=10240**: Define quantos blocos serão copiados. Como 10240 blocos de 1 MiB resultam em 10 GiB, esse será o tamanho final do arquivo.
 
 >Para saber se está dentro do container e no diretório correto, basta verificar se o seu terminal apresenta algo parecido com `root@a75d5a072e7a:/LOS#`, sendo `root` o usuário atual, `a75d5a072e7a` o ID do container e, por fim, `/LOS` o diretório onde montaremos o sistema e rodaremos todos os comandos.
 >>Tenha certeza de estar sempre nesse diretório antes de rodar qualquer script ou criar quaisquer arquivos.
 
 Em seguida, tendo a nossa imagem "bootável" criada, vamos particioná-la para criarmos a partição interna, o que nos possibilitará instalar o bootloader que irá carregar os componentes. Para isso, rodaremos o seguinte comando:
 
+**[CONTAINER]**
 ```bash 
 # fdisk é o utilitário que utilizamos para criar e modificar tabelas de partições
 fdisk lecos.img
@@ -78,15 +86,27 @@ Essa é a parte de configuração da partição no fdisk, onde inseriremos os se
 
 Com todo o processo finalizado, podemos enfim prosseguir com a geração do nosso arquivo bootável. A partir daqui, utilizaremos o formato `ext4`. Para isso, precisaremos criar nosso "pendrive virtual", como vimos durante o processo da `base inicial`.
 
+> **Dispositivo de loop (*loop device*)**: Recurso do kernel Linux que permite tratar um arquivo comum, como o nosso `lecos.img`, como se fosse um dispositivo de bloco, ou seja, um disco real. Com isso, é possível particionar, formatar e montar o arquivo como se ele fosse um pendrive ou um HD.
+
+**[CONTAINER]**
 ```bash
 # Comando para criar o loop device
 mknod /dev/loop0 b 7 0
 ```
 
+Onde:
+
+* **mknod**: Cria um arquivo especial (*device node*) no sistema, utilizado para representar um dispositivo;
+* **/dev/loop0**: Caminho do arquivo especial que será criado. O `loop0` é o primeiro dispositivo de loop;
+* **b** (*block*): Indica que o dispositivo é do tipo bloco, ou seja, acessado em blocos de dados, como discos e pendrives;
+* **7** (*major number*): Número maior, que identifica o driver do kernel responsável pelo dispositivo. O número 7 é reservado ao driver de loop;
+* **0** (*minor number*): Número menor, que identifica qual dispositivo daquele driver será utilizado. O 0 representa o primeiro deles.
+
 > Pode haver um retorno "mknod: /dev/loop0: File exists". Não ocorreu nenhum erro, o loop device apenas existia.
 
 Dispositivo de loop criado, seguiremos para o processo de montagem, onde pegaremos nosso arquivo de imagem `lecos.img` e, utilizando o loop device criado anteriormente, permitiremos a utilização do mesmo. Para isso, utilizaremos o seguinte comando:
 
+**[CONTAINER]**
 ```bash
 # Permite que o kernel compreenda e manipule o arquivo .img
 losetup -fP --show lecos.img
@@ -103,6 +123,7 @@ Com isso, dentro do loop device, a partição indicada é criada, gerando assim 
 
 Para resolver isso, utilizaremos o `kpartx`, utilitário que lê o `loop device` e cria dispositivos virtuais, permitindo o acesso às partições criadas, que ficam em `/dev/mapper/`. Para realizar essa tarefa, rodamos o seguinte comando:
 
+**[CONTAINER]**
 ```bash
 # Gera o dispositivo virtual contendo a partição de loop0 
 kpartx -av /dev/loop0
@@ -110,6 +131,7 @@ kpartx -av /dev/loop0
 
 Com a partição mapeada, podemos enfim formatá-la no formato `ext4`, obtendo de vez uma imagem capaz de bootar o nosso sistema. Para isso, executamos o comando a seguir, que simplesmente aplica o formato `ext4` à nossa partição criada, que fica em `/dev/mapper/loop0p1`:
 
+**[CONTAINER]**
 ```bash
 # Formatando a partição 1 no formato ext4 
 mkfs.ext4 /dev/mapper/loop0p1
@@ -117,6 +139,7 @@ mkfs.ext4 /dev/mapper/loop0p1
 
 Feito isso, nosso arquivo bootável está, enfim, pronto para receber os arquivos que iremos compilar e montar. Para sermos capazes disso, assim como na `base inicial`, precisamos "plugar" esse arquivo em um diretório, sendo esse o `/mnt`, um diretório dedicado à montagem temporária de sistemas de arquivos, utilizado para que possamos manipular o conteúdo presente no arquivo. Faremos essa etapa com o seguinte comando:
 
+**[CONTAINER]**
 ```bash
 # Montamos a partição 1 do loop device em '/mnt'
 mount /dev/mapper/loop0p1 /mnt
@@ -137,6 +160,7 @@ Seguimos a mesma lógica que vimos anteriormente: ao montar o `loop0p1` em `/mnt
 
 Após essa etapa, podemos enfim instalar o `GRUB` em nossa imagem. Para isso, utilizaremos o comando a seguir, onde a instalação será feita diretamente em `/mnt`, uma vez que é onde `/dev/mapper/loop0p1` está montada e permite adições:
 
+**[CONTAINER]**
 ```bash
 # Criamos o diretório 'boot', onde a configuração do GRUB será feita
 mkdir /mnt/boot 
@@ -161,6 +185,7 @@ Onde, detalhando as diretrizes:
 
 Com o GRUB instalado em nossa imagem bootável, podemos iniciar a configuração dele, que é feita através de um arquivo de configuração, de modo bastante intuitivo. Iniciamos através do seguinte comando:
 
+**[CONTAINER]**
 ```bash
 # Cria o arquivo de configuração do GRUB
 nano /mnt/boot/grub/grub.cfg
@@ -187,6 +212,7 @@ Com o arquivo escrito, podemos sair do `Nano` (o editor de texto que estamos uti
 
 Após isso, sincronizaremos as configurações feitas para garantir sua aplicação antes de iniciarmos o ambiente. Para isso, rodaremos algumas vezes o comando `sync`:
 
+**[CONTAINER]**
 ```bash
 # Repita o comando algumas vezes para garantir que nosso trabalho será salvo
 sync
@@ -194,6 +220,7 @@ sync
 
 É uma medida simples, mas serve para garantir que nossa imagem execute sem maiores problemas. Após essa etapa, podemos enfim desmontar nosso arquivo do diretório `/mnt`, pois nosso trabalho com ele já foi concluído.
 
+**[CONTAINER]**
 ```bash
 # Desmontar o arquivo do diretório /mnt e remoção do loop device
 umount /mnt
@@ -201,15 +228,41 @@ kpartx -d /dev/loop0
 losetup -d /dev/loop0
 ```
 
-Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente configurada. Agora, para podermos realizar o boot em uma máquina virtual, copiaremos o arquivo `lecos.img` para o nosso sistema principal **fora do container** (em outro terminal) através do comando `docker cp` que vimos anteriormente:
+Com isso, nossa imagem bootável está pronta para ser utilizada, contendo nosso `bootloader` instalado e devidamente configurada.
 
+### **Copiando a imagem para o sistema principal**
+
+Com a imagem bootável finalizada e desmontada, precisamos copiá-la do container Docker para o sistema operacional principal, onde executaremos a máquina virtual utilizando o `QEMU`.
+
+> **ATENÇÃO**: os próximos comandos devem ser executados no terminal do seu **sistema operacional principal** (host), e **não** dentro do container Docker.
+
+Primeiro, saia do container:
+
+**[CONTAINER]**
 ```bash
-# Copia 'lecos.img' para o diretório atual do usuário
+exit
+```
+
+No terminal do sistema principal, execute o comando `docker cp` que vimos anteriormente:
+
+**[HOST]**
+```bash
+# Copia 'lecos.img' do container para o diretório atual
 docker cp [CONTAINER ID]:/LOS/lecos.img .
 ```
 
-Após realizarmos a cópia, executaremos a imagem com o sistema `QEMU`, permitindo o boot em um ambiente virtual sem grandes problemas, bastando rodar o seguinte comando em nosso sistema principal:
+Substitua `[CONTAINER ID]` pelo identificador do seu container Docker. Caso não saiba qual é, execute `docker ps -a` para consultar os containers existentes. Pode levar alguns instantes devido ao tamanho da imagem. Após a cópia, você poderá verificar se o arquivo está presente no diretório atual:
 
+**[HOST]**
+```bash
+ls -lh lecos.img
+```
+
+> **NOTA**: caso o container esteja parado (por exemplo, após desligar o computador), liste os containers com `docker ps -a`, inicie o container desejado com `docker start [CONTAINER ID]` e entre novamente nele com `docker exec -it [CONTAINER ID] bash`. Dentro do container, o comando `ls -lh /LOS/lecos.img` permite confirmar que a imagem de 10G continua lá.
+
+Com a imagem disponível no sistema principal, podemos finalmente iniciar nossa máquina virtual utilizando o `QEMU`, bastando rodar o seguinte comando no mesmo diretório em que `lecos.img` foi copiada:
+
+**[HOST]**
 ```bash
 # Utilizamos o QEMU para bootar a imagem
 qemu-system-x86_64 lecos.img

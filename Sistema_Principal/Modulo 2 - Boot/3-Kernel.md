@@ -32,11 +32,17 @@ Como mencionado anteriormente, o kernel de um S.O. é o cérebro do sistema, res
 
 ```mermaid
 flowchart LR
-  A["Aplicações"] <--> B["Kernel (Núcleo)"]
-  B <-->|Gerencia| C@{ shape: fork, label: "Join" }
-  C <--> D["CPU"]
-  C <--> E["Memória"]
-  C <--> F["Dispositivos/Periféricos"]
+  APP["Aplicações<br/>(modo usuário)"] <-->|"chamadas de sistema"| KER["Kernel<br/>(modo kernel)"]
+  KER -->|gerencia| CPU["CPU"]
+  KER -->|gerencia| MEM["Memória"]
+  KER -->|gerencia| DEV["Dispositivos e<br/>periféricos"]
+
+  classDef user fill:#d8f3dc,stroke:#2d6a4f,color:#1b1b1b
+  classDef kern fill:#ffd6d6,stroke:#c0392b,color:#1b1b1b
+  classDef hw fill:#e5e5e5,stroke:#555555,color:#1b1b1b
+  class APP user
+  class KER kern
+  class CPU,MEM,DEV hw
 ```
 
 > Diagrama 1: Recursos que o kernel gerencia para fornecer às aplicações do sistema.
@@ -56,14 +62,6 @@ Apesar de ter uma função específica em um sistema, o kernel possui diversas v
 * Microkernel
 * Kernel híbrido
 
-<div align="center">
-
-![TiposKernel](https://github.com/FelpzzzEX/Imagens/blob/a536d4bfbddce64279dcfb497ee9193da0e039e2/OS-Architectures.webp)
-
-</div>
-
-> Imagem 2: Diagrama com as diferentes arquiteturas de kernel.
-
 Todos seguem o mesmo propósito que um kernel possui em um sistema operacional, porém são implementados de forma diferente, visando abordagens que sirvam a determinados casos de maneira mais eficiente. Abaixo, iremos mais a fundo nestes tipos e em suas particularidades.
 
 ### **Kernel monolítico**
@@ -71,6 +69,34 @@ Todos seguem o mesmo propósito que um kernel possui em um sistema operacional, 
 O **kernel monolítico**, como o próprio nome sugere, possui uma arquitetura de "monolito", onde as principais funcionalidades, como, neste caso, o gerenciamento de processos, o gerenciamento de memória e o controle de dispositivos, estão implementadas em um único bloco de código executável.
 
 Todos os serviços do sistema operacional, incluindo drivers de hardware e sistemas de arquivos, operam em modo kernel, o que significa que têm acesso total ao hardware. Isso permite uma execução mais rápida e uma resposta mais eficiente às solicitações do usuário.
+
+O diagrama a seguir ilustra essa organização, na qual todos os serviços do sistema operacional ficam reunidos em um único núcleo, em modo kernel:
+
+```mermaid
+block-beta
+  columns 1
+
+  UH["MODO USUÁRIO"]
+  APP["Aplicações"]
+  KH["MODO KERNEL — NÚCLEO ÚNICO"]
+  SC["Chamadas de sistema"]
+  FS["Sistema de arquivos e IPC"]
+  MM["Escalonador e memória virtual"]
+  DRV["Drivers de dispositivos"]
+  HH["HARDWARE"]
+  HW["CPU, memória e dispositivos"]
+
+  classDef head fill:none,stroke:none,color:#808080,font-weight:bold
+  classDef user fill:#d8f3dc,stroke:#2d6a4f,color:#1b1b1b
+  classDef kern fill:#ffd6d6,stroke:#c0392b,color:#1b1b1b
+  classDef hw fill:#e5e5e5,stroke:#555555,color:#1b1b1b
+  class UH,KH,HH head
+  class APP user
+  class SC,FS,MM,DRV kern
+  class HW hw
+```
+
+> Diagrama 2: Organização em camadas de um kernel monolítico.
 
 Como exemplos que seguem esta arquitetura, temos o kernel dos sistemas **BSD** e, sendo a base do nosso framework, o `kernel Linux`, que foi construído e expandido através da arquitetura monolítica. Graças a isso, a execução se torna bem mais rápida e eficiente, uma vez que tudo está unido em um único bloco em vez de estar em componentes separados. No entanto, isso acaba por tornar sua expansão e manutenção mais complexas ao longo do tempo, uma vez que o projeto pode acabar crescendo e passando por vários desenvolvedores.
 
@@ -80,7 +106,7 @@ Como exemplos que seguem esta arquitetura, temos o kernel dos sistemas **BSD** e
 
 </div>
 
-> Imagem 3: **BSD** e **Linux**, exemplos da arquitetura monolítica.
+> Imagem 2: Logotipos do **Linux** e do **FreeBSD** (nesta ordem), exemplos de sistemas com arquitetura monolítica.
 
 ### **Microkernel**
 
@@ -88,7 +114,44 @@ O **microkernel**, por sua vez, possui uma arquitetura na qual a maioria das fun
 
 Essa abordagem se diferencia da arquitetura monolítica por trazer uma segurança maior: mesmo que ocorra um problema em alguma parte do sistema, este não será afetado de forma geral, uma vez que os componentes defeituosos não estão diretamente interligados aos que ainda estão funcionando, o que facilita a expansão do projeto, bem como a correção de bugs.
 
-Um bom exemplo de sistema que utiliza um microkernel é o MINIX, um sistema operacional baseado em microkernel utilizado no firmware Intel ME 11. Ele é um sistema, de fato, robusto e confiável, porém, devido às inúmeras requisições que o núcleo principal precisa realizar, seu desempenho tende a ser mais lento em comparação à abordagem monolítica, onde todos os componentes existem em um mesmo espaço.
+No diagrama a seguir, apenas as funções básicas permanecem em modo kernel, enquanto os demais serviços são executados em modo usuário e se comunicam por meio de mensagens (IPC):
+
+```mermaid
+block-beta
+  columns 3
+
+  UH["MODO USUÁRIO"]:3
+  APP["Aplicações"] FSV["Servidor de arquivos"] DRV["Drivers de dispositivos"]
+  KH["MODO KERNEL — MICROKERNEL"]:3
+  MK["IPC básico, memória virtual e escalonamento"]:3
+  HH["HARDWARE"]:3
+  HW["CPU, memória e dispositivos"]:3
+
+  classDef head fill:none,stroke:none,color:#808080,font-weight:bold
+  classDef user fill:#d8f3dc,stroke:#2d6a4f,color:#1b1b1b
+  classDef kern fill:#ffd6d6,stroke:#c0392b,color:#1b1b1b
+  classDef hw fill:#e5e5e5,stroke:#555555,color:#1b1b1b
+  class UH,KH,HH head
+  class APP,FSV,DRV user
+  class MK kern
+  class HW hw
+```
+
+> Diagrama 3: Organização em camadas de um microkernel.
+
+Um dos exemplos mais conhecidos de sistemas operacionais baseados em microkernel é o **MINIX** (*Mini-UNIX*), criado em 1987 pelo professor Andrew S. Tanenbaum, da Vrije Universiteit Amsterdam, nos Países Baixos (TANENBAUM; WOODHULL, 2006).
+
+Originalmente, o MINIX foi desenvolvido com finalidade educacional, permitindo que estudantes de Ciência da Computação estudassem, compreendessem e experimentassem a implementação de um sistema operacional real. Na época, o acesso ao código-fonte do UNIX estava sujeito a restrições de licenciamento, o que dificultava sua utilização no ensino universitário. Para contornar esse problema, Tanenbaum desenvolveu uma implementação própria, inspirada no UNIX, mas escrita do zero.
+
+O projeto ganhou destaque por sua organização modular e pela utilização de mecanismos de comunicação entre processos (*Inter-Process Communication*, ou IPC), permitindo que diferentes componentes do sistema operacional interajam por meio da troca de mensagens.
+
+O MINIX também tem uma relação histórica importante com o surgimento do Linux. Linus Torvalds utilizava o MINIX quando começou a desenvolver o kernel Linux, em 1991, e chegou a discutir publicamente com Tanenbaum sobre as decisões arquiteturais adotadas no desenvolvimento de sistemas operacionais.
+
+Ao longo de sua evolução, o MINIX passou por diferentes versões. Enquanto as primeiras versões tinham como principal objetivo o ensino de sistemas operacionais, o MINIX 3 ampliou essa proposta, priorizando características como confiabilidade, isolamento de componentes e tolerância a falhas.
+
+Atualmente, o MINIX é um exemplo interessante de como a arquitetura de microkernel pode ser utilizada para construir sistemas operacionais modulares, nos quais serviços e drivers são executados predominantemente em espaço de usuário, reduzindo a quantidade de código executado em modo privilegiado (TANENBAUM; BOS, 2022).
+
+Em contrapartida, devido às inúmeras requisições que o núcleo principal precisa realizar, o desempenho de um microkernel tende a ser mais lento em comparação à abordagem monolítica, onde todos os componentes existem em um mesmo espaço.
 
 <div align="center">
 
@@ -96,13 +159,39 @@ Um bom exemplo de sistema que utiliza um microkernel é o MINIX, um sistema oper
 
 </div>
 
-> Imagem 4: **MINIX**, exemplo da arquitetura de microkernel.
+> Imagem 3: **MINIX**, exemplo da arquitetura de microkernel.
 
 ### **Kernel híbrido**
 
 O **kernel híbrido** é uma arquitetura que combina características de kernels monolíticos e microkernels. Essa abordagem permite que o sistema operacional mantenha a eficiência e a performance de um kernel monolítico, enquanto se beneficia da modularidade e da flexibilidade de um microkernel.
 
 Uma das principais características é a capacidade de executar código em espaço de usuário e em espaço de kernel, o que permite que partes do sistema operacional sejam executadas fora do núcleo e que os desenvolvedores criem módulos que podem ser carregados e descarregados conforme necessário, garantindo uma maior eficiência no uso de recursos, melhor desempenho em tarefas críticas e a capacidade de suportar uma variedade de hardware.
+
+O diagrama a seguir mostra essa combinação: parte dos serviços permanece em modo usuário, enquanto drivers e serviços mais críticos são executados dentro do núcleo:
+
+```mermaid
+block-beta
+  columns 2
+
+  UH["MODO USUÁRIO"]:2
+  APP["Aplicações"] SRV["Servidores (serviços menos críticos)"]
+  KH["MODO KERNEL — NÚCLEO HÍBRIDO"]:2
+  CORE["IPC, memória virtual e escalonamento"]:2
+  SVC["Drivers e serviços executados no núcleo"]:2
+  HH["HARDWARE"]:2
+  HW["CPU, memória e dispositivos"]:2
+
+  classDef head fill:none,stroke:none,color:#808080,font-weight:bold
+  classDef user fill:#d8f3dc,stroke:#2d6a4f,color:#1b1b1b
+  classDef kern fill:#ffd6d6,stroke:#c0392b,color:#1b1b1b
+  classDef hw fill:#e5e5e5,stroke:#555555,color:#1b1b1b
+  class UH,KH,HH head
+  class APP,SRV user
+  class CORE,SVC kern
+  class HW hw
+```
+
+> Diagrama 4: Organização em camadas de um kernel híbrido.
 
 Apesar das suas vantagens, o kernel híbrido também enfrenta desafios. A complexidade da sua arquitetura pode levar a dificuldades na depuração e na manutenção, além de a necessidade de equilibrar a modularidade com a performance poder resultar em trade-offs que nem sempre são fáceis de gerenciar.
 
@@ -114,7 +203,7 @@ Alguns dos sistemas operacionais mais conhecidos que utilizam essa arquitetura i
 
 </div>
 
-> Imagem 5: **Windows NT** e **macOS**, exemplos de sistemas operacionais que utilizam a arquitetura de kernel híbrido.
+> Imagem 4: **Windows NT** e **macOS**, exemplos de sistemas operacionais que utilizam a arquitetura de kernel híbrido.
 
 ## **Kernel x Shell**
 
@@ -125,33 +214,41 @@ No entanto, o kernel, por si só, não é responsável por fornecer uma interfac
 De forma simplificada, podemos representar essa interação da seguinte maneira: **Usuário digita um comando → Terminal → Shell interpreta → Solicita operações ao sistema → Kernel**
 
 ```mermaid
-flowchart TD
-  O@{ shape: circle, label: "Início" }
+flowchart TB
+  INICIO((Início))
+  USER["Usuário<br/>digita um comando"]
+  TERM["Terminal<br/>(entrada e saída de texto)"]
+  SHELL["Shell<br/>(interpreta o comando)"]
+  VALID{"Comando<br/>válido?"}
+  KERNEL["Kernel<br/>(executa a operação solicitada)"]
+  ERRO["Mensagem de erro"]
+  FIM(((Fim)))
 
-  A["Usuário"]
-  B["Shell"]
-  C["Interpreta comando"]
-  D["Kernel"]
-  E["Erro"]
+  INICIO --> USER
+  USER -->|"insere o comando"| TERM
+  TERM -->|"repassa o texto"| SHELL
+  SHELL --> VALID
+  VALID -->|"Sim: solicita a operação"| KERNEL
+  VALID -->|"Não"| ERRO
+  ERRO -->|"tenta novamente"| USER
+  KERNEL --> FIM
 
-  O --> A
-  A -->|Insere comando| B
-  subgraph shell["Interação com o Shell"]
-    B --> C
-    C -->|Solicita operação| D
-    C -->|Comando inválido| E
-    E -->|Tenta novamente| A
-  end
-  D --> U@{ shape: dbl-circ, label: "Fim" }
+  classDef user fill:#d8f3dc,stroke:#2d6a4f,color:#1b1b1b
+  classDef kern fill:#ffd6d6,stroke:#c0392b,color:#1b1b1b
+  classDef neutral fill:#e5e5e5,stroke:#555555,color:#1b1b1b
+  classDef err fill:#fff3cd,stroke:#b8860b,color:#1b1b1b
+  class USER,TERM,SHELL user
+  class KERNEL kern
+  class ERRO err
 ```
 
-> Diagrama 2: Fluxo simplificado de interação entre o usuário, o terminal, o shell e o kernel.
+> Diagrama 5: Fluxo simplificado de interação entre o usuário, o terminal, o shell e o kernel.
 
 ## **O kernel Linux**
 
 O kernel Linux surgiu como um projeto pessoal de um jovem estudante, Linus Torvalds, que desejava criar um sistema semelhante ao Unix para utilizar em seu computador. O que começou como um projeto pessoal acabou tomando um rumo além do imaginado, formando uma grande comunidade em torno do projeto, que passou a ajudar em seu desenvolvimento e expansão.
 
-O kernel Linux é utilizado por milhões de pessoas em todo o mundo. Devido à sua natureza livre e de código aberto, diferentes comunidades e empresas podem utilizá-lo e desenvolver seus próprios projetos a partir dele, dando origem às famosas distribuições Linux que conhecemos hoje. Podemos citar o Debian, uma das distribuições mais antigas ainda em atividade, o Fedora, uma distribuição voltada para inovação tecnológica e patrocinada pela Red Hat, e o Arch Linux, que oferece uma abordagem minimalista e bastante controle ao usuário sobre a configuração do sistema, contando também com uma extensa documentação mantida pela comunidade.
+O kernel Linux é utilizado por milhões de pessoas em todo o mundo. Devido à sua natureza livre e de código aberto, diferentes comunidades e empresas podem utilizá-lo e desenvolver seus próprios projetos a partir dele, dando origem às famosas distribuições Linux que conhecemos hoje. Podemos citar o Debian[^debian], uma das distribuições mais antigas ainda em atividade, o Fedora[^fedora], uma distribuição voltada para inovação tecnológica e patrocinada pela Red Hat, e o Arch Linux[^arch], que oferece uma abordagem minimalista e bastante controle ao usuário sobre a configuração do sistema, contando também com uma extensa documentação mantida pela comunidade.
 
 Atualmente, o projeto continua sendo liderado por Linus Torvalds e está em constante desenvolvimento e expansão. O kernel Linux está presente em uma grande parte da infraestrutura moderna, sendo utilizado em servidores, dispositivos móveis, sistemas embarcados e diversos outros equipamentos. Sua flexibilidade, estabilidade e possibilidade de personalização fizeram com que se tornasse uma das principais bases da computação moderna.
 
@@ -165,10 +262,11 @@ Retornando ao nosso framework, precisamos inserir o kernel Linux em nosso sistem
 
 </div>
 
-> Imagem 6: Diretório **Componentes_Principais** contendo o binário **bzImage**, nosso kernel Linux pré-compilado.
+> Imagem 5: Diretório **Componentes_Principais** contendo o binário **bzImage**, nosso kernel Linux pré-compilado.
 
 Com o binário localizado, é hora de inseri-lo em nossa estrutura de diretórios para que possamos gerar o arquivo de boot e inicializar o sistema. Para isso, abrindo o diretório `LecOS` no terminal, utilizaremos os seguintes comandos:
 
+**[HOST]**
 ```bash
 # Garantir que estamos no diretório correto
 cd Sistema_Principal/Componentes_Principais
@@ -185,12 +283,35 @@ Basicamente, o comando `docker cp [ITEM] [NOME-CONTAINER]:/CAMINHO` copia determ
 
 </div>
 
-> Imagem 7: Comando sendo executado para copiar o binário do kernel Linux para dentro do container.
+> Imagem 6: Comando sendo executado para copiar o binário do kernel Linux para dentro do container.
+
+### **Verificando a cópia do kernel**
+
+Após copiar o arquivo `bzImage` para o container, precisamos verificar se ele foi transferido corretamente.
+
+Para isso, abra um terminal do sistema principal e execute o comando abaixo para acessar o container Docker:
+
+**[HOST]**
+```bash
+docker exec -it LecOS-dev bash
+```
+
+Já dentro do container e no diretório `/LOS`, liste o seu conteúdo:
+
+**[CONTAINER]**
+```bash
+ls -lh
+```
+
+O arquivo `bzImage` deverá aparecer na listagem, confirmando que o kernel Linux está disponível em nosso ambiente de desenvolvimento e pronto para ser incluído na imagem bootável.
+
+> **ATENÇÃO**: o comando `ls -lh` desta verificação deve ser executado **dentro do container Docker**.
 
 Com isso, já temos o que é necessário para inserir o kernel em nossa imagem e, em seguida, gerá-la novamente. Para isso, repetiremos o processo que vimos na etapa anterior, onde criamos a imagem bootável e instalamos o **GNU GRUB** nela. Aqui, apenas inseriremos o kernel Linux, permitindo que montemos a imagem novamente.
 
-Como destruímos os dispositivos virtuais na etapa anterior por segurança, precisamos refazer o mapeamento do arquivo `lecos.img` antes de montá-lo em `/mnt`:
+Como destruímos os dispositivos virtuais na etapa anterior por segurança, precisamos refazer o mapeamento do arquivo `lecos.img` antes de montá-lo em `/mnt`. Nos comandos a seguir, a imagem será montada em `/mnt` e o kernel será copiado novamente, desta vez para `/mnt/boot`. Vale notar a diferença entre as duas cópias: a primeira (`docker cp`) trouxe o `bzImage` do sistema principal para a estrutura de diretórios do container (`/LOS`), enquanto a segunda (`cp bzImage /mnt/boot`) o insere dentro da imagem do sistema operacional, no diretório de boot de onde o GRUB irá carregá-lo:
 
+**[CONTAINER]**
 ```bash
 # Cria o loop device e associa a imagem
 mknod /dev/loop0 b 7 0
@@ -217,7 +338,7 @@ Com isso, temos enfim nosso kernel inserido no sistema, permitindo que o bootloa
 
 </div>
 
-> Imagem 8: Binário do kernel Linux presente na imagem bootável, montada no diretório `/mnt`.
+> Imagem 7: Binário do kernel Linux presente na imagem bootável, montada no diretório `/mnt`.
 
 ## **Segundo boot**
 
@@ -225,6 +346,7 @@ Após estarmos com tudo montado, é hora de realizarmos o segundo boot, dessa ve
 
 > **Host**: Sistema que você utiliza em sua máquina, o principal.
 
+**[CONTAINER]**
 ```bash
 # Sincronize as alterações
 sync
@@ -237,6 +359,7 @@ losetup -d /dev/loop0
 
 Com a imagem desmontada, abra outro terminal fora do container Docker, de modo a acessarmos e utilizarmos nosso sistema principal. Com isso, rode o seguinte comando:
 
+**[HOST]**
 ```bash
 # Copia 'lecos.img' para o sistema host novamente
 docker cp [CONTAINER ID]:/LOS/lecos.img .
@@ -244,6 +367,7 @@ docker cp [CONTAINER ID]:/LOS/lecos.img .
 
 Pode levar um tempo novamente devido ao tamanho da imagem, mas, após a execução, teremos nossa imagem atualizada contendo o kernel Linux em sua composição. Para testar, utilizaremos a ferramenta `QEMU` novamente, onde, dentro do mesmo diretório em que `lecos.img` foi copiada, rodaremos o programa com o comando a seguir:
 
+**[HOST]**
 ```bash
 # Utilizamos o QEMU para bootar a imagem mais uma vez
 qemu-system-x86_64 lecos.img
@@ -257,7 +381,7 @@ Executando a nossa imagem, nos depararemos com a mesma tela de seleção que vim
 
 </div>
 
-> Imagem 9: Kernel panic causado pela falta de um arquivo de inicialização.
+> Imagem 8: Kernel panic causado pela falta de um arquivo de inicialização.
 
 Contudo, isso nos fornece a estrutura ideal para, de fato, montarmos o nosso sistema: nosso **bootloader** e o **kernel Linux** funcionando corretamente no ambiente, restando apenas o arquivo de inicialização, que nada mais é que o primeiro processo executado pelo kernel no espaço de usuário (userspace). Sua função é dar continuidade ao processo de inicialização, preparando o ambiente e iniciando os demais processos e serviços necessários para o funcionamento do sistema operacional.
 
@@ -272,3 +396,13 @@ Inclua a captura de tela no relatório e, junto a ela, apresente uma explicaçã
 ## **Próximos passos**
 
 Finalizamos aqui uma das principais etapas do sistema, a integração do kernel à imagem. Na próxima etapa, repassaremos os conceitos de `memória primária` e `memória secundária` antes de, de fato, inicializar o sistema, pois ambas desempenham um papel importante dentro de um Sistema Operacional. Um excelente trabalho até aqui, estamos caminhando bem. Nos vemos no próximo passo!
+
+## **Referências**
+
+* TANENBAUM, Andrew S.; WOODHULL, Albert S. *Operating Systems: Design and Implementation*. 3. ed. Upper Saddle River: Pearson Prentice Hall, 2006.
+* TANENBAUM, Andrew S.; BOS, Herbert. *Modern Operating Systems*. 5. ed. Pearson, 2022.
+* TANENBAUM, Andrew S. *MINIX: A UNIX clone with source code*.
+
+[^debian]: Projeto Debian: <https://www.debian.org>.
+[^fedora]: Projeto Fedora: <https://fedoraproject.org>.
+[^arch]: Arch Linux: <https://archlinux.org>.
