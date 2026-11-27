@@ -7,27 +7,68 @@
 
 ## Introdução
 
-Durante a minha graduação, seguindo meus estudos relacionados a sistemas operacionais (S.O.), voltado para distribuições GNU/Linux, me deparei com algumas metodologias que ajudavam a entender melhor todo o processo de construção, como por exemplo o famoso `Linux From Scrath`, um livro que ensina, etapa por etapa, o processo de construção de um sistema de propósito geral. No entanto, tais metodologias, normalmente, exigem um certo nível de conhecimento prévio para conseguir absorver melhor o conteúdo proposto, o que pode servir como uma barreira para algumas pessoas curiosas em aprender mais a fundo sobre o assunto.
+Durante a minha graduação, ao estudar sistemas operacionais (S.O.) com foco em distribuições GNU/Linux, deparei-me com algumas metodologias que ajudam a entender todo o processo de construção de um sistema, como o famoso `Linux From Scratch`, um livro que ensina, etapa por etapa, a construir um sistema de propósito geral. No entanto, essas metodologias normalmente exigem um certo nível de conhecimento prévio para que o conteúdo seja bem absorvido, o que pode ser uma barreira para quem tem curiosidade em aprender mais a fundo sobre o assunto.
 
-Tendo isso em mente e após algumas pesquisas, notei que existem materiais didáticos espalhados por diversas fontes, que acabavam sendo peças importantes para aprender a montar uma distribuição de forma didática, resolvi propôr como tema de Trabalho de Conclusão de Curso (TCC) a criação de um framework destinado a facilitar o aprendizado relacionado a S.O. de maneira prática utilizando de sistemas GNU/Linux, permitindo que os alunos consigam aplicar os conceitos teóricos enquanto constroem um sistema minimalista, porém funcional.
+Com isso em mente e após algumas pesquisas, percebi que existem materiais didáticos espalhados por diversas fontes, e que eles são peças importantes para aprender a montar uma distribuição de forma didática. Por isso, propus como tema de Trabalho de Conclusão de Curso (TCC) a criação de um framework que facilita o aprendizado de S.O. de maneira prática, utilizando sistemas GNU/Linux e permitindo que os alunos apliquem os conceitos teóricos enquanto constroem um sistema minimalista, porém funcional.
 
 ---
 
 ## Etapas
 
-Para iniciar o processo do framework, optei por iniciar com uma abordagem mais simples de se concluir e aprender, pois mesmo que seja algo menos robusto, ela fornece uma base valiosa que será utilizada posteriormente no framework, na construção do sistema de propósito geral, servindo como uma ponte entre os conteúdos em vez de já iniciarmos na parte "complexa" do framework.
+Para iniciar o framework, optei por uma abordagem mais simples de concluir e de aprender. Mesmo sendo menos robusta, ela fornece uma base valiosa que será utilizada na construção do sistema de propósito geral, servindo como uma ponte entre os conteúdos, em vez de começarmos direto pela parte "complexa" do framework.
 
 ### Base Inicial
 
-Nesta etapa, o sistema construído tem um escopo bem mais simples, tendo como proposta principal fornecer uma base sólida e simplificada para que os alunos possam aprender conceitos fundamentais a respeito da construção de um S.O., embora não utilize componentes do ecossistema GNU, ainda possui um grande valor educativo que ajudará em etapas posteriores.
+Nesta etapa, o sistema construído tem um escopo bem mais simples. Sua proposta principal é fornecer uma base sólida e simplificada para que os alunos aprendam conceitos fundamentais da construção de um S.O. Embora não utilize componentes do ecossistema GNU, ela tem grande valor educativo e ajudará nas etapas posteriores.
 
-Para realizar a construção do sistema, basta acessar o tutorial presente no arquivo [Base Inicial](Primeiros_Passos/base-inicial.md), nele contém o passo a passo explicando o processo de construção, desde a compilação do Kernel Linux até o boot, sendo uma experiência relativamente rápida, mas que servirá de base para o sistema principal do Framework.
+Para construir o sistema, basta acessar o tutorial [Base Inicial](Primeiros_Passos/base-inicial.md), que traz o passo a passo do processo, desde a compilação do Kernel Linux até o boot. É uma experiência relativamente rápida, mas que servirá de base para o sistema principal do framework.
 
-### LecOS
+### LecOS (Sistema Principal)
 
-Sistema principal do framework.
+Este é o sistema principal do framework: uma distribuição GNU/Linux minimalista, construída do zero, em que cada componente é apresentado na mesma ordem em que entra em ação quando um computador é ligado. Em vez de apenas montar o sistema, o objetivo é entender, na prática, o papel de cada peça, partindo de um computador desligado até chegar a um sistema GNU/Linux em pleno funcionamento.
 
-**[Em construção...]**
+> O **LecOS** é o sistema usado como exemplo ao longo dos tutoriais. Em seu próprio projeto, cada aluno dará um nome ao seu sistema.
+
+O caminho percorrido pelo framework é:
+
+**BIOS/UEFI → Bootloader (GRUB) → Kernel Linux → Init system (Systemd, PID 1) → Processos → Entrada e saída → Sistema de arquivos (ext4)**
+
+O conteúdo está dividido em 4 módulos e 11 etapas:
+
+<div align="center">
+
+| **Módulo** | **Etapas** | **O que aprendemos** |
+| :--: | :--: | :--: |
+| **1 - Início** | [BIOS/UEFI](Sistema_Principal/Modulo%201%20-%20Inicio/0-BIOS_UEFI.md), [Ambiente de Desenvolvimento](Sistema_Principal/Modulo%201%20-%20Inicio/1-Ambiente.md), [Bootloader](Sistema_Principal/Modulo%201%20-%20Inicio/2-Bootloader.md) | Como o hardware desperta e entrega o controle ao software |
+| **2 - Boot** | [Kernel](Sistema_Principal/Modulo%202%20-%20Boot/3-Kernel.md), [Memória](Sistema_Principal/Modulo%202%20-%20Boot/4-Memoria.md), [Init](Sistema_Principal/Modulo%202%20-%20Boot/5-Init.md) | O papel do kernel, a diferença entre RAM e disco e o primeiro processo |
+| **3 - Processos** | [Userland](Sistema_Principal/Modulo%203%20-%20Processos/6-Userland.md), [Init System](Sistema_Principal/Modulo%203%20-%20Processos/7-Init_System.md), [Processos](Sistema_Principal/Modulo%203%20-%20Processos/8-Processos.md) | A userland GNU, o Systemd como PID 1 e o ciclo de vida dos processos |
+| **4 - Final** | [Entrada e Saída](Sistema_Principal/Modulo%204%20-%20Final/9-Entrada_e_Saida.md), [Sistema de Arquivos](Sistema_Principal/Modulo%204%20-%20Final/10-Sistema_de_Arquivos.md), [Encerramento](Sistema_Principal/Modulo%204%20-%20Final/11-Encerramento.md) | Como o sistema conversa com o hardware, organiza os dados e o desafio final |
+
+</div>
+
+> Tabela 1: Módulos e etapas do sistema principal.
+
+Ao longo das etapas, há exercícios práticos com capturas de tela para o registro do progresso, e o framework termina com um desafio final: construir o seu próprio programa de exibição de informações do sistema (um "fetch"), lendo os dados diretamente do sistema em execução.
+
+#### Como começar
+
+A construção é feita dentro de um contêiner [Docker](https://www.docker.com/), e o sistema criado é executado em uma máquina virtual com o [QEMU](https://www.qemu.org/). Por isso, será necessário ter instalados:
+
+* Docker;
+* QEMU (`qemu-system-x86_64`);
+* Git.
+
+Em computadores com Windows, todo o processo deve ser realizado dentro do terminal do **WSL 2**, conforme explicado na seção "Preparando o ambiente no Windows (WSL 2)" da [Base Inicial](Primeiros_Passos/base-inicial.md). A imagem do sistema construído ocupa 10 GB, portanto é importante ter espaço livre em disco.
+
+Para iniciar, basta clonar o repositório e seguir para a etapa [Ambiente de Desenvolvimento](Sistema_Principal/Modulo%201%20-%20Inicio/1-Ambiente.md), que explica como subir o contêiner de trabalho com o script `init.sh`:
+
+```bash
+git clone --depth 1 https://github.com/FelpzzzEX/LecOS.git
+```
+
+Para facilitar a leitura, os blocos de comandos dos tutoriais são precedidos por uma etiqueta que indica **onde** executá-los: `[HOST]` (sistema operacional principal), `[CONTAINER]` (contêiner Docker) e `[VM]` (sistema criado, em execução no QEMU).
+
+#### Componentes
 
 <div align="center">
 
@@ -48,9 +89,9 @@ Sistema principal do framework.
 
 </div>
 
-> Tabela 1: Componentes utilizados na construção do Sistema Principal e suas respectivas versões.
+> Tabela 2: Componentes utilizados na construção do Sistema Principal e suas respectivas versões.
 
-As versões dos componentes foram selecionadas com base na distribuição **Debian Stable**, uma vez que é um dos sistemas mais confiáveis em questão de compatibilidade e estabilidade de componentes. No entanto, não conterá os patches e correções específicas do Debian, garantindo a reprodutibilidade e independência do framework com as versões upstream desses componentes.
+As versões dos componentes foram selecionadas com base na distribuição **Debian Stable**, por ser uma das mais confiáveis em compatibilidade e estabilidade de componentes. No entanto, o sistema não contém os patches e as correções específicas do Debian, o que garante a reprodutibilidade e a independência do framework em relação às versões *upstream* desses componentes.
 
 ---
 
